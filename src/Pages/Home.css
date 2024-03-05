@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #eadfd5;
+}
+.svgs {
+  width: 42px;
+  height: 42px;
+  color: #e3bc97;
+}
+
+.plus {
+  width: 36px;
+  height: 36px;
+  color: white;
+}
+.svgs1 {
+  width: 42px;
+  height: 42px;
+}
+
+.ant-btn:hover {
+  background-color: #ce6d11 !important;
+}
+
+/* ul li {
+  margin: 60px 0;
+
+  cursor: pointer;
+} */
+
+ul li p {
+  white-space: nowrap;
+  color: #e3bc97;
+  font-weight: bold;
+  font-size: 12px;
+}

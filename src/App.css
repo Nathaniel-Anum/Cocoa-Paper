@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --white: #fff;
+  --dark-brown: #582f08;
+  --semi-dark-brown: #603814;
+  --light-brown: #9d4d01;
+  --lighter-brown: #e3bc97;
+  --lightest-brown: #f9eeda;
+  --background-color: #eadfd5;
+  --blue: #0707c7;
+  --red: #c50101;
+  --green: #009014;
+  --brown-text: #d2aa85;
+  --text-background: #e4a66c;
+  font-family: "Quicksand", sans-serif;
+  --background-picture: #966945;
+}
+
+body {
+  /* color: var(--white); */
+}
