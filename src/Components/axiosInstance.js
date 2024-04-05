@@ -21,29 +21,29 @@ axiosInstance.interceptors.request.use((req) => {
   return req;
 });
 
-axiosInstance.interceptors.response.use(
-  (res) => {
-    return res;
-  },
-  async (error) => {
-    console.log(error.response.status);
+// axiosInstance.interceptors.response.use(
+//   (res) => {
+//     return res;
+//   },
+//   async (error) => {
+//     console.log(error.response.status);
 
-    let retries = 0;
-    while (retries < 3) {
-      const errorConfig = error.config;
+//     let retries = 0;
+//     while (retries < 3) {
+//       const errorConfig = error.config;
 
-      if (error.response?.status === 401 && !errorConfig._retry) {
-        const responseAxios = await axios.post(baseURL + "/refresh", "", {
-          withCredentials: true,
-        });
-        console.log(responseAxios);
-      }
+//       if (error.response?.status === 401 && !errorConfig._retry) {
+//         const responseAxios = await axios.post(baseURL + "/refresh", "", {
+//           withCredentials: true,
+//         });
+//         console.log(responseAxios);
+//       }
 
-      retries = retries + 1;
-    }
+//       retries = retries + 1;
+//     }
 
-    return error;
-  }
-);
+//     return error;
+//   }
+// );
 
 export default axiosInstance;

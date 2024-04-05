@@ -1,4 +1,6 @@
+import axios from "axios";
 import Badge from "../Components/Badge";
+import React, { useEffect } from "react";
 
 const Main = () => {
   return (
@@ -47,14 +49,14 @@ const Main = () => {
             </div>
           </div>
         </div>
-        <div className="">
+        <div>
           <div className="relative">
             <img
               className="w-[140px]"
               src="../../src/assets/PhysicalDocs.svg"
               alt=""
             />
-            <div className="">
+            <div>
               <p className="text-center font-semibold text-[21px] text-[#582F08]">
                 Physical Docs
               </p>
@@ -82,7 +84,6 @@ const Main = () => {
           </svg>
         </div>
       </div>
-
     </div>
   );
 };

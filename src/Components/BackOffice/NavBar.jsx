@@ -3,8 +3,6 @@ import { Dropdown, Space } from "antd";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
-
 // const handleLogout = () => {
 //   localStorage.removeItem("accessToken");
 //   localStorage.removeItem("refreshToken");
@@ -18,7 +16,7 @@ const items = [
   },
 ];
 
-const Navbar = () => {
+const BackOfficeNavBar = () => {
   const currentDate = new Date();
   console.log(currentDate);
 
@@ -40,7 +38,7 @@ const Navbar = () => {
             viewBox="0 0 24 24"
             strokeWidth="1.5"
             stroke="currentColor"
-            className="w-5 h-5"
+            className="w-5 h-5 "
           >
             <path
               strokeLinecap="round"
@@ -60,9 +58,9 @@ const Navbar = () => {
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            strokeWidth="1.5"
+            strokeWidth="1.0"
             stroke="currentColor"
-            className="svgs1"
+            className="svgs1 text-[#A74D01] w-[47.99px] h-[47.99px] font-light hover:cursor-pointer hover:fill-[#A74D01] transition-color duration-[5s] ease-in"
           >
             <path
               strokeLinecap="round"
@@ -77,7 +75,7 @@ const Navbar = () => {
           </p>
           <Dropdown
             menu={{
-                  items,
+              items,
             }}
             trigger={["click"]}
           >
@@ -99,4 +97,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default BackOfficeNavBar;

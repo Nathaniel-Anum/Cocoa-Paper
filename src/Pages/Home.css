@@ -17,8 +17,8 @@ body {
   color: white;
 }
 .svgs1 {
-  width: 42px;
-  height: 42px;
+  /* width: 42px;
+  height: 42px; */
 }
 
 .ant-btn:hover {

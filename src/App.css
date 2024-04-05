@@ -22,3 +22,11 @@
 body {
   /* color: var(--white); */
 }
+
+table th {
+  background-color: #582f08 !important;
+  color: #edd3bb !important;
+}
+.ant-btn-primary {
+  color: white !important;
+}

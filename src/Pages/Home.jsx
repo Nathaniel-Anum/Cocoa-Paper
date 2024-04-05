@@ -1,39 +1,42 @@
 import axios from "axios";
 import "./Home.css";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axiosInstance, { baseURL } from "../Components/axiosInstance";
 import { useCookies } from "react-cookie";
+import { useState } from "react";
 
 const Home = () => {
   const [form] = Form.useForm();
 
+  const [loading, setLoading] = useState(false);
   const [cookie, setCookie] = useCookies(["refresh_token"]);
 
   const navigate = useNavigate();
 
   const handleSubmit = async (values) => {
-    form.resetFields();
-
     // console.log(values);
-    await axiosInstance.post("/login", values);
+    setLoading(true);
+    await setTimeout(() => {
+      setLoading(false);
+      form.resetFields();
+    }, 2500);
+    try {
+      const res = await axiosInstance.post("/login", values);
+      localStorage.setItem("accessToken", res?.data?.token);
+      // console.log(res.data.token);
 
-    //   localStorage.setItem("accessToken", res?.data?.token);
-    //   // localStorage.setItem("refreshToken", res?.data.refreshToken);
-    //   // console.log(res.data.accessToken);
-    //   navigate("/dashboard");
-    //   toast.success("Welcome");
-    // })
-    // .catch((err) => {
-    //   // console.log(err.response?.data.error);
-    //   console.log(err);
-    //   // return toast.error(err.response?.data.error);
-    // });
-    axiosInstance.post("/refresh", "", {
-      withCredentials: true,
-    });
+      setTimeout(() => {
+        // message.success("Login successful!");
+        navigate("/dashboard");
+      }, 2500);
+    } catch (err) {
+      setTimeout(() => {
+        message.error(err?.response?.data?.error);
+      }, 2500);
+    }
   };
 
   return (
@@ -92,7 +95,7 @@ const Home = () => {
               },
             ]}
           >
-            <Input placeholder="Email" />
+            <Input placeholder="Email" allowClear />
           </Form.Item>
 
           <Form.Item
@@ -112,6 +115,7 @@ const Home = () => {
               className="w-full bg-[#9D4D01]"
               type="primary"
               htmlType="submit"
+              loading={loading}
             >
               Submit
             </Button>
