@@ -41,7 +41,7 @@ const AddDepartment = ({ setOpen, open }) => {
     onSuccess: () => {
       setOpen(false);
       form.resetFields();
-      message.success("Department Created successfully!");
+      message.success("Department Created Successfully!");
       queryClient.invalidateQueries({ mutationKey: "departments" });
     },
     onError: (error) => {

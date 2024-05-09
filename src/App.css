@@ -19,6 +19,18 @@
   --background-picture: #966945;
 }
 
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
 body {
   /* color: var(--white); */
 }
@@ -29,4 +41,20 @@ table th {
 }
 .ant-btn-primary {
   color: white !important;
+}
+.ant-steps-item-icon {
+  background-color: #582f08 !important;
+}
+
+.ant-steps-icon{
+color: #ebe7e4 !important;
+}
+
+:where(.css-dev-only-do-not-override-1xg9z9n).ant-steps .ant-steps-item-finish>.ant-steps-item-container>.ant-steps-item-content>.ant-steps-item-title::after{
+  background-color: #a07554 !important;
+}
+
+
+.ant-steps-item-description{
+  color: #582F08 !important;
 }

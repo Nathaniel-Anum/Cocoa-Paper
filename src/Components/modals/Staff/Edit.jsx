@@ -30,7 +30,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
       return axiosInstance.get(`/department/${selectedDivision}`);
     },
   });
-  console.log(departments);
+  // console.log(departments);
   useEffect(() => {
     if (selectedDivision) {
       refetch();

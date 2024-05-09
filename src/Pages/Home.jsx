@@ -7,17 +7,21 @@ import "react-toastify/dist/ReactToastify.css";
 import axiosInstance, { baseURL } from "../Components/axiosInstance";
 import { useCookies } from "react-cookie";
 import { useState } from "react";
+import { useUser } from "./CustomHook/useUser";
 
 const Home = () => {
   const [form] = Form.useForm();
 
+ 
+
   const [loading, setLoading] = useState(false);
   const [cookie, setCookie] = useCookies(["refresh_token"]);
+  const { setUser, setIsLoading } = useUser();
 
   const navigate = useNavigate();
 
   const handleSubmit = async (values) => {
-    // console.log(values);
+    console.log(values);
     setLoading(true);
     await setTimeout(() => {
       setLoading(false);
@@ -26,7 +30,13 @@ const Home = () => {
     try {
       const res = await axiosInstance.post("/login", values);
       localStorage.setItem("accessToken", res?.data?.token);
-      // console.log(res.data.token);
+
+      if (res.data) {
+        setIsLoading(true);
+        const user = await axiosInstance.get("/user");
+        setUser(user?.data?.user);
+        setIsLoading(false);
+      }
 
       setTimeout(() => {
         // message.success("Login successful!");

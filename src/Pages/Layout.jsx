@@ -1,6 +1,5 @@
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
-import Main from "./Main";
 import { Outlet } from "react-router-dom";
 
 const Layout = () => {
@@ -8,7 +7,6 @@ const Layout = () => {
     <div>
       <Navbar />
       <Sidebar />
-      {/* <Main/> */}
 
       <Outlet />
     </div>

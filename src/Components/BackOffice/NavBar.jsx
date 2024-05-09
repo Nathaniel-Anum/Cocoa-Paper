@@ -22,8 +22,8 @@ const BackOfficeNavBar = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center pt-[20px]">
-        <div className="pl-[200px]">
+      <div className="flex justify-between items-center pt-[20px] ">
+        <div className="pl-[230px]">
           <p className="font-semibold text-[23px]">Dashboard</p>
 
           <p className="font-semibold text-[#694421]">

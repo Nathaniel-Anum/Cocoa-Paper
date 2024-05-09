@@ -2,8 +2,8 @@ import { DownOutlined } from "@ant-design/icons";
 import { Dropdown, Space } from "antd";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-
+import { useUser } from "./CustomHook/useUser";
+import { useEffect } from "react";
 
 // const handleLogout = () => {
 //   localStorage.removeItem("accessToken");
@@ -11,16 +11,26 @@ import "react-toastify/dist/ReactToastify.css";
 //   toast("You have successfully logged out.");
 // };
 
-const items = [
-  {
-    label: <a href="/">Logout</a>,
-    key: "0",
-  },
-];
-
 const Navbar = () => {
   const currentDate = new Date();
-  console.log(currentDate);
+  // console.log(currentDate);
+
+  const { user, setUser } = useUser();
+  // console.log(user);
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+  };
+  const items = [
+    {
+      label: (
+        <a href="/" onClick={handleLogout}>
+          Logout
+        </a>
+      ),
+      key: "0",
+    },
+  ];
 
   return (
     <div>
@@ -77,7 +87,7 @@ const Navbar = () => {
           </p>
           <Dropdown
             menu={{
-                  items,
+              items,
             }}
             trigger={["click"]}
           >
@@ -86,7 +96,7 @@ const Navbar = () => {
               onClick={(e) => e.preventDefault()}
             >
               <Space>
-                Information Systems
+                {user?.name}
                 <DownOutlined />
               </Space>
             </a>

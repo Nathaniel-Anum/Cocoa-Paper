@@ -93,7 +93,7 @@ const Staff = () => {
     onSuccess: () => {
       setOpen(false);
       form.resetFields();
-      message.success("Staff updated successfully!");
+      message.success("Staff added successfully!");
       queryClient.invalidateQueries({ mutationKey: "staff" });
     },
     onError: (error) => {
@@ -113,6 +113,7 @@ const Staff = () => {
       setOpen(false);
       form.resetFields();
       queryClient.invalidateQueries({ mutationKey: "staffDelete" });
+      message.success("Staff deleted successfully!");
     },
     onError: (error) => {
       console.log(error);
@@ -182,13 +183,13 @@ const Staff = () => {
       title: "Actions",
       dataIndex: ["staff", "StaffId"],
       render: (x, y) => (
-        <div className="flex gap-2 text-[17px]">
+        <div className="flex gap-3 text-[17px]">
           <button onClick={() => showPopup(y)}>
             <EditTwoTone />
           </button>
           <Popconfirm
-            title="Delete the task"
-            description="Are you sure to delete this task?"
+            title="Delete Staff"
+            description="Are you sure to delete this staff?"
             onConfirm={() => confirm(y?.staff?.staffId)}
             onCancel={cancel}
             okText="Yes"
@@ -205,7 +206,7 @@ const Staff = () => {
 
   return (
     <div>
-      <div className=" px-[240px] pt-[100px] ">
+      <div className=" px-[240px] pt-[50px] ">
         <div className=" flex justify-end py-[10px]">
           <Button
             type="primary"

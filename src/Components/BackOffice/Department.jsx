@@ -19,15 +19,18 @@ const Department = () => {
   const [open, setOpen] = useState(false);
   const [popup, setPopup] = useState(false);
   const [departmentDetail, setDepartmentDetail] = useState({});
+  const [form] = Form.useForm();
+  const queryClient = useQueryClient();
 
   const cancel = (e) => {
     console.log(e);
     // message.error("Click on No");
   };
 
-  const handleCancel = () => {
-    setOpen(false);
+  const confirm = (departmentId) => {
+    deleteMutate(departmentId);
   };
+
   const showModal = () => {
     setOpen(true);
   };
@@ -65,6 +68,22 @@ const Department = () => {
   });
   // console.log(divisions && divisions?.data);
 
+  // useMutation to delete department
+  const { mutate: deleteMutate } = useMutation({
+    mutationKey: "deleteDepartment",
+    mutationFn: (departmentId) => {
+      return axiosInstance.delete(`/department/${departmentId}`);
+    },
+    onSuccess: () => {
+      setOpen(false);
+      form.resetFields();
+      message.success("Department deleted successfully!");
+      queryClient.invalidateQueries({ mutationKey: "staffDelete" });
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
   const columns = [
     {
       title: " Department Name",
@@ -81,29 +100,29 @@ const Department = () => {
       title: "Actions",
       dataIndex: "departmentId",
       render: (x, individualDepartment) => (
-        <>
+        <div className="flex gap-3 text-[17px]">
           <button onClick={() => showPopup(individualDepartment)}>
             <EditTwoTone />
           </button>
           <Popconfirm
-            title="Delete the task"
-            description="Are you sure to delete this task?"
-            onConfirm={() => console.log(confirmed)}
+            title="Delete Department"
+            description="Are you sure to delete this department?"
+            onConfirm={() => confirm(individualDepartment?.departmentId)}
             onCancel={cancel}
             okText="Yes"
             cancelText="No"
           >
             <button>
-              <DeleteTwoTone />
+              <DeleteTwoTone twoToneColor="#FF0000" />
             </button>
           </Popconfirm>
-        </>
+        </div>
       ),
     },
   ];
   return (
     <div>
-      <div className=" px-[240px] pt-[100px] ">
+      <div className=" px-[240px] pt-[50px] ">
         <div className=" flex justify-end py-[10px]">
           <Button
             type="primary"
