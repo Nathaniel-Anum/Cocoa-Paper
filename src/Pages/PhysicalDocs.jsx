@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Table, message, Modal, Form, Input, Select } from "antd";
+import { Table, message, Popover, Form, Input, Select } from "antd";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTrail } from "./CustomHook/useTrail";
 import axiosInstance from "../Components/axiosInstance";
+import { CheckOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const PhysicalDocs = () => {
   const { trails, isLoading } = useTrail();
+  const navigate = useNavigate();
 
   const [form] = Form.useForm();
 
   const queryClient = useQueryClient();
-
- 
-  
 
   // useMutation to update Document Trial Status
   const { mutate: updateTrial } = useMutation({
@@ -26,19 +26,19 @@ const PhysicalDocs = () => {
     onSuccess: () => {
       message.success("Document Received successfully!");
       queryClient.invalidateQueries({ queryKey: ["trail"] });
+      if (_data.length < 1) {
+        navigate("//dashboard/incoming");
+      }
     },
     onError: (error) => {
       message.error(error?.response?.data?.Trail?.error);
     },
   });
 
- 
-
   const handleButtonClick = (selectedRecord) => {
     // console.log(selectedRecord);
     updateTrial(selectedRecord);
   };
-
 
   // if (isPending)
   //   return (
@@ -115,20 +115,21 @@ const PhysicalDocs = () => {
       render: (selectedRecord) => (
         <div>
           <div className="flex gap-2">
-            <button
-              className="bg-[#582f08] text-white px-2 rounded-lg font-semibold text-[0.9rem]"
-              onClick={() => handleButtonClick(selectedRecord)}
+            <Popover
+              content={
+                <div>
+                  <p>Receive</p>
+                </div>
+              }
             >
-              Receive
-              {/* <RightSquareTwoTone /> */}
-            </button>
-            <button
-              className=" bg-[#582f08] text-white px-2 py-1 rounded-lg font-semibold text-[0.9rem]"
-              onClick={() => console.log(selectedRecord)}
-            >
-              Archive
-              {/* <RightSquareTwoTone /> */}
-            </button>
+              <button
+                // className="bg-[#582f08] text-white px-2 rounded-lg font-semibold text-[0.9rem]"
+
+                onClick={() => handleButtonClick(selectedRecord)}
+              >
+                <CheckOutlined />
+              </button>
+            </Popover>
           </div>
         </div>
       ),
@@ -144,7 +145,6 @@ const PhysicalDocs = () => {
   return (
     <div className="pt-[70px]  h-screen w-full pl-[200px] pr-[72px]  ">
       <Table columns={columns} dataSource={_data} loading={isLoading} />
-      
     </div>
   );
 };

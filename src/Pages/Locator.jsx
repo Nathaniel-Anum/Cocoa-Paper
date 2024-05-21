@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useUser } from "./CustomHook/useUser";
 import { useTrail } from "./CustomHook/useTrail";
 import Lottie from "react-lottie";
 import locator from "../../src/lotties/locator.json";
@@ -7,10 +8,11 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../Components/axiosInstance";
 
 const Locator = () => {
+  const { user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [trialId, setTrialId] = useState("");
 
-  const [stepsData, SetStepsData] = useState([]);
+  const [stepsData, setStepsData] = useState([]);
   const [document, setDocument] = useState({});
 
   // useQuery for getting all trails associated to a document
@@ -23,81 +25,64 @@ const Locator = () => {
     enabled: !!trialId,
   });
 
+  // useEffect(() => {
+  //   if (documentTrial?.data?.trails) {
+  //     for (let i = 0; i < documentTrial?.data?.trails.length; i++) {
+  //       if (i == 0) {
+  //         setStepsData([
+  //           ...stepsData,
+  //           {
+  //             title: documentTrial?.data?.trails[i].status,
+  //             description: documentTrial?.data?.trails[i].sender.name,
+  //           },
+  //           {
+  //             title: documentTrial?.data?.trails[i].status,
+  //             description: documentTrial?.data?.trails[i].receiver.name,
+  //           },
+  //         ]);
+  //       } else {
+  //         setStepsData([
+  //           ...stepsData,
+  //           {
+  //             title: documentTrial?.data?.trails[i].status,
+  //             description: documentTrial?.data?.trails[i].receiver.name,
+  //           },
+  //         ]);
+  //       }
+  //     }
+  //   }
+  // }, [documentTrial?.data?.trails]);
+
+  console.log(stepsData);
+
   const showModal = (trial) => {
     setIsModalOpen(true);
     setTrialId(trial?.docID);
     console.log(trial, documentTrial?.data);
 
-    // const temp = [
-    //   {
-    //     title: "Sender",
+    // let temp = documentTrial?.data?.trails?.map((trail, index) => {
+    //   if (index + 1 === documentTrial?.data?.trails.length) {
+    //     return {
+    //       title: trail.status,
+    //       description: trail.receiver.name,
+    //     };
+    //   }
 
-    //     description: trial?.sender?.name,
-    //   },
-    //   {
-    //     title: (
-    //       <Popover
-    //         content={
-    //           <div className="cursor-pointer">
-    //             <p>Department: {trial?.document?.department?.departmentName}</p>
-    //             <p>Date: {new Date(trial?.createdAt).toDateString()}</p>
-    //             <p>Time: {new Date(trial?.createdAt).toLocaleTimeString()}</p>
-    //           </div>
-    //         }
-    //       >
-    //         <p className="cursor-pointer">{trial?.document?.status}</p>
-    //       </Popover>
-    //     ),
-    //     description: trial?.receiver?.name,
-    //   },
-    //   {
-    //     title: documentTrial?.data?.user,
-    //   },
-    //   // {
-    //   //   title: "documentTrial?.data?.status",
-    //   //   description: documentTrial?.data?.receiver?.name,
-    //   // },
-    // ];
-    // SetStepsData(temp);
-    // const temp = [
-    //   {
-    //     title: "Sender",
+    //   return [
+    //     {
+    //       title: trail.status,
+    //       description: trail.sender.name,
+    //     },
+    //     {
+    //       title: trail.status,
+    //       description: trail.receiver.name,
+    //     },
+    //   ];
+    // });
 
-    //     description: trial?.sender?.name,
-    //   },
-    //   {
-    //     title: (
-    //       <Popover
-    //         content={
-    //           <div className="cursor-pointer">
-    //             <p>Department: {trial?.document?.department?.departmentName}</p>
-    //             <p>Date: {new Date(trial?.createdAt).toDateString()}</p>
-    //             <p>Time: {new Date(trial?.createdAt).toLocaleTimeString()}</p>
-    //           </div>
-    //         }
-    //       >
-    //         <p className="cursor-pointer">{trial?.document?.status}</p>
-    //       </Popover>
-    //     ),
-    //     description: trial?.receiver?.name,
-    //   },
-    //   {
-    //     title: documentTrial?.data?.user,
-    //   },
-    //   // {
-    //   //   title: "documentTrial?.data?.status",
-    //   //   description: documentTrial?.data?.receiver?.name,
-    //   // },
-    // ];
+    // temp = [].concat(...temp);
 
-    const temp  = documentTrial?.data?.trails?.map((trail)=> {
-      return { 
-        title: trail.status,
-        description: trail.receiver.name
-      }
-    })
-   
-    SetStepsData(temp);
+    // setStepsData(temp);
   };
 
   // console.log(documentTrial?.data);
@@ -105,8 +90,9 @@ const Locator = () => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+
   const { allTrails } = useTrail();
-  // console.log(allTrails);
+  // console.log("Hello",allTrails);
 
   const defaultOptions = {
     loop: true,
@@ -139,15 +125,43 @@ const Locator = () => {
             </div>
           ))}
         </div>
+
         <Modal
           title="Locator"
           open={isModalOpen}
           onCancel={handleCancel}
           footer={null}
           centered="true"
+          width={"60%"}
         >
-          <Steps items={stepsData} />
+          <div className="py-6">
+            <Steps
+              responsive
+            
+              className="grid grid-cols-2 gap-y-2 "
+              items={documentTrial?.data?.trails.flatMap((trail, index) => {
+                if (index === 0) {
+                  return [
+                    {
+                      title: "Sent",
+                      description: trail.sender.name,
+                    },
+                    {
+                      title: trail?.status,
+                      description: trail.receiver.name,
+                    },
+                  ];
+                } else {
+                  return {
+                    title: trail.status,
+                    description: trail.receiver.name,
+                  };
+                }
+              })}
+            />
+          </div>
         </Modal>
+
         <div className="flex justify-center items-center">
           <Lottie options={defaultOptions} height={450} width={650} />
         </div>

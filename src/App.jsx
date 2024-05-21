@@ -20,10 +20,13 @@ import { useUser } from "./Pages/CustomHook/useUser";
 import { useTrail } from "./Pages/CustomHook/useTrail";
 import Locator from "./Pages/Locator";
 import PhysicalDocs from "./Pages/PhysicalDocs";
+import Archive from "./Pages/Archive";
 
 function App() {
   // API call for the users.
   const { setUser, setIsLoading, user, isLoading } = useUser();
+
+  // axiosInstance.get("/archive").then((res) => console.log(res?.data?.archives));
 
   console.log(user, isLoading);
 
@@ -58,6 +61,8 @@ function App() {
                 element={<PhysicalDocs />}
               />
               <Route path="/dashboard/locator" element={<Locator />} />
+              <Route path="/dashboard/archive" element={<Archive />} />
+              <Route path="/dashboard/archive/:id" element={<Archive />} />
             </Route>
             <Route path="/backoffice" element={<Dashboard />}>
               <Route path="/backoffice/bod" element={<Staff />} />

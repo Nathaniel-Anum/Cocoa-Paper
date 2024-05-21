@@ -24,7 +24,7 @@ export const useTrail = (type) => {
     if (!isLoading && user && trails?.data.length) {
       const incomingData = trails.data.filter(
         (i) =>
-          i.receiver.userId === user?.userId && i.document.status === "Received"
+          i.receiver.userId === user?.userId && i.status === "Received"   
       );
 
       setIncoming(incomingData);
@@ -35,9 +35,7 @@ export const useTrail = (type) => {
       setOutgoing(outgoingData);
 
       const physicalDocsData = trails.data.filter(
-        (i) =>
-          i.document.status === "PendingReceipt" ||
-          i.document.status === "Forwarded"
+        (i) =>  i.receiver.userId === user?.userId && i.status === "PendingReceipt"
       );
       setPhysicalDocument(physicalDocsData);
     }

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Table, Modal, Form, Select, message } from "antd";
+import { Table, Modal, Form, Select, message, Popover } from "antd";
 import { useTrail } from "./CustomHook/useTrail";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../Components/axiosInstance";
+import { ForwardOutlined } from "@ant-design/icons";
 
 const Incoming = () => {
   const { trails } = useTrail("incoming");
@@ -173,13 +174,40 @@ const Incoming = () => {
       title: "Actions",
       key: "action",
       render: (selectedRecord) => (
-        <div>
-          <button
-            className="bg-[#582f08] text-white px-2 rounded-lg font-semibold text-[0.9rem]"
-            onClick={() => handleClick(selectedRecord)}
+        <div className="flex gap-2">
+          <Popover
+            content={
+              <div>
+                <p>Forward</p>
+              </div>
+            }
           >
-            Forward
-          </button>
+            <button
+              className="text-[21px]"
+              onClick={() => handleClick(selectedRecord)}
+            >
+              <ForwardOutlined />
+            </button>
+          </Popover>
+
+          <Popover
+            content={
+              <div>
+                <p>Archive</p>
+              </div>
+            }
+          >
+            <button
+              // className="bg-[#582f08] text-white px-2 rounded-lg font-semibold text-[0.9rem]"
+              onClick={() => console.log(selectedRecord)}
+            >
+              <img
+                className="w-[23px]"
+                src="../../src/assets/archive.3b9ddd7f65d8f9353f8fd0efad0c45.svg "
+                alt=""
+              />
+            </button>
+          </Popover>
         </div>
       ),
     },
