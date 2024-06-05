@@ -27,7 +27,7 @@ function App() {
   const { setUser, setIsLoading, user, isLoading } = useUser();
 
   // axiosInstance.get("/archive").then((res) => console.log(res?.data?.archives));
-
+  axiosInstance.get('/archive').then(res=> console.log(res.data))
   console.log(user, isLoading);
 
   useEffect(() => {

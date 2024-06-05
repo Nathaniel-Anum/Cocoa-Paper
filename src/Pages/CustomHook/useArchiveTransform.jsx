@@ -5,14 +5,10 @@ const useArchiveTransform = (archives, id) => {
 
   function flattenArray(arr) {
     return arr?.reduce((acc, current) => {
-      if (
-        !current?.createdAt &&
-        Array.isArray(current?.files) &&
-        current?.files.length > 0
-      ) {
-        return acc.concat(current?.files);
-      } else {
+      if (current?.createdAt) {
         return acc.concat(current);
+      } else if (Array.isArray(current?.files) && current?.files.length > 0) {
+        return acc.concat(current.files);
       }
     }, []);
   }

@@ -7,11 +7,14 @@ import {
   message,
   Upload,
   Divider,
+  Popconfirm,
   Radio,
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  DeleteTwoTone,
+  EditTwoTone,
   FilePdfFilled,
   FolderAddOutlined,
   FolderFilled,
@@ -21,10 +24,17 @@ import { useState } from "react";
 import axiosInstance from "../Components/axiosInstance";
 import { Link, useParams } from "react-router-dom";
 import useArchiveTransform from "./CustomHook/useArchiveTransform";
+import CreateFolder from "../Components/modals/Archive/CreateFolder";
+import UploadFile from "../Components/modals/Archive/UploadFile";
 
 const Archive = () => {
   const queryClient = useQueryClient();
   const { id } = useParams();
+
+  const cancel = (e) => {
+    console.log(e);
+    // message.error("Click on No");
+  };
 
   const columns = [
     {
@@ -55,7 +65,7 @@ const Archive = () => {
       title: "Reference",
       dataIndex: "ref",
       render: (value, record) => (
-        <div>{value ? record?.ref : <div className="  "> ----- </div>}</div>
+        <div>{value ? record?.ref : <div className="  "> - </div>}</div>
       ),
     },
     {
@@ -80,10 +90,30 @@ const Archive = () => {
     {
       title: "Subject",
       dataIndex: "subject",
-      render: (value) => <div>{value ? value : <div>-----</div>}</div>,
+      render: (value) => <div>{value ? value : <div>-</div>}</div>,
     },
     {
       title: "Action",
+      dataIndex: "archiveId",
+      render: (value, record) => (
+        <div className="flex gap-3 text-[17px]">
+          <button onClick={() => console.log(record)}>
+            <EditTwoTone />
+          </button>
+          <Popconfirm
+            title="Delete Archive"
+            description="Are you sure to delete this archive?"
+            onConfirm={() => confirm(record?.archiveId)}
+            onCancel={cancel}
+            okText="Yes"
+            cancelText="No"
+          >
+            <button>
+              <DeleteTwoTone twoToneColor="#FF0000" />
+            </button>
+          </Popconfirm>
+        </div>
+      ),
     },
   ];
 
@@ -108,7 +138,6 @@ const Archive = () => {
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
   const [form] = Form.useForm();
-  const [selectedFile, setSelectedFile] = useState("");
 
   //UseQuery to fetch all archives/folders
   const { data: archive } = useQuery({
@@ -123,93 +152,22 @@ const Archive = () => {
   const archives = id ? archive?.data?.archive : archive?.data?.archives;
   const { _data } = useArchiveTransform(archives, id);
 
-  //If there is an id send data.children to the dataIndex
-  // let _data = flattenArray(
-  //   id ? archive?.data?.archive.files : archive?.data?.archives
-  // );
   const data = _data?.map((archive, index) => ({
     ...archive,
     key: index,
   }));
-  // console.log(_data);
-
-  //Usemutation to create folder
-  const { mutate } = useMutation({
-    mutationKey: "folder",
-    mutationFn: (values) => {
-      console.log(values);
-      return axiosInstance.post("/archive", { ...values, folderId: id });
-    },
-    onSuccess: () => {
-      setOpen(false);
-      form.resetFields();
-      message.success("Folder created successfully!");
-      queryClient.invalidateQueries({ mutationKey: "folder" });
-    },
-    onError: (error) => {
-      setOpen(false);
-
-      console.log(error);
-    },
-  });
-
-  //Usemutation to upload files
-  const { mutate: uploadFile } = useMutation({
-    mutationKey: "fileUpload",
-    mutationFn: (values) => {
-      console.log(values);
-      return axiosInstance.post("/upload", values);
-    },
-    onSuccess: () => {
-      setOpen(false);
-      form.resetFields();
-      message.success("file uploaded successfully!");
-      queryClient.invalidateQueries({ mutationKey: "folder" });
-    },
-    onError: (error) => {
-      setOpen(false);
-
-      console.log(error);
-    },
-  });
-
-  const handleSubmit = (values) => {
-    mutate(values);
-    // console.log(values);
-    //do my mutation value here
-  };
-
-  const handleUpload = (values) => {
-    console.log(values);
-    if (selectedFile) {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("ref", values.ref);
-      formData.append("subject", values.subject);
-      formData.append("folderId", id);
-      uploadFile(formData);
-    }
-  };
+  console.log(_data);
 
   function handleClick() {
-    console.log("object");
     setOpen(true);
   }
-
-  const handleCancel = () => {
-    setOpen(false);
-  };
-
-  const handleClose = () => {
-    setShow(false);
-  };
 
   function handleFile() {
     setShow(true);
   }
 
   return (
-    <div className="pt-[70px]  h-screen w-full pl-[200px] pr-[72px]  ">
+    <div className="pt-[70px]  h-screen w-full pl-[200px] pr-[72px]">
       <div>
         <div className="h-[2px] w-[1298px] bg-[#bb9673] m-4"></div>
         <div className="flex gap-4">
@@ -231,109 +189,7 @@ const Archive = () => {
         <div className="h-[2px] w-[1298px] bg-[#bb9673] m-4"></div>
       </div>
 
-      <div>
-        <Modal
-          open={open}
-          title="New Folder"
-          onCancel={handleCancel}
-          footer={null}
-        >
-          <div className="mt-3">
-            <Form
-              name="Create Folder"
-              onFinish={(values) => handleSubmit(values)}
-              form={form}
-            >
-              <Form.Item
-                name="folderName"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please input a name for the Folder!",
-                  },
-                ]}
-              >
-                <Input placeholder="Enter folder Name" allowClear />
-              </Form.Item>
-              <Form.Item>
-                {/* <div className="flex float-end"> */}
-                <Button
-                  className="w-full bg-[#9D4D01]"
-                  type="primary"
-                  htmlType="submit"
-                >
-                  Submit
-                </Button>
-                {/* </div> */}
-              </Form.Item>
-            </Form>
-          </div>
-        </Modal>
-        <Modal
-          open={show}
-          title="Upload File"
-          footer={null}
-          onCancel={handleClose}
-        >
-          <Form
-            name="Upload File"
-            onFinish={(values) => handleUpload(values)}
-            form={form}
-            layout="vertical"
-          >
-            <Form.Item
-              name="subject"
-              label="Subject"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input a subject for your file!",
-                },
-              ]}
-            >
-              <Input placeholder="Subject" allowClear />
-            </Form.Item>
-            <Form.Item
-              name="ref"
-              label="Reference"
-              rules={[
-                {
-                  required: true,
-                  message: "Please enter a reference for your file!",
-                },
-              ]}
-            >
-              <Input placeholder="Reference" allowClear />
-            </Form.Item>
-            <Form.Item label="File" name="file">
-              <div className="flex justify-center">
-                <Upload
-                  // action={"http://localhost:5000/upload"}
-                  name="file"
-                  onChange={(info) => setSelectedFile(info.file.originFileObj)}
-                  accept=".pdf"
-                >
-                  <button className="border border-black px-20 py-1">
-                    <div className="flex gap-2 text-[18px]">
-                      <UploadOutlined className="text-[19px]" />
-                      <p>Upload</p>
-                    </div>
-                  </button>
-                </Upload>
-              </div>
-            </Form.Item>
-            <Form.Item>
-              <Button
-                className="w-full bg-[#9D4D01]"
-                type="primary"
-                htmlType="submit"
-              >
-                Upload
-              </Button>
-            </Form.Item>
-          </Form>
-        </Modal>
-      </div>
+      <div></div>
 
       <Table
         rowSelection={{
@@ -343,6 +199,9 @@ const Archive = () => {
         columns={columns}
         dataSource={data}
       />
+
+      {open ? <CreateFolder open={open} setOpen={setOpen} id={id} /> : null}
+      {show ? <UploadFile show={show} setShow={setShow} id={id} /> : null}
     </div>
   );
 };
