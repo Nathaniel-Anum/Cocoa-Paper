@@ -21,6 +21,7 @@ const UploadFile = ({ setShow, show, id }) => {
       form.resetFields();
       message.success("file uploaded successfully!");
       queryClient.invalidateQueries({ mutationKey: "folder" });
+      
     },
     onError: (error) => {
       setOpen(false);

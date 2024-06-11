@@ -4,12 +4,28 @@ import { useTrail } from "./CustomHook/useTrail";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../Components/axiosInstance";
 import { ForwardOutlined } from "@ant-design/icons";
+import { LuForward } from "react-icons/lu";
+import { RiInboxArchiveFill } from "react-icons/ri";
+import ArchiveFiles from "../Components/modals/Archive/ArchiveFiles";
+
+import { useParams } from "react-router-dom";
 
 const Incoming = () => {
+  const { id } = useParams();
   const { trails } = useTrail("incoming");
+  const [show, setShow] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [record, setRecord] = useState({});
+
+  const [senderId, setSenderId] = useState("")
 
   const queryClient = useQueryClient();
+
+  function handleFile(selectedRecord) {
+    setShow(true);
+    setSenderId(selectedRecord);
+    setRecord(selectedRecord?.document);
+  }
 
   // console.log(trails);
 
@@ -55,6 +71,7 @@ const Incoming = () => {
   const { mutate: forwardDocument } = useMutation({
     mutationKey: "forwardDocument",
     mutationFn: (values) => {
+      console.log(values);
       console.log(`Document Id: ${selected}`);
       return axiosInstance.patch(`/trail/${selected}`, {
         userId: values?.userId,
@@ -186,7 +203,7 @@ const Incoming = () => {
               className="text-[21px]"
               onClick={() => handleClick(selectedRecord)}
             >
-              <ForwardOutlined />
+              <LuForward className="text-[22px]" />
             </button>
           </Popover>
 
@@ -199,13 +216,14 @@ const Incoming = () => {
           >
             <button
               // className="bg-[#582f08] text-white px-2 rounded-lg font-semibold text-[0.9rem]"
-              onClick={() => console.log(selectedRecord)}
+              onClick={() => handleFile(selectedRecord)}
             >
-              <img
+              {/* <img
                 className="w-[23px]"
                 src="../../src/assets/archive.3b9ddd7f65d8f9353f8fd0efad0c45.svg "
                 alt=""
-              />
+              /> */}
+              <RiInboxArchiveFill className="text-[22px]" />
             </button>
           </Popover>
         </div>
@@ -307,6 +325,9 @@ const Incoming = () => {
           </Form.Item>
         </Form>
       </Modal>
+      {show ? (
+        <ArchiveFiles show={show} setShow={setShow} id={id} record={record} sender={senderId?.sender?.userId} />
+      ) : null}
     </div>
   );
 };
