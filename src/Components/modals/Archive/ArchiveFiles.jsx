@@ -8,9 +8,6 @@ import { useTrail } from "../../../Pages/CustomHook/useTrail";
 import useArchiveTransform from "../../../Pages/CustomHook/useArchiveTransform";
 
 const ArchiveFiles = ({ setShow, show, id, record, sender = null }) => {
-
-
-
   // const { trails } = useTrail("incoming");
   // console.log(trails);
 
@@ -70,23 +67,25 @@ const ArchiveFiles = ({ setShow, show, id, record, sender = null }) => {
   console.log(_data); //displaying everything in the /archive
 
   //Filtering and mapping the all archives array
-  const folderOptions = _data && _data.filter(item=> item.type === "Folder").map(folder => (
-   { value: folder?.folderId,
-    label: folder?.folderName,
-    children: folder?.children?.map (child => (
-      {
-        value: child?.folderId,
-        label: child?.folderName
-
-      }
-    )) }
-  ))
-
-
-
+  const folderOptions =
+    _data &&
+    _data
+      .filter((item) => item.type === "Folder")
+      .map((folder) => ({
+        value: folder?.folderId,
+        label: folder?.folderName,
+        children: folder?.children?.map((child) => ({
+          value: child?.folderId,
+          label: child?.folderName,
+        })),
+      }));
 
   const onChange = (value) => {
-    console.log(value);
+    const FolderId = value[value.length-1]
+    console.log(FolderId);
+    // const FolderId = value?.folderId[value.folder.length - 1];
+    // console.log(value);
+
   };
 
   const [form] = Form.useForm();
@@ -100,7 +99,7 @@ const ArchiveFiles = ({ setShow, show, id, record, sender = null }) => {
     mutationFn: () => {
       return axiosInstance.patch(`/trail/${record?.docID}`, {
         userId: sender,
-        status: "Archived"
+        status: "Archived",
       });
     },
     onSuccess: () => {
@@ -141,11 +140,14 @@ const ArchiveFiles = ({ setShow, show, id, record, sender = null }) => {
   const handleUpload = (values) => {
     console.log(values);
     if (selectedFile) {
+      const FolderId = values?.folderId[values.folderId.length-1];
+      console.log(FolderId);
+
       const formData = new FormData();
       formData.append("file", selectedFile);
       formData.append("ref", values.ref);
       formData.append("subject", values.subject);
-      formData.append("folderId", id);
+      formData.append("folderId", FolderId);
       uploadFile(formData);
     }
   };
@@ -204,6 +206,7 @@ const ArchiveFiles = ({ setShow, show, id, record, sender = null }) => {
           </div>
         </Form.Item>
         <Form.Item
+          name="folderId"
           label="Folder"
           rules={[
             {
@@ -213,7 +216,8 @@ const ArchiveFiles = ({ setShow, show, id, record, sender = null }) => {
           ]}
         >
           <Cascader
-            options={folderOptions }
+            label="Folder"
+            options={folderOptions}
             onChange={onChange}
             changeOnSelect
           />
