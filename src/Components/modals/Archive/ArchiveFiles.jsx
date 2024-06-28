@@ -84,16 +84,19 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
   };
 
   const handleUpload = (values) => {
-    console.log(values);
     if (selectedFile) {
-      const FolderId = values?.folderId[values.folderId.length - 1];
-      console.log(FolderId);
+      const folderId = values?.folderId
+        ? values?.folderId[values.folderId.length - 1]
+        : "";
+      console.log(values, typeof folderId);
 
-      const formData = new FormData();
+      let formData = new FormData();
       formData.append("file", selectedFile);
       formData.append("ref", values.ref);
       formData.append("subject", values.subject);
-      formData.append("folderId", FolderId);
+      formData.append("folderId", folderId);
+
+      console.log(formData);
       uploadFile(formData);
     }
   };
@@ -163,16 +166,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
             </Upload>
           </div>
         </Form.Item>
-        <Form.Item
-          name="folderId"
-          label="Folder"
-          rules={[
-            {
-              required: true,
-              message: "Select a folder",
-            },
-          ]}
-        >
+        <Form.Item name="folderId" label="Folder">
           <Cascader
             label="Folder"
             options={options}

@@ -50,7 +50,7 @@ function App() {
     <div>
       <Router>
         <Routes>
-          {/* <Route element={<ProtectedRoutes />}> */}
+          <Route element={<ProtectedRoutes />}>
             <Route path="/" element={<Layout />}>
               <Route path="/dashboard" element={<HomeDashboard />} />
               <Route path="/dashboard/add-document" element={<AddDocument />} />
@@ -73,7 +73,7 @@ function App() {
                 path="/backoffice/rolemanagement"
                 element={<RoleManagement />}
               />
-            {/* </Route> */}
+            </Route>
           </Route>
 
           <Route element={<PublicRoutes />}>

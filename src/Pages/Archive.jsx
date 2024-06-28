@@ -33,12 +33,13 @@ const Archive = () => {
   const [show, setShow] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [wholerecord, setWholeRecord] = useState({});
+  const [allrecord, setAllRecord] = useState({});
   const [form] = Form.useForm();
   const { id } = useParams();
 
   const handleSubmit = (values) => {
     console.log(values);
-    EditFolder(values?.folderName)
+    EditFolder(values?.folderName);
   };
 
   function handleClick() {
@@ -59,19 +60,26 @@ const Archive = () => {
   };
 
   const [folderId, setFolderId] = useState("");
+
   const cancel = (e) => {
     console.log(e);
     // message.error("Click on No");
   };
 
-  //Mutate to delete folder
+  //Mutate to delete folders and files
   const { mutate } = useMutation({
     mutationKey: "delete",
     mutationFn: () => {
-      return axiosInstance.delete(`/archive/${folderId}`);
+      if (allrecord?.type === "Folder") {
+        return axiosInstance.delete(`/archive/${allrecord?.folderId}`);
+      } else if (allrecord?.type === "File") {
+        return axiosInstance.delete(`/archive/${allrecord?.fileId}`);
+      } else {
+        throw new Error ("Unknown file type")
+      }
     },
     onSuccess: () => {
-      message.success("Folder deleted successfully");
+      message.success("Deleted Successfully");
       queryClient.invalidateQueries({ queryKey: ["archive"] });
     },
     onError: (error) => {
@@ -80,26 +88,34 @@ const Archive = () => {
   });
 
   //Mutate function to edit folder (name)
-  const { mutate: EditFolder} = useMutation({
+  const { mutate: EditFolder } = useMutation({
     mutationKey: "editFolder",
     mutationFn: (folderName) => {
-      return axiosInstance.patch(`/archive/${wholerecord?.folderId}`, {  folderName : folderName});
+      return axiosInstance.patch(`/archive/${wholerecord?.folderId}`, {
+        folderName: folderName,
+      });
     },
     onSuccess: () => {
       message.success("Folder Successfully updated");
       queryClient.invalidateQueries({ queryKey: ["archive"] });
-      setIsModalOpen(false)
+      setIsModalOpen(false);
     },
     onError: (error) => {
       message.error(error);
     },
   });
 
-  const handleDelete = (record) => {
+  // const handleDelete = (record) => {
+  //   console.log(record);
+  //   setFolderId(record?.folderId);
+  //   mutate(record);
+  // };
+
+  function handleDelete(record) {
     console.log(record);
-    setFolderId(record?.folderId);
+    setAllRecord(record);
     mutate(record);
-  };
+  }
 
   const columns = [
     {

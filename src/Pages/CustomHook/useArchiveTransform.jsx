@@ -9,6 +9,8 @@ const useArchiveTransform = (archives, id) => {
         return acc.concat(current);
       } else if (Array.isArray(current?.files) && current?.files.length > 0) {
         return acc.concat(current.files);
+      } else {
+        return acc;
       }
     }, []);
   }
@@ -31,6 +33,7 @@ const useArchiveTransform = (archives, id) => {
       setData(temp);
     } else {
       const temp = flattenArray(archives);
+      console.log(temp, archives);
       setData(temp);
     }
   }, [id, archives]);
