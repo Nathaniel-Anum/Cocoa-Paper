@@ -29,11 +29,76 @@ import UploadFile from "../Components/modals/Archive/UploadFile";
 
 const Archive = () => {
   const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [show, setShow] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [wholerecord, setWholeRecord] = useState({});
+  const [form] = Form.useForm();
   const { id } = useParams();
 
+  const handleSubmit = (values) => {
+    console.log(values);
+    EditFolder(values?.folderName)
+  };
+
+  function handleClick() {
+    setOpen(true);
+  }
+
+  function handleFile() {
+    setShow(true);
+  }
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleEdit = (record) => {
+    setWholeRecord(record);
+    console.log(wholerecord);
+    setIsModalOpen(true);
+  };
+
+  const [folderId, setFolderId] = useState("");
   const cancel = (e) => {
     console.log(e);
     // message.error("Click on No");
+  };
+
+  //Mutate to delete folder
+  const { mutate } = useMutation({
+    mutationKey: "delete",
+    mutationFn: () => {
+      return axiosInstance.delete(`/archive/${folderId}`);
+    },
+    onSuccess: () => {
+      message.success("Folder deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["archive"] });
+    },
+    onError: (error) => {
+      message.error(error);
+    },
+  });
+
+  //Mutate function to edit folder (name)
+  const { mutate: EditFolder} = useMutation({
+    mutationKey: "editFolder",
+    mutationFn: (folderName) => {
+      return axiosInstance.patch(`/archive/${wholerecord?.folderId}`, {  folderName : folderName});
+    },
+    onSuccess: () => {
+      message.success("Folder Successfully updated");
+      queryClient.invalidateQueries({ queryKey: ["archive"] });
+      setIsModalOpen(false)
+    },
+    onError: (error) => {
+      message.error(error);
+    },
+  });
+
+  const handleDelete = (record) => {
+    console.log(record);
+    setFolderId(record?.folderId);
+    mutate(record);
   };
 
   const columns = [
@@ -97,13 +162,13 @@ const Archive = () => {
       dataIndex: "archiveId",
       render: (value, record) => (
         <div className="flex gap-3 text-[17px]">
-          <button onClick={() => console.log(record)}>
+          <button onClick={() => handleEdit(record)}>
             <EditTwoTone />
           </button>
           <Popconfirm
             title="Delete Archive"
             description="Are you sure to delete this archive?"
-            onConfirm={() => confirm(record?.archiveId)}
+            onConfirm={() => handleDelete(record)}
             onCancel={cancel}
             okText="Yes"
             cancelText="No"
@@ -135,10 +200,6 @@ const Archive = () => {
 
   const [selectionType, setSelectionType] = useState("checkbox");
 
-  const [open, setOpen] = useState(false);
-  const [show, setShow] = useState(false);
-  const [form] = Form.useForm();
-
   //UseQuery to fetch all archives/folders
   const { data: archive } = useQuery({
     queryKey: ["archive", id],
@@ -156,15 +217,7 @@ const Archive = () => {
     ...archive,
     key: index,
   }));
-  console.log(_data);
-
-  function handleClick() {
-    setOpen(true);
-  }
-
-  function handleFile() {
-    setShow(true);
-  }
+  // console.log(_data);
 
   return (
     <div className="pt-[70px]  h-screen w-full pl-[200px] pr-[72px]">
@@ -191,6 +244,45 @@ const Archive = () => {
 
       <div></div>
 
+      <Modal
+        title="Edit Folder"
+        name="Edit Folder"
+        open={isModalOpen}
+        onCancel={handleCancel}
+        footer={null}
+      >
+        <div className="mt-3">
+          <Form
+            name="Edit Folder"
+            onFinish={(values) => handleSubmit(values)}
+            form={form}
+          >
+            <Form.Item
+              name="folderName"
+              initialValue={wholerecord?.folderName}
+              rules={[
+                {
+                  required: true,
+                  message: "Please input a name for the Folder!",
+                },
+              ]}
+            >
+              <Input placeholder="Enter folder Name" allowClear />
+            </Form.Item>
+            <Form.Item>
+              {/* <div className="flex float-end"> */}
+              <Button
+                className="w-full bg-[#9D4D01]"
+                type="primary"
+                htmlType="submit"
+              >
+                Submit
+              </Button>
+              {/* </div> */}
+            </Form.Item>
+          </Form>
+        </div>
+      </Modal>
       <Table
         rowSelection={{
           type: selectionType,

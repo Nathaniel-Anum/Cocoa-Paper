@@ -6,91 +6,14 @@ import { UploadOutlined } from "@ant-design/icons";
 import { useUser } from "../../../Pages/CustomHook/useUser";
 import { useTrail } from "../../../Pages/CustomHook/useTrail";
 import useArchiveTransform from "../../../Pages/CustomHook/useArchiveTransform";
+import { getArchive, getArchiveByFolderId } from "../../../http/archive";
 
-const ArchiveFiles = ({ setShow, show, id, record, sender = null }) => {
-  // const { trails } = useTrail("incoming");
-  // console.log(trails);
-
+const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
   const { user } = useUser();
-  // console.log(user);
-  // const options = [
-  //   {
-  //     value: "zhejiang",
-  //     label: "Zhejiang",
-  //     children: [
-  //       {
-  //         value: "hangzhou",
-  //         label: "Hanzhou",
-  //         children: [
-  //           {
-  //             value: "xihu",
-  //             label: "West Lake",
-  //           },
-  //         ],
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     value: "jiangsu",
-  //     label: "Jiangsu",
-  //     children: [
-  //       {
-  //         value: "nanjing",
-  //         label: "Nanjing",
-  //         children: [
-  //           {
-  //             value: "zhonghuamen",
-  //             label: "Zhong Hua Men",
-  //           },
-  //         ],
-  //       },
-  //     ],
-  //   },
-  // ];
-
-  // console.log(user)
-
-  //   console.log(record)
-
-  //UseQuery to fetch all archives/folders
-  const { data: archive } = useQuery({
-    queryKey: ["archive", id],
-    queryFn: () => {
-      if (!id) return axiosInstance.get("/archive");
-
-      return axiosInstance.get(`archive/${id}`);
-    },
-  });
-
-  const archives = id ? archive?.data?.archive : archive?.data?.archives;
-  const { _data } = useArchiveTransform(archives, id); //Getting all the archive files (files and folders)
-  console.log(_data); //displaying everything in the /archive
-
-  //Filtering and mapping the all archives array
-  const folderOptions =
-    _data &&
-    _data
-      .filter((item) => item.type === "Folder")
-      .map((folder) => ({
-        value: folder?.folderId,
-        label: folder?.folderName,
-        children: folder?.children?.map((child) => ({
-          value: child?.folderId,
-          label: child?.folderName,
-        })),
-      }));
-
-  const onChange = (value) => {
-    const FolderId = value[value.length-1]
-    console.log(FolderId);
-    // const FolderId = value?.folderId[value.folder.length - 1];
-    // console.log(value);
-
-  };
-
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
+  const [options, setOptions] = useState([]);
   const [selectedFile, setSelectedFile] = useState("");
 
   //Mutation to change document status
@@ -133,6 +56,29 @@ const ArchiveFiles = ({ setShow, show, id, record, sender = null }) => {
     },
   });
 
+  function transformData(data) {
+    return (
+      data &&
+      data
+        .filter((item) => item.type === "Folder")
+        .map((folder) => ({
+          value: folder?.folderId,
+          label: folder?.folderName,
+          isLeaf: false,
+          children: [],
+        }))
+    );
+  }
+
+  const loadData = (selectedOptions) => {
+    const targetOption = selectedOptions[selectedOptions.length - 1];
+
+    getArchiveByFolderId(targetOption.value).then((data) => {
+      targetOption.children = transformData(data);
+      setOptions([...options]);
+    });
+  };
+
   const handleClose = () => {
     setShow(false);
   };
@@ -140,7 +86,7 @@ const ArchiveFiles = ({ setShow, show, id, record, sender = null }) => {
   const handleUpload = (values) => {
     console.log(values);
     if (selectedFile) {
-      const FolderId = values?.folderId[values.folderId.length-1];
+      const FolderId = values?.folderId[values.folderId.length - 1];
       console.log(FolderId);
 
       const formData = new FormData();
@@ -151,6 +97,18 @@ const ArchiveFiles = ({ setShow, show, id, record, sender = null }) => {
       uploadFile(formData);
     }
   };
+
+  //fetching initial archive folders
+  useEffect(() => {
+    function getInitialArchiveFolders() {
+      getArchive().then((data) => {
+        console.log(data);
+        const folderOptions = transformData(data);
+        setOptions(folderOptions);
+      });
+    }
+    getInitialArchiveFolders();
+  }, []);
 
   return (
     <Modal open={show} title="Upload File" footer={null} onCancel={handleClose}>
@@ -217,8 +175,8 @@ const ArchiveFiles = ({ setShow, show, id, record, sender = null }) => {
         >
           <Cascader
             label="Folder"
-            options={folderOptions}
-            onChange={onChange}
+            options={options}
+            loadData={loadData}
             changeOnSelect
           />
         </Form.Item>

@@ -9,7 +9,7 @@ const BackOfficeSideBar = () => {
             <img src="../../src/assets/logo.9a18109e1c16584832d5.png" alt="" />
           </div>
           <ul className="list-none py-[34px]  flex flex-col gap-[40px]  my-[30px] ">
-            <Link to="/bod">
+            <Link to="/backoffice/bod">
               <li className=" flex  gap-3 ">
                 <img
                   className="w-[19px]"
@@ -19,7 +19,7 @@ const BackOfficeSideBar = () => {
                 <p className="text-[15px] ">Staff</p>
               </li>
             </Link>
-            <Link to="/department">
+            <Link to="/backoffice/department">
               <li className="flex  gap-3">
                 <img
                   className="w-[19px]"
@@ -29,7 +29,7 @@ const BackOfficeSideBar = () => {
                 <p className="text-[15px] ">Department</p>
               </li>
             </Link>
-            <Link to="/division">
+            <Link to="/backoffice/division">
               <li className=" flex  gap-3">
                 <img
                   className="w-[19px]"
@@ -39,7 +39,7 @@ const BackOfficeSideBar = () => {
                 <p className="text-[15px]">Division</p>
               </li>
             </Link>
-            <Link to="/roles">
+            <Link to="/backoffice/roles">
               <li className="flex  gap-3">
                 <img
                   className="w-[19px]"
@@ -49,7 +49,7 @@ const BackOfficeSideBar = () => {
                 <p className="text-[15px]">Roles </p>
               </li>
             </Link>
-            <Link to="/rolemanagement">
+            <Link to="/backoffice/rolemanagement">
               <li className="flex  gap-3">
                 <img
                   className="w-[19px]"

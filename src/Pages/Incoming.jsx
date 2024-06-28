@@ -11,7 +11,6 @@ import ArchiveFiles from "../Components/modals/Archive/ArchiveFiles";
 import { useParams } from "react-router-dom";
 
 const Incoming = () => {
-  const { id } = useParams();
   const { trails } = useTrail("incoming");
   const [show, setShow] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -326,7 +325,7 @@ const Incoming = () => {
         </Form>
       </Modal>
       {show ? (
-        <ArchiveFiles show={show} setShow={setShow} id={id} record={record} sender={senderId?.sender?.userId} />
+        <ArchiveFiles show={show} setShow={setShow}  record={record} sender={senderId?.sender?.userId} />
       ) : null}
     </div>
   );

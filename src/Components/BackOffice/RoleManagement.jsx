@@ -1,8 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../axiosInstance";
-import { Table } from "antd";
+import { Table, Tag } from "antd";
 
 const RoleManagement = () => {
+  const colors = [
+    "#f50",
+    "#2db7f5",
+    "#87d068",
+    "#108ee9",
+    "#e84118",
+    "#fbc531",
+    "#9c88ff",
+  ];
+
+  // Function to get a color based on the index
+  const getColor = (index) => colors[index % colors.length];
+
   const { data: roles } = useQuery({
     queryKey: ["roles"],
     queryFn: () => {
@@ -30,7 +43,10 @@ const RoleManagement = () => {
       render: (rolePermissions) => {
         console.log(rolePermissions);
         return rolePermissions.map((permission, index) => (
-          <div key={index}>{permission.permission.permission}</div>
+          <Tag color={getColor(index)} key={permission} className="">
+            {permission.permission.permission}
+          </Tag>
+          // <div key={index}>{permission.permission.permission}</div>
         ));
       },
     },
