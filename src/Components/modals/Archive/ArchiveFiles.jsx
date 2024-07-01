@@ -87,7 +87,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
     if (selectedFile) {
       const folderId = values?.folderId
         ? values?.folderId[values.folderId.length - 1]
-        : "";
+        : "undefined";
       console.log(values, typeof folderId);
 
       let formData = new FormData();
