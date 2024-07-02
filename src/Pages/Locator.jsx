@@ -25,67 +25,24 @@ const Locator = () => {
     enabled: !!trialId,
   });
 
-  // useEffect(() => {
-  //   if (documentTrial?.data?.trails) {
-  //     for (let i = 0; i < documentTrial?.data?.trails.length; i++) {
-  //       if (i == 0) {
-  //         setStepsData([
-  //           ...stepsData,
-  //           {
-  //             title: documentTrial?.data?.trails[i].status,
-  //             description: documentTrial?.data?.trails[i].sender.name,
-  //           },
-  //           {
-  //             title: documentTrial?.data?.trails[i].status,
-  //             description: documentTrial?.data?.trails[i].receiver.name,
-  //           },
-  //         ]);
-  //       } else {
-  //         setStepsData([
-  //           ...stepsData,
-  //           {
-  //             title: documentTrial?.data?.trails[i].status,
-  //             description: documentTrial?.data?.trails[i].receiver.name,
-  //           },
-  //         ]);
-  //       }
-  //     }
-  //   }
-  // }, [documentTrial?.data?.trails]);
-
   console.log(stepsData);
 
   const showModal = (trial) => {
     setIsModalOpen(true);
     setTrialId(trial?.docID);
     console.log(trial, documentTrial?.data);
-
-    // let temp = documentTrial?.data?.trails?.map((trail, index) => {
-    //   if (index + 1 === documentTrial?.data?.trails.length) {
-    //     return {
-    //       title: trail.status,
-    //       description: trail.receiver.name,
-    //     };
-    //   }
-
-    //   return [
-    //     {
-    //       title: trail.status,
-    //       description: trail.sender.name,
-    //     },
-    //     {
-    //       title: trail.status,
-    //       description: trail.receiver.name,
-    //     },
-    //   ];
-    // });
-
-    // temp = [].concat(...temp);
-
-    // setStepsData(temp);
   };
 
   // console.log(documentTrial?.data);
+
+  // 2nd useQuery to fetch all trails
+  const { data: trailDisplay } = useQuery({
+    queryKey: ["trailDisplay"],
+    queryFn: () => {
+      return axiosInstance.get("/trail");
+    },
+  });
+  console.log(trailDisplay?.data);
 
   const handleCancel = () => {
     setIsModalOpen(false);
@@ -106,8 +63,8 @@ const Locator = () => {
   return (
     <div className="  pt-[3rem]  pl-[200px] pr-[72px] no-scrollbar overflow-scroll  border-red-500 ">
       <div className="grid grid-cols-2   border-red-500">
-        <div className="max-h-[90%] overflow-scroll no-scrollbar h-screen">
-          {allTrails?.map((trail, docID) => (
+        {/* <div className="max-h-[90%] overflow-scroll no-scrollbar h-screen">
+          {  allTrails?.map((trail, docID) => (
             <div
               key={docID}
               className="  bg-[#F9EEDA]  hover:duration-200 hover:shadow-lg mb-5 p-5 w-[25rem] cursor-pointer "
@@ -137,7 +94,62 @@ const Locator = () => {
           <div className="py-6">
             <Steps
               responsive
-            
+              className="grid grid-cols-2 gap-y-2 "
+              items={documentTrial?.data?.trails.flatMap((trail, index) => {
+                if (index === 0) {
+                  return [
+                    {
+                      title: "Sent",
+                      description: trail.sender.name,
+                    },
+                    {
+                      title: trail?.status,
+                      description: trail.receiver.name,
+                    },
+                  ];
+                } else {
+                  return {
+                    title: trail.status,
+                    description: trail.receiver.name,
+                  };
+                }
+              })}
+            />
+          </div>
+        </Modal> */}
+
+        <div className="max-h-[90%] overflow-scroll no-scrollbar h-screen">
+          {trailDisplay?.data.map((trail) => (
+            <div
+              key={trail?.docID}
+              className="  bg-[#F9EEDA]  hover:duration-200 hover:shadow-lg mb-5 p-5 w-[25rem] cursor-pointer "
+              onClick={() => showModal(trail)}
+            >
+              <p className="font-semibold">Subject: {trail.subject}</p>
+              {trail?.trail?.map((trail) => (
+                <div key={trail?.trailsId}>
+                  {trail?.sender.userId === user?.userId && (
+                    <h2 className="text-[#582F08] font-semibold">
+                      Sent to: {trail?.receiver?.name}
+                    </h2>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        <Modal
+          title="Locator"
+          open={isModalOpen}
+          onCancel={handleCancel}
+          footer={null}
+          centered="true"
+          width={"60%"}
+        >
+          <div className="py-6">
+            <Steps
+              responsive
               className="grid grid-cols-2 gap-y-2 "
               items={documentTrial?.data?.trails.flatMap((trail, index) => {
                 if (index === 0) {
@@ -165,6 +177,20 @@ const Locator = () => {
         <div className="flex justify-center items-center">
           <Lottie options={defaultOptions} height={450} width={650} />
         </div>
+      </div>
+      <div>
+        {trailDisplay?.data.map((doc) => (
+          <div key={doc.docID}>
+            <h2>{doc.subject}</h2>
+            {doc?.trail?.map((trail) => (
+              <div key={trail?.trailsId}>
+                {trail?.sender.userId === user?.userId && (
+                  <p>Sent to: {trail?.receiver?.name}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -26,8 +26,9 @@ function App() {
   // API call for the users.
   const { setUser, setIsLoading, user, isLoading } = useUser();
 
-  // axiosInstance.get("/archive").then((res) => console.log(res?.data?.archives));
+  // axiosInstance.get("/trail").then(res => console.log(res.data));
 
+  
   console.log(user, isLoading);
 
   useEffect(() => {

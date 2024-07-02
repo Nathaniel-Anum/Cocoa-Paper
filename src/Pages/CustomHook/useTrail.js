@@ -5,6 +5,7 @@ import axiosInstance from "../../Components/axiosInstance";
 
 export const useTrail = (type) => {
   const { user } = useUser();
+  // console.log(user);
 
   const [incoming, setIncoming] = useState([]);
   const [outgoing, setOutgoing] = useState([]);
@@ -19,6 +20,8 @@ export const useTrail = (type) => {
     },
   });
   // console.log(trails?.data);
+
+  
 
   useEffect(() => {
     if (!isLoading && user && trails?.data.length) {
