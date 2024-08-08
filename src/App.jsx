@@ -21,6 +21,7 @@ import { useTrail } from "./Pages/CustomHook/useTrail";
 import Locator from "./Pages/Locator";
 import PhysicalDocs from "./Pages/PhysicalDocs";
 import Archive from "./Pages/Archive";
+import { SignIn } from "./Pages/SignIn";
 
 function App() {
   // API call for the users.
@@ -51,7 +52,7 @@ function App() {
     <div>
       <Router>
         <Routes>
-          <Route element={<ProtectedRoutes />}>
+          {/* <Route element={<ProtectedRoutes />}> */}
             <Route path="/" element={<Layout />}>
               <Route path="/dashboard" element={<HomeDashboard />} />
               <Route path="/dashboard/add-document" element={<AddDocument />} />
@@ -67,6 +68,7 @@ function App() {
             </Route>
             <Route path="/backoffice" element={<Dashboard />}>
               <Route path="/backoffice/bod" element={<Staff />} />
+             
               <Route path="/backoffice/department" element={<Department />} />
               <Route path="/backoffice/division" element={<Division />} />
               <Route path="/backoffice/roles" element={<Role />} />
@@ -75,10 +77,11 @@ function App() {
                 element={<RoleManagement />}
               />
             </Route>
-          </Route>
+          {/* </Route> */}
 
           <Route element={<PublicRoutes />}>
             <Route path="/login" element={<Home />} />
+            <Route path="/backoffice/login" element={<SignIn />} />
           </Route>
         </Routes>
       </Router>
