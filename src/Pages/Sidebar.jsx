@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import "./Home.css";
+import { Link } from 'react-router-dom';
+import './Home.css';
 
 const Sidebar = () => {
   return (
@@ -30,7 +30,7 @@ const Sidebar = () => {
                 <p>Locator</p>
               </li>
             </Link>
-            <Link to="/dashboard/archive">
+            <Link to="/archive">
               <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
                 <img
                   className="w-[43px]"
