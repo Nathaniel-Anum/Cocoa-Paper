@@ -1,22 +1,26 @@
 import { DownOutlined } from "@ant-design/icons";
-import { Dropdown, Space } from "antd";
+import { Dropdown, Space, message } from "antd";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// const handleLogout = () => {
-//   localStorage.removeItem("accessToken");
-//   localStorage.removeItem("refreshToken");
-//   toast("You have successfully logged out.");
-// };
-
-const items = [
-  {
-    label: <a href="/">Logout</a>,
-    key: "0",
-  },
-];
+import { useUser } from "../../Pages/CustomHook/useUser";
 
 const BackOfficeNavBar = () => {
+  const { user } = useUser();
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+  };
+
+  const items = [
+    {
+      label: (
+        <a href="/backoffice/login" onClick={handleLogout}>
+          Logout
+        </a>
+      ),
+      key: "0",
+    },
+  ];
+
   const currentDate = new Date();
   console.log(currentDate);
 
@@ -84,7 +88,7 @@ const BackOfficeNavBar = () => {
               onClick={(e) => e.preventDefault()}
             >
               <Space>
-                Information Systems
+                {user?.name}
                 <DownOutlined />
               </Space>
             </a>

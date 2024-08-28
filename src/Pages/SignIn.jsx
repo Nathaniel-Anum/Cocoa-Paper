@@ -1,10 +1,56 @@
 import { Button, Form, Input, message } from "antd";
+import axiosInstance from "../Components/axiosInstance";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "./CustomHook/useUser";
+import { useState } from "react";
 export const SignIn = () => {
+  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+  const { setUser, setIsLoading } = useUser();
+  const navigate = useNavigate();
 
-  function handleSubmit(values) {
+  const handleSubmit = async (values) => {
     console.log(values);
-  }
+    setLoading(true);
+    await setTimeout(() => {
+      setLoading(false);
+      form.resetFields();
+    }, 0);
+    try {
+      const res = await axiosInstance.post("/login", values);
+      localStorage.setItem("accessToken", res?.data?.token);
+
+      if (res.data) {
+        setIsLoading(true);
+        const user = await axiosInstance.get("/user");
+        setUser(user?.data?.user);
+        setIsLoading(false);
+      }
+      setTimeout(() => {
+        navigate("/backoffice/bod");
+        message.success("Login successful!");
+      }, 0);
+    } catch (err) {
+      setTimeout(() => {
+        message.error(err?.response?.data?.error);
+      }, 0);
+    }
+  };
+
+  // function handleSubmit(values) {
+  //   // console.log(values);
+  //   axiosInstance
+  //     .post("/login", values)
+  //     .then((res) => {
+  //       console.log(res?.data);
+
+  //       localStorage.setItem("accessToken", res?.data?.token);
+  //       navigate("/backoffice/bod");
+  //       message.success("Welcome");
+  //     })
+  //     .catch((err) => message.error(err?.response?.data?.error));
+  // }
+
   return (
     <>
       <div className="flex justify-center py-[12rem]">
@@ -64,6 +110,7 @@ export const SignIn = () => {
                 className="w-full bg-[#9D4D01]"
                 type="primary"
                 htmlType="submit"
+                loading={loading}
               >
                 Log In
               </Button>

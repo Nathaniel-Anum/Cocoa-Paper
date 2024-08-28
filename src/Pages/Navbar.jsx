@@ -1,15 +1,9 @@
 import { DownOutlined } from "@ant-design/icons";
 import { Dropdown, Space } from "antd";
-import { toast, ToastContainer } from "react-toastify";
+import {  ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useUser } from "./CustomHook/useUser";
-import { useEffect } from "react";
 
-// const handleLogout = () => {
-//   localStorage.removeItem("accessToken");
-//   localStorage.removeItem("refreshToken");
-//   toast("You have successfully logged out.");
-// };
 
 const Navbar = () => {
   const currentDate = new Date();
