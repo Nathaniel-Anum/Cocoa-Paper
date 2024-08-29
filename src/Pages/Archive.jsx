@@ -317,7 +317,7 @@ const Archive = () => {
         title="Edit Folder"
         name="Edit Folder"
         open={isModalOpen}
-        onCancel={handleCancel}
+        onCancel={()=>{}}
         footer={null}
       >
         <div className="mt-3">

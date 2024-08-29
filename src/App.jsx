@@ -21,6 +21,7 @@ import { useTrail } from './Pages/CustomHook/useTrail';
 import Locator from './Pages/Locator';
 import PhysicalDocs from './Pages/PhysicalDocs';
 import Archive from './Pages/Archive';
+import { SignIn } from './Pages/SignIn';
 
 function App() {
   // API call for the users.
