@@ -2,7 +2,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import * as jwt_decode from 'jwt-decode';
 
-export const baseURL = 'http://localhost:9000';
+export const baseURL = 'http://localhost:5000';
 
 export const axiosInstance = axios.create({
   baseURL,
