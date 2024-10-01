@@ -23,7 +23,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
 
   // axiosInstance.get("/department").then((res) => console.log(res));
 
-  // useQuery for departments
+  // useQuery to get departments
   const { data: departments, refetch } = useQuery({
     queryKey: ["options"],
     queryFn: () => {

@@ -1,17 +1,17 @@
-import axios from 'axios';
-import dayjs from 'dayjs';
-import * as jwt_decode from 'jwt-decode';
+import axios from "axios";
+import dayjs from "dayjs";
+import * as jwt_decode from "jwt-decode";
 
-export const baseURL = 'http://localhost:5000';
+export const baseURL = "http://localhost:5000";
 
 export const axiosInstance = axios.create({
   baseURL,
 });
 
 axiosInstance.interceptors.request.use((req) => {
-  const authAccess = localStorage.getItem('accessToken');
+  const authAccess = localStorage.getItem("accessToken");
   req.headers.Authorization = `Bearer ${authAccess}`;
-  console.log('interceptor run');
+  console.log("interceptor run");
 
   // const user = jwt_decode(authAccess);
   // const isExpired = dayjs.unix(user.exp).diff(dayjs()) < 1;

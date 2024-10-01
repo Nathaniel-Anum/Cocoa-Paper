@@ -1,13 +1,13 @@
-import axios from 'axios';
-import './Home.css';
-import { Button, Form, Input, message } from 'antd';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import axiosInstance, { baseURL } from '../Components/axiosInstance';
-import { useCookies } from 'react-cookie';
-import { useState } from 'react';
-import { useUser } from './CustomHook/useUser';
+import axios from "axios";
+import "./Home.css";
+import { Button, Form, Input, message } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axiosInstance, { baseURL } from "../Components/axiosInstance";
+import { useCookies } from "react-cookie";
+import { useState } from "react";
+import { useUser } from "./CustomHook/useUser";
 
 const Home = () => {
   const [form] = Form.useForm();
@@ -17,7 +17,7 @@ const Home = () => {
   console.log(location.state);
 
   const [loading, setLoading] = useState(false);
-  const [cookie, setCookie] = useCookies(['refresh_token']);
+  const [cookie, setCookie] = useCookies(["refresh_token"]);
   const { setUser, setIsLoading } = useUser();
 
   const navigate = useNavigate();
@@ -30,19 +30,19 @@ const Home = () => {
       form.resetFields();
     }, 2500);
     try {
-      const res = await axiosInstance.post('/login', values);
-      localStorage.setItem('accessToken', res?.data?.token);
+      const res = await axiosInstance.post("/login", values);
+      localStorage.setItem("accessToken", res?.data?.token);
 
       if (res.data) {
         setIsLoading(true);
-        const user = await axiosInstance.get('/user');
+        const user = await axiosInstance.get("/user");
         setUser(user?.data?.user);
         setIsLoading(false);
       }
 
       setTimeout(() => {
         // message.success("Login successful!");
-        navigate('/dashboard');
+        navigate("/dashboard");
       }, 2500);
     } catch (err) {
       setTimeout(() => {
@@ -103,7 +103,7 @@ const Home = () => {
             rules={[
               {
                 required: true,
-                message: 'Please input your email!',
+                message: "Please input your email!",
               },
             ]}
           >
@@ -115,7 +115,7 @@ const Home = () => {
             rules={[
               {
                 required: true,
-                message: 'Please input your password!',
+                message: "Please input your password!",
               },
             ]}
           >
@@ -133,6 +133,9 @@ const Home = () => {
             </Button>
           </Form.Item>
         </Form>
+        <div className="text-center">
+          <button className="font-semibold" onClick={()=> navigate("/confirm-email")}>Forgot Password?</button>
+        </div>
       </div>
       <div className="absolute bottom-0 right-0 h-32 w-32">
         <div className="relative">

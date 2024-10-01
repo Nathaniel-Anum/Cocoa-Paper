@@ -1,7 +1,11 @@
-import { Link } from 'react-router-dom';
-import './Home.css';
+import { Link } from "react-router-dom";
+import { useUser } from "./CustomHook/useUser";
+import "./Home.css";
+import { hasPermission, requiredPermissions } from "../../utils/Roles";
 
 const Sidebar = () => {
+  const { user } = useUser();
+
   return (
     <div>
       <div className="w-full h-full bg-center">
@@ -30,17 +34,25 @@ const Sidebar = () => {
                 <p>Locator</p>
               </li>
             </Link>
-            <Link to="/archive">
-              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-                <img
-                  className="w-[43px]"
-                  src="../../src/assets/archive.3b9ddd7f65d8f9353f8fd0efad0c45e5.svg"
-                  alt=""
-                />
 
-                <p>Archive</p>
-              </li>
-            </Link>
+            {
+              hasPermission(user?.role[0].rolePermissions, [
+                requiredPermissions.CREATE_ARCHIVE,
+              ])
+             && (
+              <Link to="/archive">
+                <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+                  <img
+                    className="w-[43px]"
+                    src="../../src/assets/archive.3b9ddd7f65d8f9353f8fd0efad0c45e5.svg"
+                    alt=""
+                  />
+
+                  <p>Archive</p>
+                </li>
+              </Link>
+            )}
+
             <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
               <img
                 className="w-[43px]"
