@@ -1,6 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../axiosInstance";
-import { Table, Tag, Modal, Form, Input, Select, Button, message, Popconfirm } from "antd";
+import {
+  Table,
+  Tag,
+  Modal,
+  Form,
+  Input,
+  Select,
+  Button,
+  message,
+  Popconfirm,
+} from "antd";
 import { EditTwoTone, DeleteTwoTone } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { set } from "lodash";
@@ -9,6 +19,7 @@ const RoleManagement = () => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [wholeRecord, setWholeRecord] = useState({});
+
   const [form] = Form.useForm();
 
   const handleChange = (value) => {
@@ -34,6 +45,15 @@ const RoleManagement = () => {
   // Function to get a color based on the index
   const getColor = (index) => colors[index % colors.length];
 
+  //useQuery to get permissions
+  const { data: permission } = useQuery({
+    queryKey: ["permissions"],
+    queryFn: () => {
+      return axiosInstance.get("/permission");
+    },
+  });
+
+  //useQuery to get role
   const { data: roles } = useQuery({
     queryKey: ["roles"],
     queryFn: () => {
@@ -70,7 +90,7 @@ const RoleManagement = () => {
     },
     onSuccess: () => {
       setOpen(false);
-      message.success("Updated Successfully");
+      message.success("Successfully Updated");
       queryClient.invalidateQueries({ mutationKey: "permission" });
     },
     onError: (error) => {
@@ -82,16 +102,16 @@ const RoleManagement = () => {
   const { mutate: deleteMutate } = useMutation({
     mutationKey: "deleteRole",
     mutationFn: (roleId) => {
-      return axiosInstance.delete(`/role/${roleId}`)
-    }, 
+      return axiosInstance.delete(`/role/${roleId}`);
+    },
     onSuccess: () => {
-      setOpen(false)
+      setOpen(false);
       queryClient.invalidateQueries({ mutationKey: "deleteRole" });
       message.success("Role Successfully Deleted!");
     },
     onError: (error) => {
       console.log(error);
-    }
+    },
   });
 
   const handleCancel = () => {
@@ -143,9 +163,7 @@ const RoleManagement = () => {
             okText="Yes"
             cancelText="No"
           >
-            <button>
-              {/* <DeleteTwoTone twoToneColor="#FF0000" /> */}
-            </button>
+            <button>{/* <DeleteTwoTone twoToneColor="#FF0000" /> */}</button>
           </Popconfirm>
         </div>
       ),
@@ -181,7 +199,7 @@ const RoleManagement = () => {
               <Input placeholder="Name" />
             </Form.Item>
             <Form.Item name="permissions" label="Permission">
-              <Select
+              {/* <Select
                 placeholder="Please choose your permission"
                 mode="multiple"
                 options={wholeRecord?.rolePermissions?.map(
@@ -192,6 +210,17 @@ const RoleManagement = () => {
                     };
                   }
                 )}
+                onChange={handleChange}
+              /> */}
+              <Select
+                placeholder="Please choose your permission"
+                mode="multiple"
+                options={permission?.data?.map((permission, index) => {
+                  return {
+                    label: permission?.permission,
+                    value: permission?.permissionsId,
+                  };
+                })}
                 onChange={handleChange}
               />
             </Form.Item>

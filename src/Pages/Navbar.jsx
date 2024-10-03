@@ -6,6 +6,8 @@ import { useUser } from "./CustomHook/useUser";
 import { useEffect, useState } from "react";
 import axiosInstance from "../Components/axiosInstance";
 import _ from "lodash";
+import useDebounce from "./CustomHook/use-debounce";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   //Searching files components
@@ -14,46 +16,72 @@ const Navbar = () => {
   const [loading, setLoading] = useState("");
   const [error, setError] = useState("");
 
-  //Debounced search function to avoid too many API calls
-  const debouncedSearch = _.debounce((term) => {
-    if (!term) {
-      setResults({ files: [], documents: [] });
-      setLoading(false);
-      return;
-    }
+  const term = useDebounce(searchTerm, 3000);
 
-    setLoading(true);
-    setError(" ");
-    axiosInstance
-      .get(`/search`, {
-        params: { searchTerm },
-      })
-      .then((res) => {
-        console.log(res?.data);
-        setResults(res?.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setResults({ files: [], documents: [] });
-        setError(err?.response?.data?.error);
-        setLoading(false);
-      });
-  }, 3000); //300ms debounce delay
+  //Debounced search function to avoid too many API calls
+  // const debouncedSearch = _.debounce((term) => {
+  //   if (!term) {
+  //     setResults({ files: [], documents: [] });
+  //     setLoading(false);
+  //     return;
+  //   }
+
+  //   setLoading(true);
+  //   setError(" ");
+  //   axiosInstance
+  //     .get(`/search`, {
+  //       params: { searchTerm },
+  //     })
+  //     .then((res) => {
+  //       console.log(res?.data);
+  //       setResults(res?.data);
+  //       setLoading(false);
+  //     })
+  //     .catch((err) => {
+  //       setResults({ files: [], documents: [] });
+  //       setError(err?.response?.data?.error);
+  //       setLoading(false);
+  //     });
+  // }, 3000);
+  //300ms debounce delay
+
+  // useEffect(() => {
+  //   if (!searchTerm.trim()) {
+  //     console.log({ searchTerm });
+
+  //     setResults({ files: [], documents: [] });
+  //     debouncedSearch.cancel();
+  //   }
+  // }, [searchTerm]);
 
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setResults({ files: [], documents: [] });
-      debouncedSearch.cancel();
+    if (term) {
+      handleInputChange(term);
     }
-  }, [searchTerm, setResults]);
+  }, [term]);
 
   //Handle search input change
-  const handleInputChange = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
+  const handleInputChange = (searchTerm) => {
+    // const term = e.target.value;
+    // setSearchTerm(term);
 
     if (term.trim() !== " ") {
-      debouncedSearch(term);
+      setLoading(true);
+      setError(" ");
+      axiosInstance
+        .get(`/search`, {
+          params: { searchTerm },
+        })
+        .then((res) => {
+          console.log(res?.data);
+          setResults(res?.data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          setResults({ files: [], documents: [] });
+          setError(err?.response?.data?.error);
+          setLoading(false);
+        });
     } else {
       setResults({ files: [], documents: [] });
     }
@@ -114,7 +142,7 @@ const Navbar = () => {
           <div className="bg-white flex items-center rounded-t-lg px-[20px] h-full ">
             <input
               value={searchTerm}
-              onChange={handleInputChange}
+              onChange={(e) => setSearchTerm(e.target.value)}
               disabled={loading}
               type="search"
               placeholder="Search files and documents"
@@ -138,10 +166,20 @@ const Navbar = () => {
             </div>
           </div>
           <div className="">
-            {combineResults.length ? (
+            {loading && !combineResults ? (
+              <>loading</>
+            ) : combineResults.length ? (
               <div>
                 {combineResults?.map((item, index) => (
-                  <p key={index}>{item.name}</p>
+                  <Link
+                    to={
+                      item?.folderId ? `/archive/${item.folderId}` : "/archive"
+                    }
+                    key={index}
+                    className="flex flex-col"
+                  >
+                    {item.name}
+                  </Link>
                 ))}
               </div>
             ) : (
