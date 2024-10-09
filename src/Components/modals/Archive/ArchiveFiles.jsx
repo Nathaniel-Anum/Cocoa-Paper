@@ -84,6 +84,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
   };
 
   const handleUpload = (values) => {
+    console.log(values);
     if (selectedFile) {
       const folderId = values?.folderId
         ? values?.folderId[values.folderId.length - 1]
@@ -95,6 +96,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
       formData.append("ref", values.ref);
       formData.append("subject", values.subject);
       formData.append("folderId", folderId);
+      formData.append("docId", record?.docID);
 
       console.log(formData);
       uploadFile(formData);
@@ -113,6 +115,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
     getInitialArchiveFolders();
   }, []);
 
+  console.log(record);
   return (
     <Modal open={show} title="Upload File" footer={null} onCancel={handleClose}>
       <Form

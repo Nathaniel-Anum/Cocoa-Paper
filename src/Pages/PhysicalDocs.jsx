@@ -36,7 +36,7 @@ const PhysicalDocs = () => {
   });
 
   const handleButtonClick = (selectedRecord) => {
-    // console.log(selectedRecord);
+    console.log(selectedRecord);
     updateTrial(selectedRecord);
   };
 

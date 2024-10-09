@@ -10,6 +10,8 @@ import {
   Popconfirm,
   Radio,
   Breadcrumb,
+  Popover,
+  Cascader,
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -21,20 +23,28 @@ import {
   FolderFilled,
   UploadOutlined,
 } from "@ant-design/icons";
+import { IoMdFolderOpen } from "react-icons/io";
+import { MdDriveFileMoveOutline } from "react-icons/md";
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../Components/axiosInstance";
 import { Link, useLocation, useParams } from "react-router-dom";
 import useArchiveTransform from "./CustomHook/useArchiveTransform";
 import CreateFolder from "../Components/modals/Archive/CreateFolder";
 import UploadFile from "../Components/modals/Archive/UploadFile";
+import { MdUnarchive } from "react-icons/md";
+import { getArchive, getArchiveByFolderId } from "../http/archive";
 
 const Archive = () => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
+  const [popup, setPopup] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [options, setOptions] = useState([]);
   const [wholerecord, setWholeRecord] = useState({});
+  const [unarchive, setUnarchive] = useState({});
   const [allrecord, setAllRecord] = useState({});
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [form] = Form.useForm();
   const { id } = useParams();
 
@@ -76,6 +86,32 @@ const Archive = () => {
 
     queryClient.invalidateQueries(["archive"]);
   }
+
+  //Mutation to unarchive files
+  const { mutate: fileUnarchive } = useMutation({
+    mutationKey: "unarchive",
+    mutationFn: (record) => {
+      return axiosInstance.patch(`/unarchive/${record?.fileId}`);
+    },
+    onSuccess: () => {
+      message.success("File Successfully unarchived");
+      queryClient.invalidateQueries({ queryKey: ["archive"] });
+    },
+    onError: (error) => console.log(error),
+  });
+
+  function handleUnarchive(record) {
+    setUnarchive(record);
+    fileUnarchive(record);
+    queryClient.invalidateQueries(["archive"]);
+  }
+  console.log("selected file Id :", unarchive?.fileId);
+
+  //handling Moving file
+  const handleMove = (record) => {
+    setPopup(true);
+    console.log(record);
+  };
 
   //Mutate function to edit folders and file
   const { mutate: EditFolder } = useMutation({
@@ -189,11 +225,46 @@ const Archive = () => {
   //   localStorage.setItem("crumbs", JSON.stringify(crumbs));
   // }, [crumbs]);
 
+  function transformData(data) {
+    return (
+      data &&
+      data
+        .filter((item) => item.type === "Folder")
+        .map((folder) => ({
+          value: folder?.folderId,
+          label: folder?.folderName,
+          isLeaf: false,
+          children: [],
+        }))
+    );
+  }
+
+  const loadData = (selectedOptions) => {
+    const targetOption = selectedOptions[selectedOptions.length - 1];
+
+    getArchiveByFolderId(targetOption.value).then((data) => {
+      targetOption.children = transformData(data);
+      setOptions([...options]);
+    });
+  };
+
   useEffect(() => {
     if (wholerecord) {
       form.setFieldValue("folderName", wholerecord?.folderName);
     }
   }, [wholerecord]);
+
+  //fetching initial archive folders
+  useEffect(() => {
+    function getInitialArchiveFolders() {
+      getArchive().then((data) => {
+        console.log(data);
+        const folderOptions = transformData(data);
+        setOptions(folderOptions);
+      });
+    }
+    getInitialArchiveFolders();
+  }, []);
 
   // useEffect(() => {
   //   if (pathname) {
@@ -396,6 +467,25 @@ const Archive = () => {
                 <DeleteTwoTone twoToneColor="#FF0000" />
               </button>
             </Popconfirm>
+            <Popover
+              content={
+                <div>
+                  <p>Unarchive</p>
+                </div>
+              }
+            >
+              <Popconfirm
+                title="Are you sure you want to unarchive?"
+                onConfirm={() => handleUnarchive(record)}
+                onCancel={cancel}
+                okText="Yes"
+                cancelText="No"
+              >
+                <button>
+                  <MdUnarchive />
+                </button>
+              </Popconfirm>
+            </Popover>
           </div>
         );
       },
@@ -404,22 +494,28 @@ const Archive = () => {
 
   console.log("Test");
   // rowSelection object indicates the need for row selection
+  // const rowSelection = {
+  //   onChange: (selectedRowKeys, selectedRows) => {
+  //     console.log(
+  //       `selectedRowKeys: ${selectedRowKeys}`,
+  //       "selectedRows: ",
+  //       selectedRows
+  //     );
+  //   },
+  //   getCheckboxProps: (record) => ({
+  //     disabled: record.name === "Disabled User",
+  //     // Column configuration not to be checked
+  //     name: record.name,
+  //   }),
+  // };
   const rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      console.log(
-        `selectedRowKeys: ${selectedRowKeys}`,
-        "selectedRows: ",
-        selectedRows
-      );
+    selectedRowKeys,
+    onChange: (selectedRowKeys) => {
+      setSelectedRowKeys(selectedRowKeys);
     },
-    getCheckboxProps: (record) => ({
-      disabled: record.name === "Disabled User",
-      // Column configuration not to be checked
-      name: record.name,
-    }),
   };
 
-  const [selectionType, setSelectionType] = useState("checkbox");
+  // const [selectionType, setSelectionType] = useState("checkbox");
 
   //UseQuery to fetch all archives/folders
   const { data: archive } = useQuery({
@@ -452,6 +548,7 @@ const Archive = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
+    setPopup(false);
   };
 
   return (
@@ -463,7 +560,7 @@ const Archive = () => {
             className=" my-3 p-2 text-[#582F08] flex justify-center items-center gap-1 shadow-md rounded-md  text-[20px] font-semibold "
             onClick={handleClick}
           >
-            <FolderAddOutlined className="text-[30px]" />
+            <IoMdFolderOpen className="text-[30px]" />
             <p>New Folder</p>
           </button>
           <button
@@ -473,6 +570,15 @@ const Archive = () => {
             <UploadOutlined className="text-[30px]" />
             <p>Upload File</p>
           </button>
+          {selectedRowKeys.length > 0 && (
+            <button
+              className=" my-3 p-2 text-[#582F08] flex justify-center items-center gap-1 shadow-md rounded-md  text-[20px] font-semibold "
+              onClick={handleMove}
+            >
+              <MdDriveFileMoveOutline className="text-[30px]" />
+              <p>Move</p>
+            </button>
+          )}
         </div>
         <div className="h-[2px] w-[1298px] bg-[#bb9673] m-4"></div>
       </div>
@@ -559,11 +665,28 @@ const Archive = () => {
           </Form>
         </div>
       </Modal>
+      <Modal
+        name="Move"
+        title={wholerecord?.type === "Folder" ? "Move Folder" : "Move File"}
+        open={popup}
+        onCancel={handleCancel}
+        footer={null}
+      >
+        <Form.Item name="folderId" label="Archive">
+          <Cascader
+            label="Folder"
+            options={options}
+            loadData={loadData}
+            changeOnSelect
+          />
+        </Form.Item>
+      </Modal>
       <Table
-        rowSelection={{
-          type: selectionType,
-          ...rowSelection,
-        }}
+        // rowSelection={{
+        //   type: selectionType,
+        //   ...rowSelection,
+        // }}
+        rowSelection={rowSelection}
         columns={columns}
         dataSource={data}
       />

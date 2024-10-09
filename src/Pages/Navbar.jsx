@@ -121,7 +121,7 @@ const Navbar = () => {
     ...(results?.files || []).map((file) => ({ ...file, name: file.fileName })),
     ...(results?.documents || []).map((document) => ({
       ...document,
-      name: document.documentName,
+      name: document.subject,
     })),
   ];
 
