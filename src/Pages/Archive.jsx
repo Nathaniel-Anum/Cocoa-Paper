@@ -33,6 +33,7 @@ import CreateFolder from "../Components/modals/Archive/CreateFolder";
 import UploadFile from "../Components/modals/Archive/UploadFile";
 import { MdUnarchive } from "react-icons/md";
 import { getArchive, getArchiveByFolderId } from "../http/archive";
+import { IoFolderSharp } from "react-icons/io5";
 
 const Archive = () => {
   const queryClient = useQueryClient();
@@ -45,6 +46,7 @@ const Archive = () => {
   const [unarchive, setUnarchive] = useState({});
   const [allrecord, setAllRecord] = useState({});
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [currentTitle, setCurrentTitle] = useState([]);
   const [form] = Form.useForm();
   const { id } = useParams();
 
@@ -101,6 +103,7 @@ const Archive = () => {
   });
 
   function handleUnarchive(record) {
+    console.log(record);
     setUnarchive(record);
     fileUnarchive(record);
     queryClient.invalidateQueries(["archive"]);
@@ -254,6 +257,7 @@ const Archive = () => {
     }
   }, [wholerecord]);
 
+  console.log(options);
   //fetching initial archive folders
   useEffect(() => {
     function getInitialArchiveFolders() {
@@ -366,7 +370,10 @@ const Archive = () => {
     }
   };
 
-  const itemRender = (currentRoute) => {
+  console.log(crumbs);
+
+  const itemRender = (currentRoute, path) => {
+    console.log(currentRoute.path);
     return (
       <Link
         to={
@@ -671,15 +678,27 @@ const Archive = () => {
         open={popup}
         onCancel={handleCancel}
         footer={null}
+        width={900}
+        
       >
-        <Form.Item name="folderId" label="Archive">
+        <div className="flex gap-6">
+          {options.map((folder) => (
+            <div key={folder.value} className="flex flex-col justify-center items-center">
+              <FolderFilled className="text-[38px] text-[#FFAC28]" />
+              {folder.label}
+            </div>
+          ))}
+        </div>
+
+        {/* <Form.Item name="folderId" label="Archive">
           <Cascader
             label="Folder"
+            defaultValue={crumbs.map((crumb) => crumb.title)}
             options={options}
             loadData={loadData}
             changeOnSelect
           />
-        </Form.Item>
+        </Form.Item> */}
       </Modal>
       <Table
         // rowSelection={{
