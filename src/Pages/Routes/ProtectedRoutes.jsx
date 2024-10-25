@@ -18,7 +18,7 @@ function ProtectedRoutes({ isAllowed, children }) {
     if (user) {
       if (!isAllowed) {
         console.log("I have been called");
-           return <Navigate to="/dashboard" />;
+        return <Navigate to="/dashboard" />;
       } else {
         return children ? children : <Outlet />;
       }

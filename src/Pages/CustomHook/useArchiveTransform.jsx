@@ -18,6 +18,8 @@ const useArchiveTransform = (archives, id) => {
   function flattenSubArchiveDataArr(arr) {
     let temp = [];
 
+    console.log({ arr });
+
     if (arr?.files && arr?.files?.length > 0) temp = [...arr.files];
 
     if (arr?.children && arr?.children?.length > 0)
@@ -29,11 +31,12 @@ const useArchiveTransform = (archives, id) => {
 
   useEffect(() => {
     if (id) {
+      console.log({ id });
       const temp = flattenSubArchiveDataArr(archives);
+
       setData(temp);
     } else {
       const temp = flattenArray(archives);
-      console.log(temp, archives);
       setData(temp);
     }
   }, [id, archives]);

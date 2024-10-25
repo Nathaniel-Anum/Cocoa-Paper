@@ -7,56 +7,24 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../Components/axiosInstance";
 import _ from "lodash";
 import useDebounce from "./CustomHook/use-debounce";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   //Searching files components
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState("");
-  const [error, setError] = useState("");
+  const { user, setUser } = useUser();
+  // console.log(user);
+  const navigate = useNavigate();
 
   const term = useDebounce(searchTerm, 3000);
 
-  //Debounced search function to avoid too many API calls
-  // const debouncedSearch = _.debounce((term) => {
-  //   if (!term) {
-  //     setResults({ files: [], documents: [] });
-  //     setLoading(false);
-  //     return;
-  //   }
-
-  //   setLoading(true);
-  //   setError(" ");
-  //   axiosInstance
-  //     .get(`/search`, {
-  //       params: { searchTerm },
-  //     })
-  //     .then((res) => {
-  //       console.log(res?.data);
-  //       setResults(res?.data);
-  //       setLoading(false);
-  //     })
-  //     .catch((err) => {
-  //       setResults({ files: [], documents: [] });
-  //       setError(err?.response?.data?.error);
-  //       setLoading(false);
-  //     });
-  // }, 3000);
-  //300ms debounce delay
-
-  // useEffect(() => {
-  //   if (!searchTerm.trim()) {
-  //     console.log({ searchTerm });
-
-  //     setResults({ files: [], documents: [] });
-  //     debouncedSearch.cancel();
-  //   }
-  // }, [searchTerm]);
-
   useEffect(() => {
     if (term) {
+      console.log(term);
       handleInputChange(term);
+    } else {
+      setResults([]);
     }
   }, [term]);
 
@@ -66,8 +34,6 @@ const Navbar = () => {
     // setSearchTerm(term);
 
     if (term.trim() !== " ") {
-      setLoading(true);
-      setError(" ");
       axiosInstance
         .get(`/search`, {
           params: { searchTerm },
@@ -75,36 +41,64 @@ const Navbar = () => {
         .then((res) => {
           console.log(res?.data);
           setResults(res?.data);
-          setLoading(false);
         })
         .catch((err) => {
-          setResults({ files: [], documents: [] });
-          setError(err?.response?.data?.error);
-          setLoading(false);
+          console.log(err?.response?.data?.error);
+          message.error(err?.response?.data?.error, 2);
         });
-    } else {
-      setResults({ files: [], documents: [] });
     }
   };
 
-  useEffect(() => {
-    if (error) {
-      // message.error(error);
-      console.log(error);
-    }
-  }, [error]);
+  // Ensure incomingAndOutgoing exists and is an array
+  const incomingAndOutgoing = results?.incomingAndOutgoing || [];
 
-  // console.log(results);
+  // Separate incoming and outgoing based on receiver and sender
+  const incoming = incomingAndOutgoing.filter(
+    (i) => i?.receiver?.userId === user?.userId
+  );
+
+  const outgoing = incomingAndOutgoing.filter(
+    (i) => i?.sender?.userId === user?.userId
+  );
+
+  console.log("Incoming:", incoming);
+  console.log("Outgoing:", outgoing);
+
+  // Files from search results
+  const files = results?.files || [];
+
+  // Function to handle navigation
+  const handleNavigation = (item) => {
+    // Check if it's a file
+    if (item.type === "File") {
+      if (item.folderId === null) {
+        // If folderId is null, navigate to the archive
+        navigate("/archive");
+      } else {
+        // If folderId exists, navigate to the folder's page
+        navigate(`/archive/${item.folderId}`);
+      }
+    } else if (incoming.includes(item)) {
+      // If it's an incoming document
+      navigate("/dashboard/incoming");
+    } else if (outgoing.includes(item)) {
+      // If it's an outgoing document
+      navigate("/dashboard/outgoing");
+    }
+  };
+
+  // Check if there are no results
+  const noResults =
+    files.length === 0 && incoming.length === 0 && outgoing.length === 0;
 
   const currentDate = new Date();
   // console.log(currentDate);
 
-  const { user, setUser } = useUser();
-  // console.log(user);
-
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
   };
+
+  // Assuming `user` is accessible globally in your app
   const items = [
     {
       label: (
@@ -116,16 +110,13 @@ const Navbar = () => {
     },
   ];
 
-  // Combine files and documents, normalizing their names
-  const combineResults = [
-    ...(results?.files || []).map((file) => ({ ...file, name: file.fileName })),
-    ...(results?.documents || []).map((document) => ({
-      ...document,
-      name: document.subject,
-    })),
-  ];
-
-  console.log(combineResults);
+  // Conditionally add the "Go to Admin Console" option if the user is an admin
+  if (user?.role[0].role === "ADMIN") {
+    items.push({
+      label: <a href="/backoffice/bod">Go to Admin Console</a>,
+      key: "1",
+    });
+  }
 
   return (
     <div>
@@ -143,7 +134,6 @@ const Navbar = () => {
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              disabled={loading}
               type="search"
               placeholder="Search files and documents"
               className="w-[400px] h-[40px] px-[30px] rounded-[10px] outline-none"
@@ -165,25 +155,56 @@ const Navbar = () => {
               </svg>
             </div>
           </div>
-          <div className="">
-            {loading && !combineResults ? (
-              <>loading</>
-            ) : combineResults.length ? (
+          <div className="absolute">
+            {/* Render Files */}
+            {files.length > 0 && (
               <div>
-                {combineResults?.map((item, index) => (
-                  <Link
-                    to={
-                      item?.folderId ? `/archive/${item.folderId}` : "/archive"
-                    }
-                    key={index}
-                    className="flex flex-col"
-                  >
-                    {item.name}
-                  </Link>
+                <h2>Files</h2>
+                {files.map((file) => (
+                  <div key={file.fileId} onClick={() => handleNavigation(file)}>
+                    <p>
+                      <strong>File Name:</strong> {file.fileName}
+                    </p>
+                    <p>
+                      <strong>Subject:</strong> {file.subject}
+                    </p>
+                  </div>
                 ))}
               </div>
-            ) : (
-              <p>No results found.</p>
+            )}
+
+            {/* Render Incoming Documents */}
+            {incoming.length > 0 && (
+              <div>
+                <h2>Incoming Documents</h2>
+                {incoming.map((doc) => (
+                  <div key={doc.docID} onClick={() => handleNavigation(doc)}>
+                    <p>
+                      <strong>Subject:</strong> {doc.document.subject}
+                    </p>
+                    <p>
+                      <strong>Reference:</strong> {doc.document.ref}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Render Outgoing Documents */}
+            {outgoing.length > 0 && (
+              <div>
+                <h2>Outgoing Documents</h2>
+                {outgoing.map((doc) => (
+                  <div key={doc.docID} onClick={() => handleNavigation(doc)}>
+                    <p>
+                      <strong>Subject:</strong> {doc.document.subject}
+                    </p>
+                    <p>
+                      <strong>Reference:</strong> {doc.document.ref}
+                    </p>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>

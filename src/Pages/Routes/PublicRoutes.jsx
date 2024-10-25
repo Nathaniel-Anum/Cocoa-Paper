@@ -1,6 +1,8 @@
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useUser, useUserContext } from '../CustomHook/useUser';
-import { useEffect } from 'react';
+import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useUser, useUserContext } from "../CustomHook/useUser";
+import { useEffect } from "react";
+import { Spin } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 
 function PublicRoutes() {
   const { user, isLoading } = useUser();
@@ -17,14 +19,19 @@ function PublicRoutes() {
   return !isLoading ? (
     user ? (
       <Navigate
-        to={sessionStorage.getItem('lastVisitedPath') || '/dashboard'}
+        to={sessionStorage.getItem("lastVisitedPath") || "/dashboard"}
         replace
       />
     ) : (
       <Outlet />
     )
   ) : (
-    'Loading...'
+    <div className=" flex justify-center items-center">
+      <Spin
+        indicator={<LoadingOutlined style={{ fontSize: 54 }} spin />}
+        className="text-[#582F08] "
+      />
+    </div>
   );
 }
 

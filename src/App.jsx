@@ -35,7 +35,7 @@ function App() {
   // console.log(user, isLoading);
   // console.log(user);
 
-  console.log(user?.role[0].rolePermissions);
+  console.log(user?.role[0].role);
 
   useEffect(() => {
     const fetchUser = () => {
