@@ -1,9 +1,10 @@
-import { DownOutlined } from "@ant-design/icons";
-import { Dropdown, Space, message } from "antd";
+import { DownOutlined, LoadingOutlined } from "@ant-design/icons";
+import { Dropdown, Space, Modal, Button, Steps } from "antd";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useUser } from "./CustomHook/useUser";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../Components/axiosInstance";
 import _ from "lodash";
 import useDebounce from "./CustomHook/use-debounce";
@@ -12,84 +13,60 @@ import { Link, useNavigate } from "react-router-dom";
 const Navbar = () => {
   //Searching files components
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false); // New: State to track loading
+  const [trailId, setTrailId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const LOADING_DELAY = 12000;
   const { user, setUser } = useUser();
   // console.log(user);
   const navigate = useNavigate();
 
-  const term = useDebounce(searchTerm, 3000);
+  const term = useDebounce(searchTerm, 500);
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
 
   useEffect(() => {
     if (term) {
-      console.log(term);
+      // console.log(term);
       handleInputChange(term);
     } else {
       setResults([]);
     }
   }, [term]);
 
-  //Handle search input change
+  // Handle search input change
   const handleInputChange = (searchTerm) => {
-    // const term = e.target.value;
-    // setSearchTerm(term);
+    if (searchTerm.trim() !== "") {
+      setResults([]);
+      setLoading(true); // Start loading animation
 
-    if (term.trim() !== " ") {
+      const loadTimeout = setTimeout(() => {
+        // This sets a minimum time for the loader
+        setLoading(false);
+      }, LOADING_DELAY);
+
       axiosInstance
         .get(`/search`, {
           params: { searchTerm },
         })
         .then((res) => {
-          console.log(res?.data);
           setResults(res?.data);
+          console.log(res?.data);
         })
         .catch((err) => {
-          console.log(err?.response?.data?.error);
-          message.error(err?.response?.data?.error, 2);
+          console.error(err?.response?.data?.error);
+          setResults([]); // Clear results on error
+        })
+        .finally(() => {
+          clearTimeout(loadTimeout);
+          setLoading(false); // Stop loading animation
         });
     }
   };
-
-  // Ensure incomingAndOutgoing exists and is an array
-  const incomingAndOutgoing = results?.incomingAndOutgoing || [];
-
-  // Separate incoming and outgoing based on receiver and sender
-  const incoming = incomingAndOutgoing.filter(
-    (i) => i?.receiver?.userId === user?.userId
-  );
-
-  const outgoing = incomingAndOutgoing.filter(
-    (i) => i?.sender?.userId === user?.userId
-  );
-
-  console.log("Incoming:", incoming);
-  console.log("Outgoing:", outgoing);
-
-  // Files from search results
-  const files = results?.files || [];
-
-  // Function to handle navigation
-  const handleNavigation = (item) => {
-    // Check if it's a file
-    if (item.type === "File") {
-      if (item.folderId === null) {
-        // If folderId is null, navigate to the archive
-        navigate("/archive");
-      } else {
-        // If folderId exists, navigate to the folder's page
-        navigate(`/archive/${item.folderId}`);
-      }
-    } else if (incoming.includes(item)) {
-      // If it's an incoming document
-      navigate("/dashboard/incoming");
-    } else if (outgoing.includes(item)) {
-      // If it's an outgoing document
-      navigate("/dashboard/outgoing");
-    }
-  };
-
-  // Check if there are no results
-  const noResults =
-    files.length === 0 && incoming.length === 0 && outgoing.length === 0;
 
   const currentDate = new Date();
   // console.log(currentDate);
@@ -118,6 +95,54 @@ const Navbar = () => {
     });
   }
 
+  const renderMenuItems = () => {
+    if (!results || results.length === 0) {
+      return <div className="text-gray-500 p-4">No results found</div>;
+    }
+
+    const combinedItems = [
+      ...(results?.files || []),
+      ...(results?.documents || []),
+    ];
+
+    return combinedItems.map((item, index) => {
+      const isFile = item.type === "File";
+      return (
+        <div key={index} className="p-4 bg-white rounded-md shadow-md mb-2">
+          <div className="text-lg font-semibold">{item.subject}</div>
+          <Button
+            type="primary"
+            className="mt-2 bg-[#582F08] "
+            onClick={() => handleButtonClick(item, isFile)}
+          >
+            {isFile ? "View" : "Track"}
+          </Button>
+        </div>
+      );
+    });
+  };
+
+  //useQUery to fetch trail associated to doc ID
+  const { data: trailData } = useQuery({
+    queryKey: ["trailData", trailId],
+    queryFn: async () => {
+      return axiosInstance.get(`/trail/${trailId}`);
+    },
+    enabled: !!trailId, // Only fetch if trailId is set
+  });
+
+  console.log(trailData?.data);
+
+  const handleButtonClick = (item, isFile) => {
+    if (isFile) {
+      console.log(`Viewing file with ID: ${item.fileId}`);
+    } else {
+      console.log(`Tracking document with ID: ${item.docID}`);
+      setTrailId(item.docID); // Set trailId to trigger fetch
+    }
+    setIsModalOpen(true);
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center pt-[20px]">
@@ -138,74 +163,36 @@ const Navbar = () => {
               placeholder="Search files and documents"
               className="w-[400px] h-[40px] px-[30px] rounded-[10px] outline-none"
             />
-            <div className=" cursor-pointer ">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                />
-              </svg>
+            <div className="ml-2">
+              {loading ? (
+                <LoadingOutlined style={{ fontSize: 24 }} spin /> // Loader next to search input
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                  />
+                </svg>
+              )}
             </div>
           </div>
-          <div className="absolute">
-            {/* Render Files */}
-            {files.length > 0 && (
-              <div>
-                <h2>Files</h2>
-                {files.map((file) => (
-                  <div key={file.fileId} onClick={() => handleNavigation(file)}>
-                    <p>
-                      <strong>File Name:</strong> {file.fileName}
-                    </p>
-                    <p>
-                      <strong>Subject:</strong> {file.subject}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Render Incoming Documents */}
-            {incoming.length > 0 && (
-              <div>
-                <h2>Incoming Documents</h2>
-                {incoming.map((doc) => (
-                  <div key={doc.docID} onClick={() => handleNavigation(doc)}>
-                    <p>
-                      <strong>Subject:</strong> {doc.document.subject}
-                    </p>
-                    <p>
-                      <strong>Reference:</strong> {doc.document.ref}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Render Outgoing Documents */}
-            {outgoing.length > 0 && (
-              <div>
-                <h2>Outgoing Documents</h2>
-                {outgoing.map((doc) => (
-                  <div key={doc.docID} onClick={() => handleNavigation(doc)}>
-                    <p>
-                      <strong>Subject:</strong> {doc.document.subject}
-                    </p>
-                    <p>
-                      <strong>Reference:</strong> {doc.document.ref}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="">
+            <div className=" absolute  w-[468px] ">
+              {/* Dropdown: only displays when results are loaded */}
+              {searchTerm && results && (
+                <div className="bg-white rounded-lg p-4 mt-2 shadow-lg">
+                  {renderMenuItems()}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -249,6 +236,40 @@ const Navbar = () => {
         </div>
       </div>
 
+      <Modal
+        title="Locator"
+        open={isModalOpen}
+        onCancel={handleCancel}
+        footer={null}
+        centered="true"
+        width={"60%"}
+      >
+        <div className="py-6">
+          <Steps
+            responsive
+            className="grid grid-cols-2 gap-y-2 "
+            items={trailData?.data?.trails.flatMap((trail, index) => {
+              if (index === 0) {
+                return [
+                  {
+                    title: "Sent",
+                    description: trail.sender.name,
+                  },
+                  {
+                    title: trail?.status,
+                    description: trail.receiver.name,
+                  },
+                ];
+              } else {
+                return {
+                  title: trail.status,
+                  description: trail.receiver.name,
+                };
+              }
+            })}
+          />
+        </div>
+      </Modal>
       <ToastContainer />
     </div>
   );

@@ -15,34 +15,37 @@ const Locator = () => {
   const [stepsData, setStepsData] = useState([]);
   const [document, setDocument] = useState({});
 
-  // useQuery for getting all trails associated to a document
-  const { data: documentTrial, isLoading } = useQuery({
-    queryKey: ["documentTrial", trialId],
-    queryFn: () => {
-      console.log(`document ID assigned: ${trialId}`);
-      return axiosInstance.get(`/trail/${trialId}`);
-    },
-    enabled: !!trialId,
-  });
 
-  console.log(stepsData);
-
-  const showModal = (trial) => {
-    setIsModalOpen(true);
-    setTrialId(trial?.docID);
-    console.log(trial, documentTrial?.data);
-  };
-
-  // console.log(documentTrial?.data);
-
-  // 2nd useQuery to fetch all trails
-  const { data: trailDisplay } = useQuery({
+   //  useQuery to fetch all trails
+   const { data: trailDisplay } = useQuery({
     queryKey: ["trailDisplay"],
     queryFn: () => {
       return axiosInstance.get("/trail");
     },
   });
-  console.log(trailDisplay?.data);
+  // console.log(trailDisplay?.data);
+
+  // useQuery for getting all trails associated to a document
+  const { data: documentTrial, isLoading } = useQuery({
+    queryKey: ["documentTrial", trialId],
+    queryFn: () => {
+      // console.log(`document ID assigned: ${trialId}`);
+      return axiosInstance.get(`/trail/${trialId}`);
+    },
+    enabled: !!trialId,
+  });
+  // console.log(documentTrial?.data);
+
+
+  const showModal = (trial) => {
+    setIsModalOpen(true);
+    setTrialId(trial?.docID);
+    console.log(trial);
+  };
+
+
+
+ 
 
   const handleCancel = () => {
     setIsModalOpen(false);

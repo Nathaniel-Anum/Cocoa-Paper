@@ -112,8 +112,8 @@ const AddDocument = () => {
       <div className=" px-[240px] pt-[120px] grid grid-cols-2">
         <div>
           <p className="font-bold text-[29px] text-[#694421]">
-            Add Document/Attachment
-            <div className="w-72 h-1 bg-[#694421]"></div>
+            Add Document
+            <div className="w-[11rem] h-1 bg-[#694421]"></div>
           </p>
 
           <div className="py-7">
