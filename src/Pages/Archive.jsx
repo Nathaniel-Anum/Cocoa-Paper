@@ -524,11 +524,27 @@ const Archive = () => {
     },
   ];
 
+  //Function to view files
   function handleFileClick(record) {
     console.log(record);
     if (record.type === "File") {
-      setSelectedFile(record); // Set the selected file for viewing
-      setDisplay(true); // Open the modal (or another viewer)
+      const fileId = record.fileId;
+
+      axiosInstance
+        .get(`/archive/file/${fileId}`, {
+          responseType: "blob", // Important for handling binary PDF data
+        })
+        .then((response) => {
+          const pdfUrl = URL.createObjectURL(response.data); // Convert Blob to URL
+          setSelectedFile({
+            ...record,
+            fileUrl: pdfUrl, // Set the URL for the PDF
+          });
+          setDisplay(true); // Open modal
+        })
+        .catch((error) => {
+          console.error("Error fetching the PDF file:", error);
+        });
     }
   }
   const rowSelection = {
@@ -868,17 +884,25 @@ const Archive = () => {
       <Modal
         title={selectedFile?.fileName || "Document Viewer"}
         visible={display}
-        onCancel={() => setDisplay(false)}
+        onCancel={() => {
+          setDisplay(false);
+          URL.revokeObjectURL(selectedFile?.fileUrl); // Clean up URL
+          setSelectedFile(null); // Clear selected file
+        }}
         footer={null}
-        width={800}
+        width={850}
+        className="!top-9"
       >
         {selectedFile && (
-          <DocViewer
-            documents={[{ uri: selectedFile.path }]} // The file path
-            pluginRenderers={DocViewerRenderers}
+          <iframe
+            src={selectedFile.fileUrl}
+            width="100%"
+            height="600px" // Adjust as needed
+            title="PDF Viewer"
           />
         )}
       </Modal>
+
       <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
 
       {open ? <CreateFolder open={open} setOpen={setOpen} id={id} /> : null}

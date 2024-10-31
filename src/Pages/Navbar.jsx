@@ -8,7 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../Components/axiosInstance";
 import _ from "lodash";
 import useDebounce from "./CustomHook/use-debounce";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import DocViewer, { DocViewerRenderers } from "react-doc-viewer";
 
 const Navbar = () => {
   //Searching files components
@@ -17,6 +18,8 @@ const Navbar = () => {
   const [loading, setLoading] = useState(false); // New: State to track loading
   const [trailId, setTrailId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFileModalVisible, setFileModalVisible] = useState(false);
+  const [currentFile, setCurrentFile] = useState(null);
 
   const LOADING_DELAY = 12000;
   const { user, setUser } = useUser();
@@ -100,22 +103,49 @@ const Navbar = () => {
       return <div className="text-gray-500 p-4">No results found</div>;
     }
 
+    // Use a map to remove duplicates based on docID for documents and fileId for files
+    const documentMap = new Map();
+
+    (results?.incomingAndOutgoing || []).forEach((item) => {
+      const { document, status, sender } = item;
+      const isArchivedByUser =
+        status === "Archived" && sender.userId === user?.userId;
+
+      // Add or update the map to ensure we only keep one entry per docID
+      documentMap.set(document.docID, {
+        ...document,
+        status: status,
+        isArchivedByUser,
+        type: "Document",
+      });
+    });
+
+    // Handle files by fileId without duplication logic, assuming file IDs are unique
     const combinedItems = [
-      ...(results?.files || []),
-      ...(results?.documents || []),
+      ...documentMap.values(),
+      ...(results?.files || []).map((file) => ({
+        ...file,
+        type: "File",
+      })),
     ];
 
     return combinedItems.map((item, index) => {
-      const isFile = item.type === "File";
+      const buttonText =
+        item.type === "File"
+          ? "View"
+          : item.isArchivedByUser
+          ? "Trail"
+          : "Track";
+
       return (
         <div key={index} className="p-4 bg-white rounded-md shadow-md mb-2">
           <div className="text-lg font-semibold">{item.subject}</div>
           <Button
             type="primary"
-            className="mt-2 bg-[#582F08] "
-            onClick={() => handleButtonClick(item, isFile)}
+            className="mt-2 bg-[#582F08]"
+            onClick={() => handleButtonClick(item)}
           >
-            {isFile ? "View" : "Track"}
+            {buttonText}
           </Button>
         </div>
       );
@@ -131,16 +161,57 @@ const Navbar = () => {
     enabled: !!trailId, // Only fetch if trailId is set
   });
 
-  console.log(trailData?.data);
+  // console.log(trailData?.data);
 
-  const handleButtonClick = (item, isFile) => {
-    if (isFile) {
-      console.log(`Viewing file with ID: ${item.fileId}`);
+  // const handleButtonClick = (item) => {
+  //   if (item.type === "File") {
+  //     console.log(`Viewing file with file ID: ${item.fileId}`);
+  //   } else {
+  //     console.log(
+  //       `${item.isArchivedByUser ? "Trailing" : "Tracking"} document with ID: ${
+  //         item.docID
+  //       }`
+  //     );
+
+  //     // Set trailId to item.docID and open the modal
+  //     setTrailId(item.docID);
+  //     setIsModalOpen(true);
+  //   }
+  // };
+
+  const handleButtonClick = async (item) => {
+    if (item.type === "File") {
+      try {
+        // Fetch the file as a blob
+        const response = await axiosInstance.get(
+          `/archive/file/${item.fileId}`,
+          {
+            responseType: "blob", // Important for handling binary PDF data
+          }
+        );
+
+        const pdfUrl = URL.createObjectURL(response.data); // Convert Blob to URL
+
+        // Set the current file to display in the modal
+        setCurrentFile({
+          ...item,
+          fileUrl: pdfUrl,
+        });
+        setFileModalVisible(true); // Open file modal
+      } catch (error) {
+        console.error(`Error viewing file with file ID: ${item.fileId}`, error);
+      }
     } else {
-      console.log(`Tracking document with ID: ${item.docID}`);
-      setTrailId(item.docID); // Set trailId to trigger fetch
+      console.log(
+        `${item.isArchivedByUser ? "Trailing" : "Tracking"} document with ID: ${
+          item.docID
+        }`
+      );
+
+      // Set trailId to item.docID and open the modal
+      setTrailId(item.docID);
+      setIsModalOpen(true);
     }
-    setIsModalOpen(true);
   };
 
   return (
@@ -269,6 +340,27 @@ const Navbar = () => {
             })}
           />
         </div>
+      </Modal>
+      <Modal
+        title={currentFile?.fileName || "Document Viewer"}
+        visible={isFileModalVisible}
+        onCancel={() => {
+          setFileModalVisible(false);
+          URL.revokeObjectURL(currentFile?.fileUrl); // Clean up URL
+          setCurrentFile(null); // Clear current file
+        }}
+        footer={null}
+        width={800}
+        className="!top-9"
+      >
+        {currentFile && (
+          <iframe
+            src={currentFile.fileUrl}
+            width="100%"
+            height="600px" // Adjust as needed
+            title="PDF Viewer"
+          />
+        )}
       </Modal>
       <ToastContainer />
     </div>
