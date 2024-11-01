@@ -897,7 +897,7 @@ const Archive = () => {
           <iframe
             src={selectedFile.fileUrl}
             width="100%"
-            height="600px" // Adjust as needed
+            height="650px" // Adjust as needed
             title="PDF Viewer"
           />
         )}

@@ -98,55 +98,105 @@ const Navbar = () => {
     });
   }
 
+  // Function to render menu items in the dropdown based on search results
   const renderMenuItems = () => {
     if (!results || results.length === 0) {
       return <div className="text-gray-500 p-4">No results found</div>;
     }
 
-    // Use a map to remove duplicates based on docID for documents and fileId for files
-    const documentMap = new Map();
+    // Map to store unique items based on subject (combines file and document items with the same subject)
+    const uniqueItemsMap = new Map();
 
+    // Process incoming and outgoing documents
     (results?.incomingAndOutgoing || []).forEach((item) => {
-      const { document, status, sender } = item;
+      const { document, status, sender, receiver } = item;
       const isArchivedByUser =
         status === "Archived" && sender.userId === user?.userId;
+      const isArchiver =
+        status === "Archived" && receiver.userId === user?.userId;
 
-      // Add or update the map to ensure we only keep one entry per docID
-      documentMap.set(document.docID, {
-        ...document,
-        status: status,
-        isArchivedByUser,
-        type: "Document",
-      });
+      // Add or update the map to store unique items by subject
+      if (!uniqueItemsMap.has(document.subject)) {
+        uniqueItemsMap.set(document.subject, {
+          ...document,
+          isArchivedByUser,
+          isArchiver,
+          status,
+          type: "Document",
+        });
+      }
     });
 
-    // Handle files by fileId without duplication logic, assuming file IDs are unique
-    const combinedItems = [
-      ...documentMap.values(),
-      ...(results?.files || []).map((file) => ({
-        ...file,
-        type: "File",
-      })),
-    ];
+    // Process files and merge with the documents based on subject
+    (results?.files || []).forEach((file) => {
+      const existingItem = uniqueItemsMap.get(file.subject);
 
-    return combinedItems.map((item, index) => {
-      const buttonText =
-        item.type === "File"
-          ? "View"
-          : item.isArchivedByUser
-          ? "Trail"
-          : "Track";
+      if (existingItem) {
+        // Update existing item with file information and add 'hasFile' flag
+        uniqueItemsMap.set(file.subject, {
+          ...existingItem,
+          fileId: file.fileId,
+          fileName: file.fileName,
+          hasFile: true, // Indicates both file and document are present
+        });
+      } else {
+        // If no document with the same subject exists, add file as a unique item
+        uniqueItemsMap.set(file.subject, {
+          ...file,
+          type: "File",
+          hasFile: true,
+        });
+      }
+    });
+
+    // Render the items in the dropdown
+    return Array.from(uniqueItemsMap.values()).map((item, index) => {
+      // Determine which buttons to show based on user and item properties
+      const showTrailButton =
+        item.isArchiver || (item.type === "Document" && item.isArchivedByUser);
+      const showTrackButton = !item.isArchiver && item.type === "Document";
+
+      // Set button text based on conditions
+      const buttonText = item.hasFile
+        ? "View"
+        : showTrailButton
+        ? "Trail"
+        : showTrackButton
+        ? "Track"
+        : "";
 
       return (
-        <div key={index} className="p-4 bg-white rounded-md shadow-md mb-2">
+        <div key={index} className="p-4  bg-white rounded-md  mb-2">
           <div className="text-lg font-semibold">{item.subject}</div>
-          <Button
-            type="primary"
-            className="mt-2 bg-[#582F08]"
-            onClick={() => handleButtonClick(item)}
-          >
-            {buttonText}
-          </Button>
+
+          {/* Show Trail button if user archived the document, Track if they didn’t, and View for files */}
+          {item.hasFile && (
+            <Button
+              type="primary"
+              className="mt-2 bg-[#582F08] mr-2"
+              onClick={() => handleButtonClick(item, "View")}
+            >
+              View
+            </Button>
+          )}
+          {showTrailButton && (
+            <Button
+              type="primary"
+              className="mt-2 bg-[#582F08]"
+              onClick={() => handleButtonClick(item, "Trail")}
+            >
+              Trail
+            </Button>
+          )}
+          {showTrackButton && (
+            <Button
+              type="primary"
+              className="mt-2 bg-[#582F08]"
+              onClick={() => handleButtonClick(item, "Track")}
+            >
+              Track
+            </Button>
+          )}
         </div>
       );
     });
@@ -179,10 +229,11 @@ const Navbar = () => {
   //   }
   // };
 
-  const handleButtonClick = async (item) => {
-    if (item.type === "File") {
+  // Function to handle button click actions based on button type and item properties
+  const handleButtonClick = async (item, actionType) => {
+    if (actionType === "View") {
       try {
-        // Fetch the file as a blob
+        // Fetch the file as a blob if the "View" button is clicked
         const response = await axiosInstance.get(
           `/archive/file/${item.fileId}`,
           {
@@ -190,9 +241,8 @@ const Navbar = () => {
           }
         );
 
-        const pdfUrl = URL.createObjectURL(response.data); // Convert Blob to URL
-
-        // Set the current file to display in the modal
+        // Convert Blob to URL and set it to display in the modal
+        const pdfUrl = URL.createObjectURL(response.data);
         setCurrentFile({
           ...item,
           fileUrl: pdfUrl,
@@ -201,14 +251,14 @@ const Navbar = () => {
       } catch (error) {
         console.error(`Error viewing file with file ID: ${item.fileId}`, error);
       }
-    } else {
-      console.log(
-        `${item.isArchivedByUser ? "Trailing" : "Tracking"} document with ID: ${
-          item.docID
-        }`
-      );
-
-      // Set trailId to item.docID and open the modal
+    } else if (actionType === "Trail") {
+      // Log trailing action for the document and set the trail ID
+      console.log(`Trailing document with ID: ${item.docID}`);
+      setTrailId(item.docID);
+      setIsModalOpen(true);
+    } else if (actionType === "Track") {
+      // Log tracking action for the document and set the trail ID
+      console.log(`Tracking document with ID: ${item.docID}`);
       setTrailId(item.docID);
       setIsModalOpen(true);
     }
@@ -259,7 +309,7 @@ const Navbar = () => {
             <div className=" absolute  w-[468px] ">
               {/* Dropdown: only displays when results are loaded */}
               {searchTerm && results && (
-                <div className="bg-white rounded-lg p-4 mt-2 shadow-lg">
+                <div className="bg-white  absolute z-50 w-full max-h-64 overflow-y-auto shadow-lg  rounded-lg  mt-2">
                   {renderMenuItems()}
                 </div>
               )}
