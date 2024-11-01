@@ -181,7 +181,7 @@ const Locator = () => {
           <Lottie options={defaultOptions} height={450} width={650} />
         </div>
       </div>
-      <div>
+      {/* <div>
         {trailDisplay?.data.map((doc) => (
           <div key={doc.docID}>
             <h2>{doc.subject}</h2>
@@ -194,7 +194,7 @@ const Locator = () => {
             ))}
           </div>
         ))}
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -104,7 +104,7 @@ const Navbar = () => {
       return <div className="text-gray-500 p-4">No results found</div>;
     }
 
-    // Map to store unique items based on subject (combines file and document items with the same subject)
+    // Map to store unique items based on ref
     const uniqueItemsMap = new Map();
 
     // Process incoming and outgoing documents
@@ -115,9 +115,9 @@ const Navbar = () => {
       const isArchiver =
         status === "Archived" && receiver.userId === user?.userId;
 
-      // Add or update the map to store unique items by subject
-      if (!uniqueItemsMap.has(document.subject)) {
-        uniqueItemsMap.set(document.subject, {
+      // Add or update the map to store unique items by ref
+      if (!uniqueItemsMap.has(document.ref)) {
+        uniqueItemsMap.set(document.ref, {
           ...document,
           isArchivedByUser,
           isArchiver,
@@ -127,21 +127,21 @@ const Navbar = () => {
       }
     });
 
-    // Process files and merge with the documents based on subject
+    // Process files and merge with the documents based on ref
     (results?.files || []).forEach((file) => {
-      const existingItem = uniqueItemsMap.get(file.subject);
+      const existingItem = uniqueItemsMap.get(file.ref);
 
       if (existingItem) {
         // Update existing item with file information and add 'hasFile' flag
-        uniqueItemsMap.set(file.subject, {
+        uniqueItemsMap.set(file.ref, {
           ...existingItem,
           fileId: file.fileId,
           fileName: file.fileName,
           hasFile: true, // Indicates both file and document are present
         });
       } else {
-        // If no document with the same subject exists, add file as a unique item
-        uniqueItemsMap.set(file.subject, {
+        // If no document with the same ref exists, add file as a unique item
+        uniqueItemsMap.set(file.ref, {
           ...file,
           type: "File",
           hasFile: true,
@@ -151,12 +151,10 @@ const Navbar = () => {
 
     // Render the items in the dropdown
     return Array.from(uniqueItemsMap.values()).map((item, index) => {
-      // Determine which buttons to show based on user and item properties
       const showTrailButton =
         item.isArchiver || (item.type === "Document" && item.isArchivedByUser);
       const showTrackButton = !item.isArchiver && item.type === "Document";
 
-      // Set button text based on conditions
       const buttonText = item.hasFile
         ? "View"
         : showTrailButton
@@ -166,7 +164,11 @@ const Navbar = () => {
         : "";
 
       return (
-        <div key={index} className="p-4  bg-white rounded-md  mb-2">
+        <div
+          key={index}
+          className="p-4 border-b last:border-none border-gray-200 bg-white hover:bg-gray-100 transition-colors"
+        >
+          {/* Display subject while ensuring unique check is based on ref */}
           <div className="text-lg font-semibold">{item.subject}</div>
 
           {/* Show Trail button if user archived the document, Track if they didn’t, and View for files */}
