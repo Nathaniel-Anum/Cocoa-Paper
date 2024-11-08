@@ -494,6 +494,7 @@ const Archive = () => {
               onCancel={cancel}
               okText="Yes"
               cancelText="No"
+              overlayClassName="popconfirm-custom"
             >
               <button onClick={() => console.log(record)}>
                 <DeleteTwoTone twoToneColor="#FF0000" />
@@ -512,6 +513,7 @@ const Archive = () => {
                 onCancel={cancel}
                 okText="Yes"
                 cancelText="No"
+                overlayClassName="popconfirm-custom"
               >
                 <button>
                   <MdUnarchive />

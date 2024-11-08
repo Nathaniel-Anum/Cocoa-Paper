@@ -31,10 +31,6 @@
   }
 }
 
-body {
-  /* color: var(--white); */
-}
-
 table th {
   background-color: #582f08 !important;
   color: #edd3bb !important;
@@ -62,6 +58,26 @@ table th {
   color: #582f08 !important;
 }
 
-/* #archive-362 path{
-  fill: "#582f08"
-} */
+/* Remove hover styles for both buttons */
+.popconfirm-custom .ant-btn,
+.popconfirm-custom .ant-btn-primary {
+  transition: none; /* Disable hover transitions */
+}
+
+.popconfirm-custom .ant-btn:hover,
+.popconfirm-custom .ant-btn-primary:hover {
+  background-color: transparent !important; /* Remove background hover color */
+  border-color: #582f08 !important; /* Keep border color the same */
+  color: #582f08 !important; /* Keep text color the same */
+}
+
+/* Keep normal background and border for primary (Yes) button */
+.popconfirm-custom .ant-btn-primary {
+  background-color: #582f08;
+  border-color: #582f08;
+}
+
+.popconfirm-custom .ant-btn {
+  color: #582f08;
+  border-color: #582f08;
+}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { PlusOutlined } from "@ant-design/icons";
-import { Form, Input, Select, message } from "antd";
+import { Form, Input, Select, message, Button } from "antd";
 import axiosInstance from "../Components/axiosInstance";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Lottie from "react-lottie";
@@ -20,6 +20,7 @@ const AddDocument = () => {
   const [form] = Form.useForm();
   const [selectedDivision, setSelectedDivision] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // axiosInstance.get("/document").then((res) => {
   //   console.log(res);
@@ -55,18 +56,20 @@ const AddDocument = () => {
   console.log(users?.data);
 
   // useMutation to add Documents
-  const { mutate } = useMutation({
+  const { mutate, isLoading } = useMutation({
     mutationKey: "document",
     mutationFn: (values) => {
-      console.log(values);
+      // console.log(values);
       return axiosInstance.post("/document", values);
     },
     onSuccess: () => {
-      message.success("document created successfully!");
+      setLoading(false);
+      message.success("Document Created Successfully!");
       form.resetFields();
       queryClient.invalidateQueries({ queryKey: ["trail"] });
     },
     onError: (error) => {
+      setLoading(false);
       message.error(error?.response?.data?.error);
     },
   });
@@ -102,11 +105,13 @@ const AddDocument = () => {
   };
 
   const handleSubmit = (values) => {
+    setLoading(true);
     mutate(values);
     // form.resetFields();
     // console.log(values);
     // console.log("object");
   };
+
   return (
     <div>
       <div className=" px-[240px] pt-[120px] grid grid-cols-2">
@@ -216,9 +221,14 @@ const AddDocument = () => {
               </Form.Item>
 
               <Form.Item className="flex justify-end pr-[330px]">
-                <button className="bg-[#582F08] px-5 py-1 text-white">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  className="bg-[#582F08] text-white px-5 py-1"
+                  loading={loading}
+                >
                   Submit
-                </button>
+                </Button>
               </Form.Item>
             </Form>
           </div>

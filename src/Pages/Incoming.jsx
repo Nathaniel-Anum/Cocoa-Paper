@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Modal, Form, Select, message, Popover } from "antd";
+import { Table, Modal, Form, Select, message, Popover, Button } from "antd";
 import { useTrail } from "./CustomHook/useTrail";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../Components/axiosInstance";
@@ -14,11 +14,13 @@ const Incoming = () => {
   const { trails } = useTrail("incoming");
   const [show, setShow] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [record, setRecord] = useState({});
 
-  const [senderId, setSenderId] = useState("")
+  const [senderId, setSenderId] = useState("");
 
   const queryClient = useQueryClient();
+  const [form] = Form.useForm();
 
   function handleFile(selectedRecord) {
     setShow(true);
@@ -78,11 +80,18 @@ const Incoming = () => {
       });
     },
     onSuccess: () => {
+      setLoading(false);
+      setIsModalOpen(false);
       message.success("Document has been successfully forwarded!");
+      form.resetFields();
       queryClient.invalidateQueries({ queryKey: ["trail"] });
     },
     onError: (error) => {
-      console.log(error);
+      setLoading(false);
+      setIsModalOpen(false);
+      console.log(error?.response?.data?.trail?.error);
+      form.resetFields();
+      message.error(error?.response?.data?.trail?.error);
     },
   });
   useEffect(() => {
@@ -97,14 +106,24 @@ const Incoming = () => {
     }
   }, [selectedDepartment]);
 
-  const handleDivisionChange = (value) => {
-    console.log(`selected Division: ${value}`);
-    setSelectedDivision(value);
+  // const handleDivisionChange = (value) => {
+  //   console.log(`selected Division: ${value}`);
+  //   setSelectedDivision(value);
+  // };
+
+  // const handleDepartmentChange = (value) => {
+  //   console.log(`selected Department: ${value}`);
+  //   setSelectedDepartment(value);
+  // };
+
+  const handleDivisionChange = (option) => {
+    console.log(`selected Division: ${option.value}`); // Access the division ID
+    setSelectedDivision(option.value);
   };
 
-  const handleDepartmentChange = (value) => {
-    console.log(`selected Department: ${value}`);
-    setSelectedDepartment(value);
+  const handleDepartmentChange = (option) => {
+    console.log(`selected Department: ${option.value}`); // Access the department ID
+    setSelectedDepartment(option.value);
   };
 
   const handleUserChange = (value) => {
@@ -118,6 +137,7 @@ const Incoming = () => {
   };
 
   const handleFormSubmit = (selectedRecord) => {
+    setLoading(true);
     console.log(selectedRecord);
     forwardDocument(selectedRecord);
   };
@@ -217,11 +237,6 @@ const Incoming = () => {
               // className="bg-[#582f08] text-white px-2 rounded-lg font-semibold text-[0.9rem]"
               onClick={() => handleFile(selectedRecord)}
             >
-              {/* <img
-                className="w-[23px]"
-                src="../../src/assets/archive.3b9ddd7f65d8f9353f8fd0efad0c45.svg "
-                alt=""
-              /> */}
               <RiInboxArchiveFill className="text-[22px]" />
             </button>
           </Popover>
@@ -246,12 +261,14 @@ const Incoming = () => {
         footer={null}
       >
         <Form
+          form={form}
           layout="vertical"
           name="Forward Document"
           onFinish={(values) => handleFormSubmit(values)}
         >
           <Form.Item
             label="Division"
+            name="division"
             rules={[
               {
                 required: true,
@@ -262,6 +279,7 @@ const Incoming = () => {
             <Select
               placeholder="Please choose your Division"
               allowClear
+              labelInValue
               options={divisions?.data.map((division, index) => {
                 return {
                   label: division?.divisionName,
@@ -273,6 +291,7 @@ const Incoming = () => {
           </Form.Item>
           <Form.Item
             label="Department"
+            name="department"
             rules={[
               {
                 required: true,
@@ -283,6 +302,7 @@ const Incoming = () => {
             <Select
               placeholder="Please choose your Department"
               allowClear
+              labelInValue
               options={departments?.data?.data?.map((department, index) => {
                 return {
                   label: department?.departmentName,
@@ -315,17 +335,24 @@ const Incoming = () => {
             />
           </Form.Item>
           <Form.Item className=" flex justify-center">
-            <button
+            <Button
+              type="primary"
+              htmlType="submit"
               className="bg-[#582F08] px-5 py-1 text-white"
-              onClick={() => setIsModalOpen(false)}
+              loading={loading}
             >
-              Submit
-            </button>
+              Forward
+            </Button>
           </Form.Item>
         </Form>
       </Modal>
       {show ? (
-        <ArchiveFiles show={show} setShow={setShow}  record={record} sender={senderId?.sender?.userId} />
+        <ArchiveFiles
+          show={show}
+          setShow={setShow}
+          record={record}
+          sender={senderId?.sender?.userId}
+        />
       ) : null}
     </div>
   );
