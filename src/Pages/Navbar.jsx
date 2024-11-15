@@ -215,21 +215,7 @@ const Navbar = () => {
 
   // console.log(trailData?.data);
 
-  // const handleButtonClick = (item) => {
-  //   if (item.type === "File") {
-  //     console.log(`Viewing file with file ID: ${item.fileId}`);
-  //   } else {
-  //     console.log(
-  //       `${item.isArchivedByUser ? "Trailing" : "Tracking"} document with ID: ${
-  //         item.docID
-  //       }`
-  //     );
-
-  //     // Set trailId to item.docID and open the modal
-  //     setTrailId(item.docID);
-  //     setIsModalOpen(true);
-  //   }
-  // };
+ 
 
   // Function to handle button click actions based on button type and item properties
   const handleButtonClick = async (item, actionType) => {

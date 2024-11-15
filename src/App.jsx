@@ -65,8 +65,30 @@ function App() {
       <Router>
         <Routes>
           {/* <Route element={<ProtectedRoutes />}> */}
-          <Route path="/" element={<Layout />}>
-            <Route path="/dashboard" element={<HomeDashboard />} />
+          {/* <Route path="/" element={<Layout />}> */}
+
+          <Route
+            path="/"
+            element={
+              <ProtectedRoutes
+                isAllowed={!!user} // Example condition: only allow if `user` exists
+              >
+                <Layout />
+              </ProtectedRoutes>
+            }
+          >
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.READ_ALL_USERS,
+                  ])}
+                >
+                  <HomeDashboard />
+                </ProtectedRoutes>
+              }
+            />
             <Route
               path="/dashboard/add-document"
               element={
@@ -176,28 +198,28 @@ function App() {
           <Route
             path="/backoffice"
             element={
-              // <ProtectedRoutes
-              //   isAllowed={hasPermission(user?.role[0].rolePermissions, [
-              //     requiredPermissions.READ_USER,
-              //     requiredPermissions.UPDATE_USER,
-              //     requiredPermissions.CREATE_USER,
-              //     requiredPermissions.DELETE_USER,
-              //     requiredPermissions.CREATE_ROLES,
-              //     requiredPermissions.READ_ROLES,
-              //     requiredPermissions.DELETE_ROLES,
-              //     requiredPermissions.UPDATE_ROLES,
-              //     requiredPermissions.CREATE_DEPT,
-              //     requiredPermissions.DELETE_DEPT,
-              //     requiredPermissions.READ_DEPT,
-              //     requiredPermissions.UPDATE_DEPT,
-              //     requiredPermissions.CREATE_STAFF,
-              //     requiredPermissions.READ_STAFF,
-              //     requiredPermissions.DELETE_STAFF,
-              //     requiredPermissions.UPDATE_STAFF,
-              //   ])}
-              // >
-              <Dashboard />
-              // </ProtectedRoutes>
+              <ProtectedRoutes
+                isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  requiredPermissions.READ_USER,
+                  requiredPermissions.UPDATE_USER,
+                  requiredPermissions.CREATE_USER,
+                  requiredPermissions.DELETE_USER,
+                  requiredPermissions.CREATE_ROLES,
+                  requiredPermissions.READ_ROLES,
+                  requiredPermissions.DELETE_ROLES,
+                  requiredPermissions.UPDATE_ROLES,
+                  requiredPermissions.CREATE_DEPT,
+                  requiredPermissions.DELETE_DEPT,
+                  requiredPermissions.READ_DEPT,
+                  requiredPermissions.UPDATE_DEPT,
+                  requiredPermissions.CREATE_STAFF,
+                  requiredPermissions.READ_STAFF,
+                  requiredPermissions.DELETE_STAFF,
+                  requiredPermissions.UPDATE_STAFF,
+                ])}
+              >
+                <Dashboard />
+              </ProtectedRoutes>
             }
           >
             <Route
@@ -269,7 +291,7 @@ function App() {
             <Route path="/login" element={<Home />} />
             <Route path="/backoffice/login" element={<SignIn />} />
             <Route path="/confirm-email" element={<ConfirmEmail />} />
-            <Route path="/resetPassword" element={<ResetPassword />} />
+            <Route path="/resetPassword/:token" element={<ResetPassword />} />
           </Route>
         </Routes>
       </Router>

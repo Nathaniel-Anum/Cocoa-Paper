@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Table, Modal, Form, Select, message, Popover, Button } from "antd";
+import {
+  Table,
+  Modal,
+  Form,
+  Select,
+  message,
+  Popover,
+  Button,
+  Steps,
+} from "antd";
 import { useTrail } from "./CustomHook/useTrail";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../Components/axiosInstance";
@@ -7,6 +16,7 @@ import { ForwardOutlined } from "@ant-design/icons";
 import { LuForward } from "react-icons/lu";
 import { RiInboxArchiveFill } from "react-icons/ri";
 import ArchiveFiles from "../Components/modals/Archive/ArchiveFiles";
+import { FaRegEye } from "react-icons/fa";
 
 import { useParams } from "react-router-dom";
 
@@ -16,6 +26,8 @@ const Incoming = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [record, setRecord] = useState({});
+  const [trailId, setTrailId] = useState("");
+  const [open, SetOpen] = useState(false);
 
   const [senderId, setSenderId] = useState("");
 
@@ -32,6 +44,10 @@ const Incoming = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
+  };
+
+  const handleClose = () => {
+    SetOpen(false);
   };
 
   const [selectedDivision, setSelectedDivision] = useState("");
@@ -106,16 +122,16 @@ const Incoming = () => {
     }
   }, [selectedDepartment]);
 
-  // const handleDivisionChange = (value) => {
-  //   console.log(`selected Division: ${value}`);
-  //   setSelectedDivision(value);
-  // };
+  //useQUery to fetch trail associated to doc ID
+  const { data: trailData } = useQuery({
+    queryKey: ["trailData", trailId],
+    queryFn: async () => {
+      return axiosInstance.get(`/trail/${trailId}`);
+    },
+    enabled: !!trailId, // Only fetch if trailId is set
+  });
 
-  // const handleDepartmentChange = (value) => {
-  //   console.log(`selected Department: ${value}`);
-  //   setSelectedDepartment(value);
-  // };
-
+  // console.log(trailData?.data);
   const handleDivisionChange = (option) => {
     console.log(`selected Division: ${option.value}`); // Access the division ID
     setSelectedDivision(option.value);
@@ -140,6 +156,13 @@ const Incoming = () => {
     setLoading(true);
     console.log(selectedRecord);
     forwardDocument(selectedRecord);
+  };
+
+  const handleView = (selectedRecord) => {
+    // console.log(selectedRecord);
+    console.log(`Vieweing trail with ${selectedRecord?.docID}`);
+    setTrailId(selectedRecord?.docID);
+    SetOpen(true);
   };
 
   const columns = [
@@ -210,7 +233,7 @@ const Incoming = () => {
       title: "Actions",
       key: "action",
       render: (selectedRecord) => (
-        <div className="flex gap-2">
+        <div className="flex gap-4">
           <Popover
             content={
               <div>
@@ -238,6 +261,17 @@ const Incoming = () => {
               onClick={() => handleFile(selectedRecord)}
             >
               <RiInboxArchiveFill className="text-[22px]" />
+            </button>
+          </Popover>
+          <Popover
+            content={
+              <div>
+                <p>View Trail</p>
+              </div>
+            }
+          >
+            <button onClick={() => handleView(selectedRecord)}>
+              <FaRegEye className="text-[20px]" />
             </button>
           </Popover>
         </div>
@@ -345,6 +379,40 @@ const Incoming = () => {
             </Button>
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title="Locator"
+        open={open}
+        onCancel={handleClose}
+        footer={null}
+        centered="true"
+        width={"60%"}
+      >
+        <div className="py-6">
+          <Steps
+            responsive
+            className="grid grid-cols-2 gap-y-2 "
+            items={trailData?.data?.trails.flatMap((trail, index) => {
+              if (index === 0) {
+                return [
+                  {
+                    title: "Sent",
+                    description: trail.sender.name,
+                  },
+                  {
+                    title: trail?.status,
+                    description: trail.receiver.name,
+                  },
+                ];
+              } else {
+                return {
+                  title: trail.status,
+                  description: trail.receiver.name,
+                };
+              }
+            })}
+          />
+        </div>
       </Modal>
       {show ? (
         <ArchiveFiles

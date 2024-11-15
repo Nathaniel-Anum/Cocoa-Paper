@@ -220,11 +220,11 @@ const AddDocument = () => {
                 />
               </Form.Item>
 
-              <Form.Item className="flex justify-end pr-[330px]">
+              <Form.Item className="">
                 <Button
                   type="primary"
                   htmlType="submit"
-                  className="bg-[#582F08] text-white px-5 py-1"
+                  className="bg-[#582F08] text-white px-5 w-[18.7rem] py-1"
                   loading={loading}
                 >
                   Submit

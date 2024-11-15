@@ -81,7 +81,7 @@ const Archive = () => {
       }
     },
     onSuccess: () => {
-      message.success("Folder Successfully Deleted");
+      message.success("Deleted Successfully");
       queryClient.invalidateQueries({ queryKey: ["archive"] });
     },
     onError: (error) => message.error(error),
@@ -500,26 +500,29 @@ const Archive = () => {
                 <DeleteTwoTone twoToneColor="#FF0000" />
               </button>
             </Popconfirm>
-            <Popover
-              content={
-                <div>
-                  <p>Unarchive</p>
-                </div>
-              }
-            >
-              <Popconfirm
-                title="Are you sure you want to unarchive?"
-                onConfirm={() => handleUnarchive(record)}
-                onCancel={cancel}
-                okText="Yes"
-                cancelText="No"
-                overlayClassName="popconfirm-custom"
+            {/* Render Unarchive button only if document and docID are present */}
+            {record.document?.docID && (
+              <Popover
+                content={
+                  <div>
+                    <p>Unarchive</p>
+                  </div>
+                }
               >
-                <button>
-                  <MdUnarchive />
-                </button>
-              </Popconfirm>
-            </Popover>
+                <Popconfirm
+                  title="Are you sure you want to unarchive?"
+                  onConfirm={() => handleUnarchive(record)}
+                  onCancel={cancel}
+                  okText="Yes"
+                  cancelText="No"
+                  overlayClassName="popconfirm-custom"
+                >
+                  <button>
+                    <MdUnarchive />
+                  </button>
+                </Popconfirm>
+              </Popover>
+            )}
           </div>
         );
       },
@@ -604,7 +607,7 @@ const Archive = () => {
       }
     },
     onSuccess: () => {
-      message.success(" File Moved Successfully");
+      message.success(" Moved Successfully");
       queryClient.invalidateQueries({ queryKey: ["archive"] });
       setPopup(false);
     },

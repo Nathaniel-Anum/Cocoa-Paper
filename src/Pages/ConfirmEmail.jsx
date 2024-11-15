@@ -15,6 +15,7 @@ const ConfirmEmail = () => {
       .post("/forgotPassword", values)
       .then((res) => {
         message.success(res?.data?.msg);
+        form.resetFields();
         setLoading(false);
       })
       .catch((err) => {

@@ -13,13 +13,20 @@ const BackOfficeNavBar = () => {
   const items = [
     {
       label: (
-        <a href="/backoffice/login" onClick={handleLogout}>
+        <a href="/login" onClick={handleLogout}>
           Logout
         </a>
       ),
       key: "0",
     },
   ];
+  // Conditionally add the "Go to Client Dashboard" option if the user is an admin
+  if (user?.role[0].role === "ADMIN") {
+    items.push({
+      label: <a href="/dashboard">Go to Dashboard</a>,
+      key: "1",
+    });
+  }
 
   const currentDate = new Date();
   console.log(currentDate);
