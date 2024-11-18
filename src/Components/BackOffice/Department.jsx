@@ -43,7 +43,7 @@ const Department = () => {
     console.log(`selected Division: ${value}`);
   };
 
-  // Usequery for department
+  // Usequery for getting department
   const { data: department } = useQuery({
     queryKey: ["departments"],
     queryFn: () => {

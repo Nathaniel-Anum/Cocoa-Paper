@@ -114,123 +114,118 @@ const AddDocument = () => {
 
   return (
     <div>
-      <div className=" px-[240px] pt-[120px] grid grid-cols-2">
-        <div>
-          <p className="font-bold text-[29px] text-[#694421]">
-            Add Document
-            <div className="w-[11rem] h-1 bg-[#694421]"></div>
-          </p>
+      <div className=" px-[150px] pt-[60px] grid gap-8 place-items-center grid-cols-2">
+        <div className="  bg-white rounded-md px-[3rem] ">
+          <div className=" bg-white ">
+            <p className="font-bold text-[29px] text-[#694421] py-2 ">
+              Add Document
+              <div className="w-[11rem] h-1 bg-[#694421]"></div>
+            </p>
 
-          <div className="py-7">
-            <Form
-              form={form}
-              // labelCol={{
-              //   span: 4,
-              // }}
-              wrapperCol={{
-                span: 13,
-              }}
-              layout="vertical"
-              style={{
-                maxWidth: 800,
-              }}
-              className=""
-              name="Add Document"
-              onFinish={(values) => handleSubmit(values)}
-            >
-              <Form.Item label="Ref" name="ref">
-                <Input placeholder="Input a Reference Number" />
-              </Form.Item>
-              <Form.Item label="Subject" name="subject">
-                <Input placeholder="Input a Subject" />
-              </Form.Item>
-              <Form.Item label=" Document Category" name="documentType">
-                <Select placeholder="Select Document Type">
-                  <Select.Option value="Custom">Custom</Select.Option>
-                  <Select.Option value="Medicals">Medicals</Select.Option>
-                  <Select.Option value="Transport_Requisition">
-                    Transport Requisition
-                  </Select.Option>
-                </Select>
-              </Form.Item>
-              <Form.Item
-                name="divisionId"
-                label="Division"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please choose your Division!",
-                  },
-                ]}
+            <div className=" py-6 ">
+              <Form
+                form={form}
+                layout="vertical"
+                className=""
+                name="Add Document"
+                onFinish={(values) => handleSubmit(values)}
               >
-                <Select
-                  placeholder="Please choose your Division"
-                  allowClear
-                  options={divisions?.data.map((division, index) => {
-                    return {
-                      label: division?.divisionName,
-                      value: division?.divisionId,
-                    };
-                  })}
-                  onChange={handleDivisionChange}
-                />
-              </Form.Item>
-              <Form.Item
-                name="departmentId"
-                label="Department"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please choose your Department!",
-                  },
-                ]}
-              >
-                <Select
-                  placeholder="Please choose your Department"
-                  allowClear
-                  options={departments?.data?.data?.map((department, index) => {
-                    return {
-                      label: department?.departmentName,
-                      value: department?.departmentId,
-                    };
-                  })}
-                  onChange={handleDepartmentChange}
-                />
-              </Form.Item>
-              <Form.Item
-                name="userId"
-                label="User"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select a User!",
-                  },
-                ]}
-              >
-                <Select
-                  placeholder="Please select a User"
-                  allowClear
-                  options={users?.data.map((user, index) => {
-                    return {
-                      label: user?.name,
-                      value: user?.userId,
-                    };
-                  })}
-                  onChange={handleUserChange}
-                />
-              </Form.Item>
-
-              <Form.Item className="">
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  className="bg-[#582F08] text-white px-5 w-[18.7rem] py-1"
-                  loading={loading}
+                <Form.Item label="Reference" name="ref">
+                  <Input placeholder="Input a Reference Number" />
+                </Form.Item>
+                <Form.Item label="Subject" name="subject">
+                  <Input placeholder="Input a Subject" />
+                </Form.Item>
+                <Form.Item label=" Document Category" name="documentType">
+                  <Select placeholder="Select Document Type">
+                    <Select.Option value="Custom">Custom</Select.Option>
+                    <Select.Option value="Medicals">Medicals</Select.Option>
+                    <Select.Option value="Transport_Requisition">
+                      Transport Requisition
+                    </Select.Option>
+                  </Select>
+                </Form.Item>
+                <Form.Item
+                  name="divisionId"
+                  label="Division"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please choose your Division!",
+                    },
+                  ]}
                 >
-                  Submit
-                </Button>
-              </Form.Item>
-            </Form>
+                  <Select
+                    placeholder="Please choose your Division"
+                    allowClear
+                    options={divisions?.data.map((division, index) => {
+                      return {
+                        label: division?.divisionName,
+                        value: division?.divisionId,
+                      };
+                    })}
+                    onChange={handleDivisionChange}
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="departmentId"
+                  label="Department"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please choose your Department!",
+                    },
+                  ]}
+                >
+                  <Select
+                    placeholder="Please choose your Department"
+                    allowClear
+                    options={departments?.data?.data?.map(
+                      (department, index) => {
+                        return {
+                          label: department?.departmentName,
+                          value: department?.departmentId,
+                        };
+                      }
+                    )}
+                    onChange={handleDepartmentChange}
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="userId"
+                  label="User"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select a User!",
+                    },
+                  ]}
+                >
+                  <Select
+                    placeholder="Please select a User"
+                    allowClear
+                    options={users?.data.map((user, index) => {
+                      return {
+                        label: user?.name,
+                        value: user?.userId,
+                      };
+                    })}
+                    onChange={handleUserChange}
+                  />
+                </Form.Item>
+
+                <Form.Item className="">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    className="bg-[#582F08] text-white px-5 w-[18.7rem] py-1"
+                    loading={loading}
+                  >
+                    Submit
+                  </Button>
+                </Form.Item>
+              </Form>
+            </div>
           </div>
         </div>
         <Lottie options={defaultOptions} height={450} width={450} />

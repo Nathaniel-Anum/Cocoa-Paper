@@ -28,6 +28,7 @@ const Incoming = () => {
   const [record, setRecord] = useState({});
   const [trailId, setTrailId] = useState("");
   const [open, SetOpen] = useState(false);
+ 
 
   const [senderId, setSenderId] = useState("");
 

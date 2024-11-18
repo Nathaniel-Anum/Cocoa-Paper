@@ -45,6 +45,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
     },
     onSuccess: () => {
       setShow(false);
+
       form.resetFields();
       message.success("file uploaded successfully!");
       status("status");
@@ -52,6 +53,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
     },
     onError: (error) => {
       setOpen(false);
+
       message.error(error);
     },
   });
