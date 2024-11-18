@@ -32,6 +32,7 @@ const Home = () => {
     try {
       const res = await axiosInstance.post("/login", values);
       localStorage.setItem("accessToken", res?.data?.token);
+      localStorage.setItem("refreshToken", res?.data?.refreshToken);
 
       if (res.data) {
         setIsLoading(true);
@@ -134,7 +135,12 @@ const Home = () => {
           </Form.Item>
         </Form>
         <div className="text-center">
-          <button className="font-semibold" onClick={()=> navigate("/confirm-email")}>Forgot Password?</button>
+          <button
+            className="font-semibold"
+            onClick={() => navigate("/confirm-email")}
+          >
+            Forgot Password?
+          </button>
         </div>
       </div>
       <div className="absolute bottom-0 right-0 h-32 w-32">

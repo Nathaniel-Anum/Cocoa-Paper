@@ -76,6 +76,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
   };
 
   // Assuming `user` is accessible globally in your app
@@ -170,6 +171,7 @@ const Navbar = () => {
         >
           {/* Display subject while ensuring unique check is based on ref */}
           <div className="text-lg font-semibold">{item.subject}</div>
+          <div className="text-sm text-gray-500">Ref: {item.ref}</div>
 
           {/* Show Trail button if user archived the document, Track if they didn’t, and View for files */}
           {item.hasFile && (
@@ -214,8 +216,6 @@ const Navbar = () => {
   });
 
   // console.log(trailData?.data);
-
- 
 
   // Function to handle button click actions based on button type and item properties
   const handleButtonClick = async (item, actionType) => {
