@@ -33,6 +33,7 @@ const Staff = () => {
   const [open, setOpen] = useState(false);
   const [popup, setPopup] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState("");
+  const [loading, setLoading] = useState(false); // Loading state for button
 
   const [staffDetail, setStaffDetail] = useState({});
 
@@ -87,16 +88,19 @@ const Staff = () => {
     mutationKey: "staff",
     mutationFn: (values) => {
       console.log(values);
+      setLoading(true);
       return axiosInstance.post("/staff", values); //This way or
       // addUser(data);  //This way
     },
     onSuccess: () => {
+      setLoading(false);
       setOpen(false);
       form.resetFields();
       message.success("Staff added successfully!");
       queryClient.invalidateQueries({ mutationKey: "staff" });
     },
     onError: (error) => {
+      setLoading(false);
       setOpen(false);
       form.resetFields();
       console.log(error?.response?.data);
@@ -194,6 +198,7 @@ const Staff = () => {
             onCancel={cancel}
             okText="Yes"
             cancelText="No"
+            overlayClassName="popconfirm-custom"
           >
             <button>
               <DeleteTwoTone twoToneColor="#FF0000" />
@@ -212,6 +217,7 @@ const Staff = () => {
             type="primary"
             onClick={showModal}
             className="bg-[#582F08] text-[#edd3bb] font-semibold "
+            loading={loading}
           >
             Add Staff
           </Button>

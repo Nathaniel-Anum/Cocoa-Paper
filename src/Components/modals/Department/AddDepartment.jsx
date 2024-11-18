@@ -18,6 +18,7 @@ const AddDepartment = ({ setOpen, open }) => {
     setOpen(false);
   };
   const [form] = Form.useForm();
+  const [isLoading, setIsLoading] = useState(false); // Loading state for button
   const queryClient = useQueryClient();
 
   const handleDivisionChange = (value) => {
@@ -27,6 +28,10 @@ const AddDepartment = ({ setOpen, open }) => {
   const showModal = () => {
     setOpen(true);
   };
+
+  // Function to enforce a delay
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const handleSubmit = (values) => {
     // console.log(values);
     mutate(values);
@@ -34,17 +39,24 @@ const AddDepartment = ({ setOpen, open }) => {
   // useMutation to add department
   const { mutate } = useMutation({
     mutationKey: "departments",
-    mutationFn: (values) => {
+    mutationFn: async (values) => {
       console.log(values);
-      return axiosInstance.post("/department", values);
+      setIsLoading(true); // Start loading
+      // Wait for both API request and delay to complete
+      await Promise.all([
+        axiosInstance.post("/department", values), // API call
+        delay(2500), // Minimum 30-second delay
+      ]);
     },
     onSuccess: () => {
+      setIsLoading(false); // Stop loading
       setOpen(false);
       form.resetFields();
       message.success("Department Created Successfully!");
       queryClient.invalidateQueries({ mutationKey: "departments" });
     },
     onError: (error) => {
+      setIsLoading(false); // Stop loading
       setOpen(false);
       form.resetFields();
       //   message.error(error?.response?.data?.result);
@@ -114,8 +126,10 @@ const AddDepartment = ({ setOpen, open }) => {
               type="primary"
               htmlType="submit"
               onClick={showModal}
+              loading={isLoading} // Show spinner when loading
             >
               Add Department
+              {/* Optional: Label change */}
             </Button>
           </Form.Item>
         </Form>

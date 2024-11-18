@@ -10,6 +10,7 @@ import _ from "lodash";
 import useDebounce from "./CustomHook/use-debounce";
 import { useNavigate } from "react-router-dom";
 import DocViewer, { DocViewerRenderers } from "react-doc-viewer";
+import useOutsideClick from "./CustomHook/useOutsideClick";
 
 const Navbar = () => {
   //Searching files components
@@ -20,6 +21,13 @@ const Navbar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFileModalVisible, setFileModalVisible] = useState(false);
   const [currentFile, setCurrentFile] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Define the callback to close the dropdown
+  const handleCloseDropdown = () => {
+    setIsOpen(false);
+  };
+  const dropdownRef = useOutsideClick(handleCloseDropdown);
 
   const LOADING_DELAY = 12000;
   const { user, setUser } = useUser();
@@ -40,6 +48,13 @@ const Navbar = () => {
       setResults([]);
     }
   }, [term]);
+
+  // Automatically open the dropdown when searchTerm and results are present
+  useEffect(() => {
+    if (searchTerm && results) {
+      setIsOpen(true);
+    }
+  }, [searchTerm, results]);
 
   // Handle search input change
   const handleInputChange = (searchTerm) => {
@@ -105,10 +120,8 @@ const Navbar = () => {
       return <div className="text-gray-500 p-4">No results found</div>;
     }
 
-    // Map to store unique items based on ref
     const uniqueItemsMap = new Map();
 
-    // Process incoming and outgoing documents
     (results?.incomingAndOutgoing || []).forEach((item) => {
       const { document, status, sender, receiver } = item;
       const isArchivedByUser =
@@ -116,7 +129,6 @@ const Navbar = () => {
       const isArchiver =
         status === "Archived" && receiver.userId === user?.userId;
 
-      // Add or update the map to store unique items by ref
       if (!uniqueItemsMap.has(document.ref)) {
         uniqueItemsMap.set(document.ref, {
           ...document,
@@ -128,20 +140,17 @@ const Navbar = () => {
       }
     });
 
-    // Process files and merge with the documents based on ref
     (results?.files || []).forEach((file) => {
       const existingItem = uniqueItemsMap.get(file.ref);
 
       if (existingItem) {
-        // Update existing item with file information and add 'hasFile' flag
         uniqueItemsMap.set(file.ref, {
           ...existingItem,
           fileId: file.fileId,
           fileName: file.fileName,
-          hasFile: true, // Indicates both file and document are present
+          hasFile: true,
         });
       } else {
-        // If no document with the same ref exists, add file as a unique item
         uniqueItemsMap.set(file.ref, {
           ...file,
           type: "File",
@@ -150,30 +159,19 @@ const Navbar = () => {
       }
     });
 
-    // Render the items in the dropdown
     return Array.from(uniqueItemsMap.values()).map((item, index) => {
       const showTrailButton =
         item.isArchiver || (item.type === "Document" && item.isArchivedByUser);
       const showTrackButton = !item.isArchiver && item.type === "Document";
-
-      const buttonText = item.hasFile
-        ? "View"
-        : showTrailButton
-        ? "Trail"
-        : showTrackButton
-        ? "Track"
-        : "";
 
       return (
         <div
           key={index}
           className="p-4 border-b last:border-none border-gray-200 bg-white hover:bg-gray-100 transition-colors"
         >
-          {/* Display subject while ensuring unique check is based on ref */}
           <div className="text-lg font-semibold">{item.subject}</div>
           <div className="text-sm text-gray-500">Ref: {item.ref}</div>
 
-          {/* Show Trail button if user archived the document, Track if they didn’t, and View for files */}
           {item.hasFile && (
             <Button
               type="primary"
@@ -294,10 +292,13 @@ const Navbar = () => {
             </div>
           </div>
           <div className="">
-            <div className=" absolute  w-[468px] ">
-              {/* Dropdown: only displays when results are loaded */}
-              {searchTerm && results && (
-                <div className="bg-white  absolute z-50 w-full max-h-64 overflow-y-auto shadow-lg  rounded-lg  mt-2">
+            <div className="absolute w-[468px]">
+              {/* Dropdown: only displays when searchTerm, results, and isOpen are true */}
+              {searchTerm && results && isOpen && (
+                <div
+                  className="bg-white absolute z-50 w-full max-h-64 overflow-y-auto shadow-lg rounded-lg mt-2"
+                  ref={dropdownRef} // Ensure this is wrapped with the useOutsideClick hook
+                >
                   {renderMenuItems()}
                 </div>
               )}

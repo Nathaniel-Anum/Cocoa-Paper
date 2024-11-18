@@ -221,7 +221,7 @@ const AddDocument = () => {
                     className="bg-[#582F08] text-white px-5 w-[18.7rem] py-1"
                     loading={loading}
                   >
-                    Submit
+                    Send
                   </Button>
                 </Form.Item>
               </Form>

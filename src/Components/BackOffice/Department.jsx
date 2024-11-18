@@ -111,6 +111,7 @@ const Department = () => {
             onCancel={cancel}
             okText="Yes"
             cancelText="No"
+            overlayClassName="popconfirm-custom"
           >
             <button>
               <DeleteTwoTone twoToneColor="#FF0000" />

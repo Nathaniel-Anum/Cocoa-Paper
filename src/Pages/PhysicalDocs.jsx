@@ -24,7 +24,7 @@ const PhysicalDocs = () => {
       });
     },
     onSuccess: () => {
-      message.success("Document Received successfully!");
+      message.success("Document Received Successfully!");
       queryClient.invalidateQueries({ queryKey: ["trail"] });
       if (_data.length < 1) {
         navigate("//dashboard/incoming");
