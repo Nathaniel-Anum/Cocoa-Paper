@@ -28,19 +28,15 @@ import { hasPermission, requiredPermissions } from "../utils/Roles";
 
 function App() {
   // API call for the users.
-  const { setUser, setIsLoading, user, isLoading } = useUser();
+  const { setUser, setIsLoading, user } = useUser();
 
   // axiosInstance.get("/archive").then((res) => console.log(res?.data?.archives));
 
   // console.log(user, isLoading);
   // console.log(user);
 
-  console.log(user?.role[0].role);
-
   useEffect(() => {
     const fetchUser = () => {
-      setIsLoading(true);
-
       axiosInstance
         .get("/user")
         .then((res) => {
@@ -78,7 +74,8 @@ function App() {
             }
           >
             <Route
-              path="/dashboard"
+              path="/"
+              index
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(user?.role[0].rolePermissions, [
@@ -90,7 +87,7 @@ function App() {
               }
             />
             <Route
-              path="/dashboard/add-document"
+              path="/add-document"
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(user?.role[0].rolePermissions, [
@@ -105,7 +102,7 @@ function App() {
               }
             />
             <Route
-              path="/dashboard/incoming"
+              path="/incoming"
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(user?.role[0].rolePermissions, [
@@ -120,7 +117,7 @@ function App() {
               }
             />
             <Route
-              path="/dashboard/outgoing"
+              path="/outgoing"
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(user?.role[0].rolePermissions, [
@@ -135,7 +132,7 @@ function App() {
               }
             />
             <Route
-              path="/dashboard/physicaldocs"
+              path="/physicaldocs"
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(user?.role[0].rolePermissions, [
@@ -150,7 +147,7 @@ function App() {
               }
             />
             <Route
-              path="/dashboard/locator"
+              path="/locator"
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(user?.role[0].rolePermissions, [

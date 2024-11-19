@@ -14,7 +14,7 @@ const Sidebar = () => {
             <img src="../../src/assets/logo.9a18109e1c16584832d5.png" alt="" />
           </div>
           <ul className="list-none  px-[15px] py-[25px]  flex flex-col gap-[35px]  my-[20px] cursor-pointer ">
-            <Link to="/dashboard">
+            <Link to="/">
               <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
                 <img
                   className="w-[43px]"
@@ -24,7 +24,7 @@ const Sidebar = () => {
                 <p>Home</p>
               </li>
             </Link>
-            <Link to="/dashboard/locator">
+            <Link to="/locator">
               <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-500 py-2 px-2 hover:scale-105 hover:rounded-md ">
                 <img
                   className="w-[43px]"
@@ -35,11 +35,9 @@ const Sidebar = () => {
               </li>
             </Link>
 
-            {
-              hasPermission(user?.role[0].rolePermissions, [
-                requiredPermissions.CREATE_ARCHIVE,
-              ])
-             && (
+            {hasPermission(user?.role[0].rolePermissions, [
+              requiredPermissions.CREATE_ARCHIVE,
+            ]) && (
               <Link to="/archive">
                 <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
                   <img

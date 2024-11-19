@@ -17,7 +17,6 @@ const Home = () => {
   console.log(location.state);
 
   const [loading, setLoading] = useState(false);
-  const [cookie, setCookie] = useCookies(["refresh_token"]);
   const { setUser, setIsLoading } = useUser();
 
   const navigate = useNavigate();
@@ -41,10 +40,11 @@ const Home = () => {
         setIsLoading(false);
       }
 
-      setTimeout(() => {
-        // message.success("Login successful!");
-        navigate("/dashboard");
-      }, 2500);
+      navigate("/");
+      // setTimeout(() => {
+      //   // message.success("Login successful!");
+      //   navigate("/dashboard");
+      // }, 2500);
     } catch (err) {
       setTimeout(() => {
         message.error(err?.response?.data?.error);

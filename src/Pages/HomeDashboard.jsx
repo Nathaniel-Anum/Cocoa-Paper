@@ -24,7 +24,7 @@ const HomeDashboard = () => {
         </div>
       </div>
       <div className="pt-[100px] flex justify-start items-center gap-[70px] pl-[30px] cursor-pointer  pb-[37px] border-b border-black ">
-        <Link to="/dashboard/incoming">
+        <Link to="/incoming">
           <div>
             <div className=" relative hover:bg-[#E3BC97] duration-500 px-3 hover:rounded-lg py-2 hover:scale-110 ">
               <img
@@ -42,7 +42,7 @@ const HomeDashboard = () => {
           </div>
         </Link>
 
-        <Link to="/dashboard/outgoing">
+        <Link to="/outgoing">
           <div>
             <div className="relative hover:bg-[#E3BC97] duration-500 hover:px-3 hover:rounded-lg py-2 hover:scale-110 ">
               <img
@@ -60,7 +60,7 @@ const HomeDashboard = () => {
           </div>
         </Link>
 
-        <Link to="/dashboard/physicaldocs">
+        <Link to="/physicaldocs">
           <div>
             <div className="relative hover:bg-[#E3BC97] duration-500 hover:px-3 hover:rounded-lg py-2 hover:scale-110">
               <img
@@ -97,7 +97,7 @@ const HomeDashboard = () => {
             </div>
           </div>
         </div> */}
-        <Link to="/dashboard/add-document">
+        <Link to="/add-document">
           <div className="absolute bottom-7 right-[62px] bg-[#582F08] rounded-full px-2 py-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
