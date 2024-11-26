@@ -130,13 +130,40 @@ const AddDocument = () => {
                 name="Add Document"
                 onFinish={(values) => handleSubmit(values)}
               >
-                <Form.Item label="Reference" name="ref">
+                <Form.Item
+                  label="Reference"
+                  name="ref"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input a Reference!",
+                    },
+                  ]}
+                >
                   <Input placeholder="Input a Reference Number" />
                 </Form.Item>
-                <Form.Item label="Subject" name="subject">
+                <Form.Item
+                  label="Subject"
+                  name="subject"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input a Subject",
+                    },
+                  ]}
+                >
                   <Input placeholder="Input a Subject" />
                 </Form.Item>
-                <Form.Item label=" Document Category" name="documentType">
+                <Form.Item
+                  label=" Document Category"
+                  name="documentType"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select a Document Category!",
+                    },
+                  ]}
+                >
                   <Select placeholder="Select Document Type">
                     <Select.Option value="Custom">Custom</Select.Option>
                     <Select.Option value="Medicals">Medicals</Select.Option>

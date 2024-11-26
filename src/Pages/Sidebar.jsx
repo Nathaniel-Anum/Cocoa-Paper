@@ -60,6 +60,15 @@ const Sidebar = () => {
 
               <p>Work History</p>
             </li>
+            <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+              <img
+                className="w-[43px]"
+                src="../../src/full trash.6648e39921b830096f076502815f16eb.svg"
+                alt=""
+              />
+
+              <p>Recycle Bin</p>
+            </li>
           </ul>
         </div>
       </div>

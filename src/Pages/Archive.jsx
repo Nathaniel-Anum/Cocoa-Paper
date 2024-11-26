@@ -20,14 +20,17 @@ import {
   FolderFilled,
   UploadOutlined,
 } from "@ant-design/icons";
-import { IoMdFolderOpen } from "react-icons/io";
-import { MdDriveFileMoveOutline } from "react-icons/md";
+
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../Components/axiosInstance";
 import { Link, useLocation, useParams } from "react-router-dom";
 import useArchiveTransform from "./CustomHook/useArchiveTransform";
 import CreateFolder from "../Components/modals/Archive/CreateFolder";
 import UploadFile from "../Components/modals/Archive/UploadFile";
+import {
+  MdDriveFileMoveOutline,
+  MdOutlineCreateNewFolder,
+} from "react-icons/md";
 import { MdUnarchive } from "react-icons/md";
 import { getArchive, getArchiveByFolderId } from "../http/archive";
 import DocViewer, { DocViewerRenderers } from "react-doc-viewer";
@@ -687,36 +690,36 @@ const Archive = () => {
   return (
     <div className="pt-[70px]  h-screen w-full pl-[200px] pr-[72px]">
       <div>
-        <div className="h-[2px] w-[1298px] bg-[#bb9673] m-4"></div>
-        <div className="flex gap-4">
-          <button
-            className=" my-3 p-2 text-[#582F08] flex justify-center items-center gap-1 shadow-md rounded-md  text-[20px] font-semibold "
-            onClick={handleClick}
-          >
-            <IoMdFolderOpen className="text-[30px]" />
-            <p>New Folder</p>
-          </button>
-          <button
-            className=" my-3 p-2 text-[#582F08] flex justify-center items-center gap-1 shadow-md rounded-md  text-[20px] font-semibold "
-            onClick={handleFile}
-          >
-            <UploadOutlined className="text-[30px]" />
-            <p>Upload File</p>
-          </button>
-          {selectedRowKeys.length > 0 && (
-            <button
-              className=" my-3 p-2 text-[#582F08] flex justify-center items-center gap-1 shadow-md rounded-md  text-[20px] font-semibold "
-              onClick={handleMove}
-            >
-              <MdDriveFileMoveOutline className="text-[30px]" />
-              <p>Move</p>
+        <div className="h-[2px] w-[1298px] bg-black/40 m-4"></div>
+
+        <div className="flex  gap-6 pl-6">
+          <div className="   ">
+            <button onClick={handleClick} className=" flex items-center ">
+              <MdOutlineCreateNewFolder className="text-[1.3rem]" />
+              <p className="font-semibold text-[#582F08]"> New Folder</p>
+            </button>
+          </div>
+          <div className="   ">
+            <button onClick={handleFile} className=" flex items-center ">
+              <UploadOutlined className="text-[1.3rem]" />
+              <p className="font-semibold text-[#582F08]"> Upload File</p>
+            </button>
+          </div>
+          {selectedRowKeys?.length > 0 && (
+            <button onClick={handleMove} className=" flex items-center ">
+              <MdDriveFileMoveOutline className="text-[1.3rem]" />
+              <p className="font-semibold text-[#582F08]"> Move</p>
             </button>
           )}
         </div>
-        <div className="h-[2px] w-[1298px] bg-[#bb9673] m-4"></div>
+        <div className="h-[2px] w-[1298px] bg-black/40 m-4"></div>
       </div>
 
-      <Breadcrumb itemRender={itemRender} items={crumbs} />
+      <Breadcrumb
+        itemRender={itemRender}
+        items={crumbs}
+        className="pl-[0.6rem]"
+      />
 
       <Modal
         title={wholerecord?.type === "Folder" ? "Edit Folder" : "Edit File"}

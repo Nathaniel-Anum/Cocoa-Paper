@@ -8,12 +8,19 @@ const BackOfficeNavBar = () => {
   const { user } = useUser();
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
   };
 
+  // const items = [
+  //   {
+  //     label: <a href="/"> Go to Dashboard</a>,
+  //     key: "0",
+  //   },
+  // ];
   const items = [
     {
       label: (
-        <a href="/login" onClick={handleLogout}>
+        <a href="/" onClick={handleLogout}>
           Logout
         </a>
       ),
@@ -23,7 +30,7 @@ const BackOfficeNavBar = () => {
   // Conditionally add the "Go to Client Dashboard" option if the user is an admin
   if (user?.role[0].role === "ADMIN") {
     items.push({
-      label: <a href="/dashboard">Go to Dashboard</a>,
+      label: <a href="/">Go to Dashboard</a>,
       key: "1",
     });
   }

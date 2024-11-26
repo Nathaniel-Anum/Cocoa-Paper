@@ -76,12 +76,6 @@ const Outgoing = () => {
       dataIndex: "createdAt",
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
-        //   console.log(dateTime.toDateString());
-        //   const year = dateTime.getFullYear();
-        //   const month = (dateTime.getMonth() + 1).toString();
-        //   const day = dateTime.getDate().toString().padStart(2, "0");
-        //   const readableTime = `${day}-${month}-${year}`;
-        //   console.log(readableTime);
         return <div>{dateTime.toDateString()}</div>;
       },
     },
@@ -130,10 +124,11 @@ const Outgoing = () => {
         centered="true"
         width={"60%"}
       >
-        <div className="py-6">
+        <div className="space-y-4  ">
           <Steps
             responsive
-            className="grid grid-cols-2 gap-y-2 "
+            direction
+            className="grid grid-cols-2 gap-x-4 gap-y-6  "
             items={trailData?.data?.trails.flatMap((trail, index) => {
               if (index === 0) {
                 return [

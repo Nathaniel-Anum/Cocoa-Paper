@@ -3,13 +3,15 @@ import { useUser } from "./CustomHook/useUser";
 import { useTrail } from "./CustomHook/useTrail";
 import Lottie from "react-lottie";
 import locator from "../../src/lotties/locator.json";
-import { Modal, Steps, Button, Table, Popover } from "antd"; // Removed Popover import, added Button and Table
+import { Modal, Steps, Button, Table, Popover, Tooltip } from "antd"; // Removed Popover import, added Button and Table
 import { useQuery } from "@tanstack/react-query";
 import { FaRegEye } from "react-icons/fa";
 import { FaTable, FaThLarge } from "react-icons/fa";
 import axiosInstance from "../Components/axiosInstance";
-
+import dayjs from "dayjs";
+import advancedFormat from "dayjs/plugin/advancedFormat";
 const Locator = () => {
+  dayjs.extend(advancedFormat);
   const { user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [trialId, setTrialId] = useState("");
@@ -31,6 +33,7 @@ const Locator = () => {
     },
     enabled: !!trialId,
   });
+  console.log(documentTrial?.data?.trails);
 
   const showModal = (trail) => {
     setIsModalOpen(true);
@@ -175,22 +178,90 @@ const Locator = () => {
         <div className="py-6">
           <Steps
             responsive
+            direction
             className="grid grid-cols-2 gap-y-2"
             items={documentTrial?.data?.trails.flatMap((trail, index) => {
+              // Get createdAt and updatedAt times
+              const createdDateTime = trail.createdAt
+                ? dayjs(trail.createdAt)
+                : null;
+              const updatedDateTime = trail.updatedAt
+                ? dayjs(trail.updatedAt)
+                : null;
+
+              // Format the date and time
+              const formattedCreatedDate = createdDateTime
+                ? createdDateTime.format("dddd MMM DD YYYY")
+                : null;
+              const formattedUpdatedDate = updatedDateTime
+                ? updatedDateTime.format("dddd MMM DD YYYY")
+                : null;
+
+              const formattedCreatedTime = createdDateTime
+                ? createdDateTime.format("hh:mm:ss A")
+                : null;
+              const formattedUpdatedTime = updatedDateTime
+                ? updatedDateTime.format("hh:mm:ss A")
+                : null;
+
+              // Create a title with a tooltip showing the createdAt date/time for the first one and updatedAt for others
+              const titleWithTooltip = (
+                <Tooltip
+                  title={
+                    <div>
+                      {/* Show createdAt for the first item */}
+                      {index === 0 && formattedCreatedDate && (
+                        <p>Date: {formattedCreatedDate}</p>
+                      )}
+                      {index === 0 && formattedCreatedTime && (
+                        <p>Time: {formattedCreatedTime}</p>
+                      )}
+
+                      {/* Show updatedAt for all other items */}
+                      {index !== 0 && formattedUpdatedDate && (
+                        <p>Date : {formattedUpdatedDate}</p>
+                      )}
+                      {index !== 0 && formattedUpdatedTime && (
+                        <p>Time : {formattedUpdatedTime}</p>
+                      )}
+                    </div>
+                  }
+                >
+                  <span className="cursor-pointer">
+                    {index === 0 ? "Sent" : trail.status}
+                  </span>
+                </Tooltip>
+              );
+
               if (index === 0) {
                 return [
                   {
-                    title: "Sent",
+                    title: titleWithTooltip,
                     description: trail.sender.name,
                   },
                   {
-                    title: trail?.status,
+                    title: (
+                      <Tooltip
+                        title={
+                          <>
+                            {formattedUpdatedDate && (
+                              <p>Date: {formattedUpdatedDate}</p>
+                            )}
+                            {formattedUpdatedTime && (
+                              <p>Time: {formattedUpdatedTime}</p>
+                            )}
+                          </>
+                        }
+                      >
+                        <span className="cursor-pointer">{trail.status}</span>
+                      </Tooltip>
+                    ),
                     description: trail.receiver.name,
                   },
                 ];
               } else {
                 return {
-                  title: trail.status,
+                  title: titleWithTooltip,
                   description: trail.receiver.name,
                 };
               }

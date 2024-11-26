@@ -28,7 +28,6 @@ const Incoming = () => {
   const [record, setRecord] = useState({});
   const [trailId, setTrailId] = useState("");
   const [open, SetOpen] = useState(false);
- 
 
   const [senderId, setSenderId] = useState("");
 
@@ -392,6 +391,7 @@ const Incoming = () => {
         <div className="py-6">
           <Steps
             responsive
+            direction
             className="grid grid-cols-2 gap-y-2 "
             items={trailData?.data?.trails.flatMap((trail, index) => {
               if (index === 0) {

@@ -109,7 +109,7 @@ const Navbar = () => {
   // Conditionally add the "Go to Admin Console" option if the user is an admin
   if (user?.role[0].role === "ADMIN") {
     items.push({
-      label: <a href="/backoffice/bod">Go to Admin Console</a>,
+      label: <a href="/backoffice/bod">Admin Console</a>,
       key: "1",
     });
   }
@@ -357,6 +357,7 @@ const Navbar = () => {
         <div className="py-6">
           <Steps
             responsive
+            direction
             className="grid grid-cols-2 gap-y-2 "
             items={trailData?.data?.trails.flatMap((trail, index) => {
               if (index === 0) {

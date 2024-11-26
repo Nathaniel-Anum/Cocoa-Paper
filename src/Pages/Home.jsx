@@ -130,7 +130,7 @@ const Home = () => {
               htmlType="submit"
               loading={loading}
             >
-              Submit
+              Login
             </Button>
           </Form.Item>
         </Form>
