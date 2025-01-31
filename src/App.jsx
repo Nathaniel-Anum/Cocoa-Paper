@@ -25,6 +25,7 @@ import { SignIn } from "./Pages/SignIn";
 import ConfirmEmail from "./Pages/ConfirmEmail";
 import ResetPassword from "./Pages/ResetPassword";
 import { hasPermission, requiredPermissions } from "../utils/Roles";
+import WorkHistory from "./Pages/WorkHistory";
 
 function App() {
   // API call for the users.
@@ -173,6 +174,21 @@ function App() {
                   ])}
                 >
                   <Archive />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/work-history"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.CREATE_ARCHIVE,
+                    requiredPermissions.READ_ARCHIVE,
+                    requiredPermissions.DELETE_ARCHIVE,
+                    requiredPermissions.UPDATE_ARCHIVE,
+                  ])}
+                >
+                  <WorkHistory />
                 </ProtectedRoutes>
               }
             />

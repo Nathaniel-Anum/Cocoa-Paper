@@ -390,9 +390,9 @@ const Archive = () => {
   return (
     <div className="pt-[70px] h-screen w-full pl-[200px] pr-[72px]">
       <div className="border-b-2 border-black/40 mb-4">
-        <div className="flex gap-6 p-4">
+        <div className="flex gap-6 p-4 ">
           <Button
-            icon={<MdOutlineCreateNewFolder />}
+            icon={<MdOutlineCreateNewFolder className='' />}
             onClick={() =>
               setModalStates((prev) => ({ ...prev, createFolder: true }))
             }

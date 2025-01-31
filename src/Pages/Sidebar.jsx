@@ -50,16 +50,22 @@ const Sidebar = () => {
                 </li>
               </Link>
             )}
+            {hasPermission(user?.role[0].rolePermissions, [
+              requiredPermissions.CREATE_ARCHIVE,
+            ]) && (
+              <Link to="/work-history">
+                <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+                  <img
+                    className="w-[43px]"
+                    src="../../src/assets/work-history.c7047f9c0a21ca2ba896c6c73f75c562.svg"
+                    alt=""
+                  />
 
-            <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-              <img
-                className="w-[43px]"
-                src="../../src/assets/work-history.c7047f9c0a21ca2ba896c6c73f75c562.svg"
-                alt=""
-              />
+                  <p>Work History</p>
+                </li>
+              </Link>
+            )}
 
-              <p>Work History</p>
-            </li>
             <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
               <img
                 className="w-[43px]"
