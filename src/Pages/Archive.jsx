@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Modal,
@@ -8,441 +9,288 @@ import {
   Popconfirm,
   Breadcrumb,
   Popover,
-  Spin,
 } from "antd";
-import { LoadingOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PiEmptyBold } from "react-icons/pi";
 import {
   DeleteTwoTone,
   EditTwoTone,
   FilePdfFilled,
   FolderFilled,
   UploadOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
-
-import React, { useEffect, useState } from "react";
-import axiosInstance from "../Components/axiosInstance";
 import { Link, useLocation, useParams } from "react-router-dom";
-import useArchiveTransform from "./CustomHook/useArchiveTransform";
-import CreateFolder from "../Components/modals/Archive/CreateFolder";
-import UploadFile from "../Components/modals/Archive/UploadFile";
 import {
   MdDriveFileMoveOutline,
   MdOutlineCreateNewFolder,
+  MdUnarchive,
 } from "react-icons/md";
-import { MdUnarchive } from "react-icons/md";
-import { getArchive, getArchiveByFolderId } from "../http/archive";
-import DocViewer, { DocViewerRenderers } from "react-doc-viewer";
+import axiosInstance from "../Components/axiosInstance";
+import useArchiveTransform from "./CustomHook/useArchiveTransform";
+import CreateFolder from "../Components/modals/Archive/CreateFolder";
+import UploadFile from "../Components/modals/Archive/UploadFile";
 
 const Archive = () => {
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [show, setShow] = useState(false);
-  const [popup, setPopup] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [options, setOptions] = useState([]);
-  const [wholerecord, setWholeRecord] = useState({});
-  const [unarchive, setUnarchive] = useState({});
-  const [allrecord, setAllRecord] = useState({});
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [type, setType] = useState("");
-  const [selectedRecord, setSelectedRecord] = useState({});
-  const [display, setDisplay] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedFolder, setSelectedFolder] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [children, setChildren] = useState([]);
-  const [isRootView, setIsRootView] = useState(true);
-  const [isFolderClicked, setIsFolderClicked] = useState(false);
   const [form] = Form.useForm();
   const { id } = useParams();
 
-  const { pathname } = useLocation();
+  // State management
+  const [modalStates, setModalStates] = useState({
+    createFolder: false,
+    uploadFile: false,
+    editModal: false,
+    moveModal: false,
+    fileViewer: false,
+  });
 
-  const cancel = (e) => {
-    console.log(e);
-    // message.error("Click on No");
-  };
+  const [selectedItem, setSelectedItem] = useState({
+    record: null,
+    file: null,
+    rowKeys: [],
+    currentFolder: null,
+  });
 
-  const handleEdit = (record) => {
-    setWholeRecord(record);
-    console.log(wholerecord);
-    setIsModalOpen(true);
-  };
+  // New state for move modal navigation
+  const [moveModalState, setMoveModalState] = useState({
+    currentFolderId: null,
+    navigationHistory: [],
+    availableFolders: [],
+    isNavigating: false,
+  });
 
-  //Mutation to delete folders and files
-  const { mutate } = useMutation({
-    mutationKey: "delete",
-    mutationFn: () => {
-      if (allrecord?.type === "Folder") {
-        return axiosInstance.delete(`/archive/${allrecord?.folderId}`);
-      } else if (allrecord?.type === "File") {
-        return axiosInstance.delete(`/archive/${allrecord?.fileId}`);
+  const [breadcrumbs, setBreadcrumbs] = useState([
+    { title: "Archive", path: "/archive", id: 0 },
+  ]);
+
+  // Queries
+  const { data: archiveData } = useQuery({
+    queryKey: ["archive", id],
+    queryFn: () => {
+      return id
+        ? axiosInstance.get(`archive/${id}`)
+        : axiosInstance.get("/archive");
+    },
+  });
+  // Replace the existing move folder query with this:
+  const { data: moveFolderData, isLoading: isFetchingFolders } = useQuery({
+    queryKey: ["moveFolder", moveModalState.currentFolderId],
+    queryFn: async () => {
+      let response;
+      if (moveModalState.currentFolderId !== null) {
+        response = await axiosInstance.get(
+          `/archive/${moveModalState.currentFolderId}`
+        );
+      } else if (selectedItem.record?.parentFolderId) {
+        response = await axiosInstance.get(
+          `/archive/${selectedItem.record.parentFolderId}`
+        );
       } else {
-        throw new Error("Unknown file type");
+        response = await axiosInstance.get("/archive");
       }
+      return response;
     },
-    onSuccess: () => {
-      message.success("Deleted Successfully");
-      queryClient.invalidateQueries({ queryKey: ["archive"] });
+    enabled: modalStates.moveModal,
+    onSuccess: (data) => {
+      const folders = data.data.archive?.children || data.data.archives;
+      const availableFolders = folders.filter(
+        (folder) => folder.folderId !== selectedItem.record?.folderId
+      );
+      setMoveModalState((prev) => ({
+        ...prev,
+        availableFolders,
+        isNavigating: false,
+      }));
     },
-    onError: (error) => message.error(error),
   });
 
-  function handleDelete(record) {
-    setAllRecord(record);
-    mutate(record);
+  useEffect(() => {
+    console.log("Effect run");
+    if (moveFolderData) {
+      const folders =
+        moveFolderData.data.archive?.children || moveFolderData.data.archives;
+      // Filter out the selected folder from available folders
+      const availableFolders = folders.filter(
+        (folder) => folder.folderId !== selectedItem.record?.folderId
+      );
+      setMoveModalState((prev) => ({
+        ...prev,
+        availableFolders,
+      }));
+    }
+  }, [moveFolderData, selectedItem.record]);
 
-    queryClient.invalidateQueries(["archive"]);
-  }
+  // Mutations
+  const mutations = {
+    delete: useMutation({
+      mutationFn: (record) => {
+        const endpoint =
+          record.type === "Folder"
+            ? `/archive/${record.folderId}`
+            : `/archive/${record.fileId}`;
+        return axiosInstance.delete(endpoint);
+      },
+      onSuccess: () => {
+        message.success("Deleted Successfully");
+        queryClient.invalidateQueries(["archive"]);
+      },
+    }),
 
-  //Mutation to unarchive files
-  const { mutate: fileUnarchive } = useMutation({
-    mutationKey: "unarchive",
-    mutationFn: (record) => {
-      return axiosInstance.patch(`/unarchive/${record?.fileId}`);
-    },
-    onSuccess: () => {
-      message.success("File Successfully unarchived");
-      queryClient.invalidateQueries({ queryKey: ["archive"] });
-    },
-    onError: (error) => console.log(error),
-  });
+    edit: useMutation({
+      mutationFn: (values) => {
+        const record = selectedItem.record;
+        const endpoint =
+          record.type === "Folder"
+            ? `/archive/${record.folderId}`
+            : `/archive/${record.fileId}`;
+        return axiosInstance.patch(endpoint, values);
+      },
+      onSuccess: () => {
+        message.success("Successfully Updated");
+        queryClient.invalidateQueries(["archive"]);
+        setModalStates((prev) => ({ ...prev, editModal: false }));
+      },
+    }),
 
-  function handleUnarchive(record) {
-    console.log(record);
-    setUnarchive(record);
-    fileUnarchive(record);
-    queryClient.invalidateQueries(["archive"]);
-  }
-  console.log("selected file Id :", unarchive?.fileId);
+    move: useMutation({
+      mutationFn: () => {
+        const record = selectedItem.record;
+        const endpoint =
+          record.type === "Folder"
+            ? `/archive/${record.folderId}`
+            : `/archive/${record.fileId}`;
 
-  //handling Moving file
-  const handleMove = (record) => {
-    setPopup(true);
+        console.log(endpoint);
 
-    console.log(record);
-  };
-
-  //Mutate function to edit folders and file
-  const { mutate: EditFolder } = useMutation({
-    mutationKey: "edit",
-    mutationFn: (values) => {
-      if (wholerecord?.type === "Folder") {
-        return axiosInstance.patch(`/archive/${wholerecord?.folderId}`, {
-          folderName: values.folderName,
+        //Only send parentFolderId in the payload
+        return axiosInstance.patch(endpoint, {
+          parentFolderId: moveModalState.currentFolderId,
         });
-      } else if (wholerecord?.type === "File") {
-        return axiosInstance.patch(`/archive/${wholerecord?.fileId}`, values);
-      } else {
-        throw new Error("Unknown file type");
-      }
-    },
-    onSuccess: () => {
-      message.success(" Successfully Updated");
-      queryClient.invalidateQueries({ queryKey: ["archive"] });
-      setIsModalOpen(false);
-    },
-    onError: (error) => {
-      message.error(error);
-    },
-  });
+      },
+      onSuccess: () => {
+        message.success("Moved Successfully");
+        // Invalidate both queries to ensure fresh data
+        queryClient.invalidateQueries(["archive"]);
+        queryClient.invalidateQueries(["moveFolder"]);
 
-  // //Mutate function to edit folder (name)
-  // const { mutate: EditFolder } = useMutation({
-  //   mutationKey: "editFolder",
-  //   mutationFn: (folderName) => {
-  //     return axiosInstance.patch(`/archive/${wholerecord?.folderId}`, {
-  //       folderName: folderName,
-  //     });
-  //   },
-  //   onSuccess: () => {
-  //     message.success("Folder Name Successfully Updated");
-  //     queryClient.invalidateQueries({ queryKey: ["archive"] });
-  //     setIsModalOpen(false);
-  //   },
-  //   onError: (error) => {
-  //     message.error(error);
-  //   },
-  // });
+        // Reset states
+        setModalStates((prev) => ({ ...prev, moveModal: false }));
+        setMoveModalState({
+          currentFolderId: null,
+          navigationHistory: [],
+          availableFolders: [],
+        });
+        // Clear selected item
+        setSelectedItem((prev) => ({
+          ...prev,
+          record: null,
+          rowKeys: [],
+        }));
+      },
+    }),
 
-  const handleSubmit = (values) => {
-    console.log(values);
-    EditFolder(values);
+    unarchive: useMutation({
+      mutationFn: (record) =>
+        axiosInstance.patch(`/unarchive/${record.fileId}`),
+      onSuccess: () => {
+        message.success("File Successfully unarchived");
+        queryClient.invalidateQueries(["archive"]);
+      },
+    }),
   };
 
-  //Bright Code start
+  // Move modal navigation handlers
+  const handleFolderClick = (folder) => {
+    setMoveModalState((prev) => ({
+      ...prev,
+      currentFolderId: folder.folderId,
+      navigationHistory: [...prev.navigationHistory, prev.currentFolderId],
+      isNavigating: true,
+    }));
+  };
 
-  // const [crumbs, setCrumbs] = useState([
-  //   {
-  //     title: "Archive",
-  //     path: "/archive",
-  //     id: 0,
-  //     onClick: (e) => console.log(e),
-  //   },
-  // ]);
+  // Update the back click handler
+  const handleBackClick = () => {
+    const newHistory = [...moveModalState.navigationHistory];
+    const previousFolderId = newHistory.pop();
 
-  // const handleAddItem = (itemToAdd) => {
-  //   //check if the item is already  in items array
+    setMoveModalState((prev) => ({
+      ...prev,
+      currentFolderId: previousFolderId,
+      navigationHistory: newHistory,
+      isNavigating: true,
+    }));
+  };
 
-  //   const itemsExist = crumbs.find((item) => item.id === itemToAdd.folderId);
-
-  //   if (itemsExist) {
-  //     const itemIndex = crumbs.findIndex(
-  //       (item) => item.folderId === itemsExist.folderId
-  //     );
-
-  //     if (itemIndex !== crumbs.length - 1 || itemIndex !== 0) {
-  //       setCrumbs(crumbs.slice(0, itemIndex + 1));
-  //     }
-  //   } else {
-  //     setCrumbs([
-  //       ...crumbs,
-  //       {
-  //         title: itemToAdd.folderName,
-  //         path: `/${itemToAdd.folderId}`,
-  //         id: itemToAdd.folderId,
-  //       },
-  //     ]);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   const storedCrumbs = JSON.parse(localStorage.getItem("crumbs")) || [];
-  //   if (storedCrumbs.length) {
-  //     setCrumbs(storedCrumbs);
-  //   }
-  // }, []);
-
-  //Bright Code end
-
-  // useEffect(() => {
-  //   if (id || pathname.split('/')[1] !== 'archive') {
-  //     const storedCrumbs = JSON.parse(localStorage.getItem('crumbs')) || [];
-  //     console.log(storedCrumbs)
-  //     const itemIndex = storedCrumbs.findIndex((item) => item.id === id);
-  //     if (itemIndex) {
-  //       setCrumbs(storedCrumbs.slice(0, itemIndex + 1));
-  //       localStorage.setItem(
-  //         'crumbs',
-  //         JSON.stringify(storedCrumbs.slice(0, itemIndex + 1))
-  //       );
-  //     }
-  //   }
-  // }, [id, pathname]);
-
-  //Bright code again
-  // useEffect(() => {
-  //   localStorage.setItem("crumbs", JSON.stringify(crumbs));
-  // }, [crumbs]);
-
-  function transformData(data) {
-    return (
-      data &&
-      data
-        .filter((item) => item.type === "Folder")
-        .map((folder) => ({
-          value: folder?.folderId,
-          label: folder?.folderName,
-          isLeaf: false,
-          children: [],
-        }))
-    );
-  }
-
-  const loadData = (selectedOptions) => {
-    const targetOption = selectedOptions[selectedOptions.length - 1];
-
-    getArchiveByFolderId(targetOption.value).then((data) => {
-      targetOption.children = transformData(data);
-      setOptions([...options]);
+  // Reset move modal state when closing
+  const handleCloseMoveModal = () => {
+    setModalStates((prev) => ({ ...prev, moveModal: false }));
+    setMoveModalState({
+      currentFolderId: null,
+      navigationHistory: [],
+      availableFolders: [],
     });
   };
 
-  useEffect(() => {
-    if (wholerecord) {
-      form.setFieldValue("folderName", wholerecord?.folderName);
-    }
-  }, [wholerecord]);
-
-  console.log(options);
-  //fetching initial archive folders
-  useEffect(() => {
-    function getInitialArchiveFolders() {
-      getArchive().then((data) => {
-        console.log(data);
-        const folderOptions = transformData(data);
-        setOptions(folderOptions);
-      });
-    }
-    getInitialArchiveFolders();
-  }, []);
-
-  // useEffect(() => {
-  //   if (pathname) {
-  //     console.log('I have been called');
-  //     const ItemIndex = crumbs.findIndex((item) => item.id === id);
-  //     console.log(ItemIndex);
-  //     if (ItemIndex !== 0 || ItemIndex !== -1) {
-  //       setCrumbs(crumbs.slice(0, ItemIndex + 1));
-  //       localStorage.setItem(
-  //         'crumbs',
-  //         JSON.stringify(crumbs.slice(1, ItemIndex + 1))
-  //       );
-  //     } else if (ItemIndex === -1) {
-  //       setCrumbs([
-  //         {
-  //           title: 'Archive',
-  //           path: '/archive',
-  //           id: 0,
-  //         },
-  //       ]);
-  //       localStorage.setItem(
-  //         'crumbs',
-  //         JSON.stringify([{ title: 'Archive', path: '/archive', id: 0 }])
-  //       );
-  //     }
-  //   } else {
-  //     setCrumbs([
-  //       {
-  //         title: 'Archive',
-  //         path: '/archive',
-  //         id: 0,
-  //       },
-  //     ]);
-  //     localStorage.setItem(
-  //       'crumbs',
-  //       JSON.stringify([{ title: 'Archive', path: '/archive', id: 0 }])
-  //     );
-  //   }
-  // }, [pathname]);
-
-  //Bright code
-  // function itemRender(currentRoute, params, items, paths) {
-  //   console.log({ route: currentRoute.path, items, paths });
-  //   return (
-  //     <Link
-  //       to={
-  //         currentRoute.path === "/archive"
-  //           ? "/archive"
-  //           : `/archive${currentRoute.path}`
-  //       }
-  //     >
-  //       {currentRoute.title}
-  //     </Link>
-  //   );
-  // }
-
-  const [crumbs, setCrumbs] = useState([
-    {
-      title: "Archive",
-      path: "/archive",
-      id: 0,
-      onClick: (e) => console.log(e),
-    },
-  ]);
-
-  // Load crumbs from localStorage on component mount
-  useEffect(() => {
-    const storedCrumbs = JSON.parse(localStorage.getItem("crumbs")) || [];
-    if (storedCrumbs.length) {
-      setCrumbs(storedCrumbs);
-    }
-  }, []);
-
-  // Update localStorage whenever crumbs state changes
-  useEffect(() => {
-    localStorage.setItem("crumbs", JSON.stringify(crumbs));
-  }, [crumbs]);
-
-  const handleAddItem = (itemToAdd) => {
-    const itemsExist = crumbs.find((item) => item.id === itemToAdd.folderId);
-
-    if (itemsExist) {
-      const itemIndex = crumbs.findIndex((item) => item.id === itemsExist.id);
-
-      // Slice the array to include only the clicked item and its predecessors
-      if (itemIndex !== crumbs.length - 1 || itemIndex !== 0) {
-        const newCrumbs = crumbs.slice(0, itemIndex + 1);
-        setCrumbs(newCrumbs);
+  // Event Handlers
+  const handleFileClick = async (record) => {
+    if (record.type === "File") {
+      try {
+        const response = await axiosInstance.get(
+          `/archive/file/${record.fileId}`,
+          {
+            responseType: "blob",
+          }
+        );
+        const fileUrl = URL.createObjectURL(response.data);
+        setSelectedItem((prev) => ({ ...prev, file: { ...record, fileUrl } }));
+        setModalStates((prev) => ({ ...prev, fileViewer: true }));
+      } catch (error) {
+        message.error("Error loading file");
       }
+    }
+  };
+
+  const handleBreadcrumbUpdate = (item) => {
+    const existingIndex = breadcrumbs.findIndex(
+      (crumb) => crumb.id === item.folderId
+    );
+
+    if (existingIndex !== -1) {
+      setBreadcrumbs(breadcrumbs.slice(0, existingIndex + 1));
     } else {
-      setCrumbs([
-        ...crumbs,
+      setBreadcrumbs([
+        ...breadcrumbs,
         {
-          title: itemToAdd.folderName,
-          path: `/${itemToAdd.folderId}`,
-          id: itemToAdd.folderId,
+          title: item.folderName,
+          path: `/${item.folderId}`,
+          id: item.folderId,
         },
       ]);
     }
   };
 
-  console.log(crumbs);
-
-  const itemRender = (currentRoute, path) => {
-    // console.log(currentRoute.path);
-    return (
-      <Link
-        to={
-          currentRoute.path === "/archive"
-            ? "/archive"
-            : `/archive${currentRoute.path}`
-        }
-        onClick={() => {
-          const itemIndex = crumbs.findIndex(
-            (item) => item.path === currentRoute.path
-          );
-          setCrumbs(crumbs.slice(0, itemIndex + 1));
-        }}
-      >
-        {currentRoute.title}
-      </Link>
-    );
-  };
+  // Table Configuration
   const columns = [
     {
       title: "Name",
       dataIndex: "folderName",
       render: (value, record) => (
         <div
-          className="flex gap-2 cursor-pointer "
-          onClick={() => {
-            handleAddItem(record);
-            // console.log(crumbs);
-          }}
+          className="flex gap-2 cursor-pointer"
+          onClick={() => handleBreadcrumbUpdate(record)}
         >
-          {/* <Link to={`/archive/${record?.folderId}`}>
-            {value ? (
-              <div className="flex gap-2">
-                <FolderFilled className="text-[24px] text-[#FFAC28]" />
-                {value}
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <FilePdfFilled className="text-[24px] text-[#eb3b3b]" />
-                {record?.fileName}
-              </div>
-            )}
-          </Link> */}
-
-          {record?.type === "Folder" ? (
-            // If it's a folder, use Link to navigate to the folder
-            <Link to={`/archive/${record?.folderId}`}>
+          {record.type === "Folder" ? (
+            <Link to={`/archive/${record.folderId}`}>
               <div className="flex gap-2">
                 <FolderFilled className="text-[24px] text-[#FFAC28]" />
                 {value}
               </div>
             </Link>
           ) : (
-            // If it's a file, handle click to open the file
-            <div
-              className="flex gap-2 cursor-pointer"
-              onClick={() => handleFileClick(record)} // Function to open the file
-            >
+            <div onClick={() => handleFileClick(record)}>
               <FilePdfFilled className="text-[24px] text-[#eb3b3b]" />
-              {record?.fileName}
+              {record.fileName}
             </div>
           )}
         </div>
@@ -451,20 +299,17 @@ const Archive = () => {
     {
       title: "Reference",
       dataIndex: "ref",
-      render: (value, record) => (
-        <div>{value ? record?.ref : <div className="  "> - </div>}</div>
-      ),
+      render: (value) => value || "-",
     },
     {
       title: "Date Created",
       dataIndex: "createdAt",
-      render: (createdAt) => {
-        const dateTime = new Date(createdAt);
-        const datesTime = new Date(createdAt);
+      render: (date) => {
+        const dateObj = new Date(date);
         return (
           <div className="flex gap-2">
-            <div>{dateTime.toDateString()}</div>
-            <div>{datesTime.toLocaleTimeString()} </div>
+            <span>{dateObj.toDateString()}</span>
+            <span>{dateObj.toLocaleTimeString()}</span>
           </div>
         );
       },
@@ -472,449 +317,308 @@ const Archive = () => {
     {
       title: "Type",
       dataIndex: "type",
-      render: (value) => <div>{value}</div>,
     },
     {
       title: "Subject",
       dataIndex: "subject",
-      render: (value) => <div>{value ? value : <div>-</div>}</div>,
+      render: (value) => value || "-",
     },
     {
       title: "Action",
-      dataIndex: "archiveId",
-      render: (value, record) => {
-        const isFile = record?.type === "File";
-        return (
-          <div className="flex gap-3 text-[17px]">
-            <button onClick={() => handleEdit(record)}>
-              <EditTwoTone />
-            </button>
+      render: (_, record) => (
+        <div className="flex gap-3 text-[17px]">
+          <Button
+            icon={<EditTwoTone />}
+            onClick={() => {
+              setSelectedItem((prev) => ({ ...prev, record }));
+              setModalStates((prev) => ({ ...prev, editModal: true }));
+            }}
+          />
+          <Popconfirm
+            title={`Delete this ${record.type.toLowerCase()}?`}
+            onConfirm={() => mutations.delete.mutate(record)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button icon={<DeleteTwoTone twoToneColor="#FF0000" />} />
+          </Popconfirm>
+          {record.document?.docID && (
             <Popconfirm
-              title={` Are you sure you want to  delete this ${
-                isFile ? "file" : "folder"
-              } ?`}
-              onConfirm={() => handleDelete(record)}
-              onCancel={cancel}
+              title="Unarchive this file?"
+              onConfirm={() => mutations.unarchive.mutate(record)}
               okText="Yes"
               cancelText="No"
-              overlayClassName="popconfirm-custom"
             >
-              <button onClick={() => console.log(record)}>
-                <DeleteTwoTone twoToneColor="#FF0000" />
-              </button>
-            </Popconfirm>
-            {/* Render Unarchive button only if document and docID are present */}
-            {record.document?.docID && (
-              <Popover
-                content={
-                  <div>
-                    <p>Unarchive</p>
-                  </div>
-                }
-              >
-                <Popconfirm
-                  title="Are you sure you want to unarchive?"
-                  onConfirm={() => handleUnarchive(record)}
-                  onCancel={cancel}
-                  okText="Yes"
-                  cancelText="No"
-                  overlayClassName="popconfirm-custom"
-                >
-                  <button>
-                    <MdUnarchive />
-                  </button>
-                </Popconfirm>
+              <Popover content="Unarchive">
+                <Button icon={<MdUnarchive />} />
               </Popover>
-            )}
-          </div>
-        );
-      },
+            </Popconfirm>
+          )}
+        </div>
+      ),
     },
   ];
 
-  //Function to view files
-  function handleFileClick(record) {
-    console.log(record);
-    if (record.type === "File") {
-      const fileId = record.fileId;
-
-      axiosInstance
-        .get(`/archive/file/${fileId}`, {
-          responseType: "blob", // Important for handling binary PDF data
-        })
-        .then((response) => {
-          const pdfUrl = URL.createObjectURL(response.data); // Convert Blob to URL
-          setSelectedFile({
-            ...record,
-            fileUrl: pdfUrl, // Set the URL for the PDF
-          });
-          setDisplay(true); // Open modal
-        })
-        .catch((error) => {
-          console.error("Error fetching the PDF file:", error);
-        });
-    }
-  }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (newSelectedRowKeys, selectedRows) => {
-      setSelectedRowKeys(newSelectedRowKeys);
-      // console.log(selectedRows[0]);
-      setType(selectedRows[0]);
-    },
-  };
-  console.log(type);
-
-  // const { mutate: EditFolder } = useMutation({
-  //   mutationKey: "edit",
-  //   mutationFn: (values) => {
-  //     if (wholerecord?.type === "Folder") {
-  //       return axiosInstance.patch(`/archive/${wholerecord?.folderId}`, {
-  //         folderName: values.folderName,
-  //       });
-  //     } else if (wholerecord?.type === "File") {
-  //       return axiosInstance.patch(`/archive/${wholerecord?.fileId}`, values);
-  //     } else {
-  //       throw new Error("Unknown file type");
-  //     }
-  //   },
-  //   onSuccess: () => {
-  //     message.success(" Successfully Updated");
-  //     queryClient.invalidateQueries({ queryKey: ["archive"] });
-  //     setIsModalOpen(false);
-  //   },
-  //   onError: (error) => {
-  //     message.error(error);
-  //   },
-  // });
-
-  //Mutate function to move Files and Folders
-  const { mutate: Move } = useMutation({
-    mutationKey: "move",
-    mutationFn: () => {
-      if (type?.type === "Folder") {
-        return axiosInstance.patch(`/archive/${type?.folderId}`, {
-          folderName: type?.folderName,
-          parentFolderId: selectedRecord?.folderId,
-        });
-      } else if (type?.type === "File") {
-        return axiosInstance.patch(`/archive/${type?.fileId}`, {
-          folderName: type?.fileId,
-          parentFolderId: selectedRecord?.folderId,
-          fileName: type?.fileName,
-          ref: type?.ref,
-          subject: type?.subject,
-        });
-      } else {
-        throw new Error("Unknown file type");
-      }
-    },
-    onSuccess: () => {
-      message.success(" Moved Successfully");
-      queryClient.invalidateQueries({ queryKey: ["archive"] });
-      setPopup(false);
-    },
-    onError: (error) => {
-      console.log(error?.response?.data?.error);
-    },
-  });
-
-  function handleFolderMove() {
-    Move();
-    console.log("Moving folder with the following details:", selectedRecord);
-  }
-
-  //UseQuery to fetch all archives/folders
-  const { data: archive } = useQuery({
-    queryKey: ["archive", id],
-    queryFn: () => {
-      if (!id) return axiosInstance.get("/archive");
-
-      return axiosInstance.get(`archive/${id}`);
-    },
-  });
-
-  const archives = id ? archive?.data?.archive : archive?.data?.archives;
-  console.log({ archives });
-
+  // Transform data for table
+  const archives = id
+    ? archiveData?.data?.archive
+    : archiveData?.data?.archives;
   const { _data } = useArchiveTransform(archives, id);
-
-  console.log({ _data });
-  const data = _data?.map((archive, index) => ({
+  const tableData = _data?.map((archive, index) => ({
     ...archive,
     key: index,
   }));
 
-  function handleClick() {
-    setOpen(true);
-  }
+  // Effects
+  useEffect(() => {
+    const storedBreadcrumbs = JSON.parse(localStorage.getItem("breadcrumbs"));
+    if (storedBreadcrumbs?.length) {
+      setBreadcrumbs(storedBreadcrumbs);
+    }
+  }, []);
 
-  function handleFile() {
-    setShow(true);
-  }
+  useEffect(() => {
+    localStorage.setItem("breadcrumbs", JSON.stringify(breadcrumbs));
+  }, [breadcrumbs]);
 
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    setPopup(false);
-  };
-
-  function handleFolderClick(archive) {
-    // console.log(archive);
-    setSelectedRecord(archive);
-    setIsLoading(true);
-    setSelectedFolder(archive?.folderName);
-    setIsRootView(false);
-    setIsFolderClicked(true); // Show footer buttons
-    // Simulate fetching data from the backend with a delay
-    setTimeout(() => {
-      if (archive.children && archive.children.length > 0) {
-        setChildren(archive.children); // Display children if available
-      } else {
-        setChildren(null); // Set to null if no children available
-      }
-      setIsLoading(false); // Hide loader
-    }, 1500); // Simulated 1.5-seconds delay
-  }
-
-  const handleBack = () => {
-    setIsRootView(true); // Go back to the root folder view
-    setSelectedFolder(null); // Reset selected folder
-    setChildren([]); // Clear children
-    setIsFolderClicked(false); // Hide footer buttons
-  };
-
-  console.log(selectedRecord);
-
-  const folders = _data?.filter((item) => item.type === "Folder");
+  useEffect(() => {
+    if (selectedItem.record) {
+      form.setFieldsValue(selectedItem.record);
+    }
+  }, [selectedItem.record, form]);
 
   return (
-    <div className="pt-[70px]  h-screen w-full pl-[200px] pr-[72px]">
-      <div>
-        <div className="h-[2px] w-[1298px] bg-black/40 m-4"></div>
-
-        <div className="flex  gap-6 pl-6">
-          <div className="   ">
-            <button onClick={handleClick} className=" flex items-center ">
-              <MdOutlineCreateNewFolder className="text-[1.3rem]" />
-              <p className="font-semibold text-[#582F08]"> New Folder</p>
-            </button>
-          </div>
-          <div className="   ">
-            <button onClick={handleFile} className=" flex items-center ">
-              <UploadOutlined className="text-[1.3rem]" />
-              <p className="font-semibold text-[#582F08]"> Upload File</p>
-            </button>
-          </div>
-          {selectedRowKeys?.length > 0 && (
-            <button onClick={handleMove} className=" flex items-center ">
-              <MdDriveFileMoveOutline className="text-[1.3rem]" />
-              <p className="font-semibold text-[#582F08]"> Move</p>
-            </button>
+    <div className="pt-[70px] h-screen w-full pl-[200px] pr-[72px]">
+      <div className="border-b-2 border-black/40 mb-4">
+        <div className="flex gap-6 p-4">
+          <Button
+            icon={<MdOutlineCreateNewFolder />}
+            onClick={() =>
+              setModalStates((prev) => ({ ...prev, createFolder: true }))
+            }
+          >
+            New Folder
+          </Button>
+          <Button
+            icon={<UploadOutlined />}
+            onClick={() =>
+              setModalStates((prev) => ({ ...prev, uploadFile: true }))
+            }
+          >
+            Upload File
+          </Button>
+          {selectedItem.rowKeys.length > 0 && (
+            <Button
+              icon={<MdDriveFileMoveOutline />}
+              onClick={() => {
+                setModalStates((prev) => ({ ...prev, moveModal: true }));
+                // Set initial folder ID based on selected item's parent
+                setMoveModalState((prev) => ({
+                  ...prev,
+                  currentFolderId: selectedItem.record?.parentFolderId || null,
+                }));
+                // Manual refetch after state is set
+                // setTimeout(() => refetchMoveFolder(), 0);
+                refetchMoveFolder();
+              }}
+            >
+              Move
+            </Button>
           )}
         </div>
-        <div className="h-[2px] w-[1298px] bg-black/40 m-4"></div>
       </div>
 
       <Breadcrumb
-        itemRender={itemRender}
-        items={crumbs}
-        className="pl-[0.6rem]"
+        items={breadcrumbs}
+        itemRender={(route, _, routes) => (
+          <Link
+            to={
+              route.path === "/archive" ? "/archive" : `/archive${route.path}`
+            }
+            onClick={() =>
+              setBreadcrumbs(routes.slice(0, routes.indexOf(route) + 1))
+            }
+          >
+            {route.title}
+          </Link>
+        )}
       />
 
+      <Table
+        columns={columns}
+        dataSource={tableData}
+        rowSelection={{
+          selectedRowKeys: selectedItem.rowKeys,
+          onChange: (keys, rows) =>
+            setSelectedItem((prev) => ({
+              ...prev,
+              rowKeys: keys,
+              record: rows[0],
+            })),
+        }}
+      />
+
+      {/* Modals */}
+      {modalStates.createFolder && (
+        <CreateFolder
+          open={modalStates.createFolder}
+          setOpen={(value) =>
+            setModalStates((prev) => ({ ...prev, createFolder: value }))
+          }
+          id={id}
+        />
+      )}
+
+      {modalStates.uploadFile && (
+        <UploadFile
+          show={modalStates.uploadFile}
+          setShow={(value) =>
+            setModalStates((prev) => ({ ...prev, uploadFile: value }))
+          }
+          id={id}
+        />
+      )}
+
       <Modal
-        title={wholerecord?.type === "Folder" ? "Edit Folder" : "Edit File"}
-        // name="Edit Folder"
-        open={isModalOpen}
-        onCancel={handleCancel}
+        title={`Edit ${selectedItem.record?.type}`}
+        open={modalStates.editModal}
+        onCancel={() =>
+          setModalStates((prev) => ({ ...prev, editModal: false }))
+        }
         footer={null}
       >
-        <div className="mt-3">
-          <Form
-            name="Edit Folder"
-            onFinish={(values) => handleSubmit(values)}
-            form={form}
-          >
-            {wholerecord?.type === "Folder" && (
-              <Form.Item
-                name="folderName"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please input a name for the Folder!",
-                  },
-                ]}
-              >
-                <Input placeholder="Enter folder Name" allowClear />
-              </Form.Item>
-            )}
-            {wholerecord.type === "File" && (
-              <>
-                <Form.Item
-                  name="fileName"
-                  label="File Name"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input a subject for your file!",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Subject" allowClear />
-                </Form.Item>
-                <Form.Item
-                  name="subject"
-                  label="Subject"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input a subject for your file!",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Subject" allowClear />
-                </Form.Item>
-                <Form.Item
-                  name="ref"
-                  label="Reference"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input a reference for your file!",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Reference" allowClear />
-                </Form.Item>
-              </>
-            )}
-            <Form.Item>
-              {/* <div className="flex float-end"> */}
-              <Button
-                className="w-full bg-[#9D4D01]"
-                type="primary"
-                htmlType="submit"
-              >
-                Submit
-              </Button>
-              {/* </div> */}
+        <Form form={form} onFinish={(values) => mutations.edit.mutate(values)}>
+          {selectedItem.record?.type === "Folder" ? (
+            <Form.Item
+              name="folderName"
+              rules={[{ required: true, message: "Please input folder name" }]}
+            >
+              <Input placeholder="Enter folder name" />
             </Form.Item>
-          </Form>
-        </div>
-      </Modal>
-
-      <Modal
-        width={900}
-        name="Move"
-        title={selectedFolder || "Archive"}
-        open={popup}
-        onCancel={handleCancel}
-        footer={
-          isFolderClicked && (
-            <div className="flex justify-between">
-              {!isRootView && (
-                <button
-                  className="bg-[#582F08] text-white px-4 py-2 rounded-md "
-                  onClick={handleBack}
-                >
-                  Back
-                </button>
-              )}
-              <button
-                className="bg-[#582F08] text-white px-4 py-2 rounded-md "
-                onClick={handleFolderMove}
-              >
-                Move here
-              </button>
-            </div>
-          )
-        }
-        className=""
-      >
-        <div>
-          {/* Show Loader */}
-          {isLoading && (
-            <div className="flex justify-center items-center h-24">
-              <Spin
-                indicator={<LoadingOutlined spin />}
-                className="text-[#582F08]"
-                size="large"
-              />
-            </div>
-          )}
-          {!isLoading && (
+          ) : (
             <>
-              {isRootView ? (
-                // Root view: show all folders with icons
-                <div className="grid grid-cols-5 pt-4 gap-4 ">
-                  {folders &&
-                    folders.map((folder) => (
-                      <div
-                        key={folder.folderId}
-                        className="p-3 cursor-pointer flex items-center flex-col space-x-3"
-                        onClick={() => handleFolderClick(folder)}
-                      >
-                        <FolderFilled className="text-[3rem] text-[#FFAC28]" />
-                        <p>{folder.folderName}</p>
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                // Child view: show children or No Data
-                <div>
-                  {children && children.length > 0 ? (
-                    <div className="grid grid-cols-5 pt-4 gap-4">
-                      {children.map((child) => (
-                        <div
-                          key={child.folderId}
-                          className="p-3  cursor-pointer flex items-center space-x-3"
-                          onClick={() => handleFolderClick(child)}
-                        >
-                          <FolderFilled className="text-[3rem] text-[#FFAC28]" />
-                          <span>{child.folderName}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className=" flex justify-center flex-col items-center mt-4">
-                      <PiEmptyBold className="text-[2rem] text-[#582F08]" />
-                      <p className="text-[#582F08] font-semibold text-[1.2rem]">
-                        No Data
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+              <Form.Item
+                name="fileName"
+                label="File Name"
+                rules={[{ required: true }]}
+              >
+                <Input placeholder="File name" />
+              </Form.Item>
+              <Form.Item
+                name="subject"
+                label="Subject"
+                rules={[{ required: true }]}
+              >
+                <Input placeholder="Subject" />
+              </Form.Item>
+              <Form.Item
+                name="ref"
+                label="Reference"
+                rules={[{ required: true }]}
+              >
+                <Input placeholder="Reference" />
+              </Form.Item>
             </>
           )}
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="w-full bg-[#9D4D01]"
+            >
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Move Item"
+        open={modalStates.moveModal}
+        onCancel={handleCloseMoveModal}
+        footer={[
+          <Button key="cancel" onClick={handleCloseMoveModal}>
+            Cancel
+          </Button>,
+          <Button
+            key="move"
+            type="primary"
+            onClick={() => mutations.move.mutate()}
+            className="bg-[#9D4D01]"
+            disabled={!moveModalState.currentFolderId}
+          >
+            Move Here
+          </Button>,
+        ]}
+        width={900}
+      >
+        <div className="flex flex-col gap-4">
+          {selectedItem.record?.parentFolderId && (
+            <Button
+              icon={<ArrowLeftOutlined />}
+              onClick={handleBackClick}
+              className="w-24"
+            >
+              Back
+            </Button>
+          )}
+
+          <div className="grid grid-cols-5 gap-4">
+            {isFetchingFolders ? (
+              <div className="col-span-5 flex justify-center items-center py-12">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#9D4D01]"></div>
+                  <span className="text-gray-500">Loading folders...</span>
+                </div>
+              </div>
+            ) : (
+              <>
+                {moveModalState.availableFolders?.map((folder) => (
+                  <div
+                    key={folder.folderId}
+                    onClick={() => handleFolderClick(folder)}
+                    className="p-3 cursor-pointer hover:bg-gray-100 rounded-lg flex items-center flex-col"
+                  >
+                    <FolderFilled className="text-[3rem] text-[#FFAC28]" />
+                    <p className="text-center mt-2 text-sm truncate w-full">
+                      {folder.folderName}
+                    </p>
+                  </div>
+                ))}
+                {moveModalState.availableFolders?.length === 0 && (
+                  <div className="col-span-5 text-center py-8 text-gray-500">
+                    No folders available in this location
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </Modal>
 
       <Modal
-        title={selectedFile?.fileName || "Document Viewer"}
-        visible={display}
+        title={selectedItem.file?.fileName || "Document Viewer"}
+        open={modalStates.fileViewer}
         onCancel={() => {
-          setDisplay(false);
-          URL.revokeObjectURL(selectedFile?.fileUrl); // Clean up URL
-          setSelectedFile(null); // Clear selected file
+          setModalStates((prev) => ({ ...prev, fileViewer: false }));
+          if (selectedItem.file?.fileUrl) {
+            URL.revokeObjectURL(selectedItem.file.fileUrl);
+          }
+          setSelectedItem((prev) => ({ ...prev, file: null }));
         }}
         footer={null}
         width={850}
         className="!top-9"
       >
-        {selectedFile && (
+        {selectedItem.file?.fileUrl && (
           <iframe
-            src={selectedFile.fileUrl}
+            src={selectedItem.file.fileUrl}
             width="100%"
-            height="650px" // Adjust as needed
+            height="650px"
             title="PDF Viewer"
           />
         )}
       </Modal>
-
-      <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
-
-      {open ? <CreateFolder open={open} setOpen={setOpen} id={id} /> : null}
-      {show ? <UploadFile show={show} setShow={setShow} id={id} /> : null}
     </div>
   );
 };

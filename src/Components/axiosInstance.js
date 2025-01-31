@@ -1,21 +1,3 @@
-// import axios from "axios";
-
-// export const baseURL = "http://localhost:5000";
-
-// export const axiosInstance = axios.create({
-//   baseURL,
-// });
-
-// axiosInstance.interceptors.request.use((req) => {
-//   const authAccess = localStorage.getItem("accessToken");
-//   req.headers.Authorization = `Bearer ${authAccess}`;
-//   console.log("interceptor run");
-
-//   return req;
-// });
-
-// export default axiosInstance;
-
 import axios from "axios";
 
 // export const baseURL = "http://localhost:5000";
@@ -33,7 +15,7 @@ axiosInstance.interceptors.request.use(
     if (authAccess) {
       req.headers.Authorization = `Bearer ${authAccess}`;
     }
-    console.log("Request interceptor run");
+    // console.log("Request interceptor run");
     return req;
   },
   (error) => {
@@ -56,7 +38,7 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true; // Prevent infinite retry loops
 
       try {
-        console.log("Access token expired, attempting refresh...");
+        // console.log("Access token expired, attempting refresh...");
         const refreshToken = localStorage.getItem("refreshToken");
 
         if (!refreshToken) {
