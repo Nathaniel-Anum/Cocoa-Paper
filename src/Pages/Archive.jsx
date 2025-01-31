@@ -78,17 +78,14 @@ const Archive = () => {
     queryFn: async () => {
       let response;
       if (moveModalState.currentFolderId) {
-        console.log('first');
         response = await axiosInstance.get(
           `/archive/${moveModalState.currentFolderId}`
         );
       } else if (selectedItem.record?.parentFolderId) {
-        console.log('second');
         response = await axiosInstance.get(
           `/archive/${selectedItem.record.parentFolderId}`
         );
       } else {
-        console.log('third');
         response = await axiosInstance.get('/archive');
       }
       return response;
@@ -107,10 +104,7 @@ const Archive = () => {
     },
   });
 
-  console.log({ moveFolderData });
-
   useEffect(() => {
-    console.log('Effect run');
     if (moveFolderData) {
       const folders =
         moveFolderData.data.archive?.children || moveFolderData.data.archives;
@@ -227,8 +221,6 @@ const Archive = () => {
       isNavigating: true,
     }));
   };
-
-  console.log({ currentFolderId: moveModalState.currentFolderId });
 
   // Reset move modal state when closing
   const handleCloseMoveModal = () => {
