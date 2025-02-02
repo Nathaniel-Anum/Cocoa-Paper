@@ -14,6 +14,7 @@ import Trail from '../Components/Trail/Trail';
 import { LuFileSearch, LuSearch } from 'react-icons/lu';
 import { BsSend } from 'react-icons/bs';
 import { IoLocationOutline } from 'react-icons/io5';
+import { isArray } from 'lodash';
 const Locator = () => {
   dayjs.extend(advancedFormat);
   const { user } = useUser();
@@ -129,86 +130,94 @@ const Locator = () => {
           </button>
         </Popover>
       </div>
-
+      {console.log(trailDisplay && trailDisplay)}
       {/* Conditional Rendering for Grid or Table View */}
       {isGridView ? (
         <div className="grid grid-cols-2 border-red-500">
           <div className="max-h-[90%] grid grid-cols-2 overflow-scroll no-scrollbar h-screen">
-            {trailDisplay?.data.map((trail) => (
-              <div className=" flex items-center  p-6 cursor-pointer ">
-                <div className="w-full max-w-2xl">
-                  <div
-                    onClick={() => showModal(trail)}
-                    className="relative transition-all bg-[#c2773199] rounded-2xl p-8 shadow-2xl hover:bg-[#5f4a387d] overflow-hidden"
-                    style={{
-                      backgroundImage:
-                        'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 25%, rgba(249, 238, 218, 0) 50%)',
-                    }}
-                  >
-                    <div className="absolute top-4 right-4 flex items-center gap-2">
-                      <div className="animate-pulse">
-                        <LuSearch className="w-5 h-5 text-gray-600" />
+            {isArray(trailDisplay) ? (
+              trailDisplay?.data?.map((trail) => (
+                <div className=" flex items-center  p-6 cursor-pointer ">
+                  <div className="w-full max-w-2xl">
+                    <div
+                      onClick={() => showModal(trail)}
+                      className="relative transition-all bg-[#c2773199] rounded-2xl p-8 shadow-2xl hover:bg-[#5f4a387d] overflow-hidden"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 25%, rgba(249, 238, 218, 0) 50%)',
+                      }}
+                    >
+                      <div className="absolute top-4 right-4 flex items-center gap-2">
+                        <div className="animate-pulse">
+                          <LuSearch className="w-5 h-5 text-gray-600" />
+                        </div>
+                        <IoLocationOutline className=" w-8 h-8 text-gray-700" />
                       </div>
-                      <IoLocationOutline className=" w-8 h-8 text-gray-700" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-orange-100/30 rounded-bl-full" />
+
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-600">
+                            Subject
+                          </label>
+                          <h2 className="text-xl font-bold text-gray-800">
+                            {trail.subject}
+                          </h2>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-600">
+                            Reference
+                          </label>
+                          <p className="font-mono text-gray-700">
+                            REF-2024-03-QR
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-600">
+                            Sent To
+                          </label>
+                          <p className="text-gray-800">
+                            {trail?.trail?.map(
+                              (trailItem) =>
+                                trailItem?.sender.userId === user?.userId && (
+                                  //
+                                  <span> {trailItem?.receiver?.name}</span>
+                                )
+                            )}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-600">
+                            Date Sent
+                          </label>
+                          <p className="text-gray-800">
+                            {new Date(trail?.createdAt).toLocaleDateString(
+                              'en-US',
+                              {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              }
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-orange-200/20 via-orange-300/40 to-orange-200/20" />
                     </div>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-orange-100/30 rounded-bl-full" />
-
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-600">
-                          Subject
-                        </label>
-                        <h2 className="text-xl font-bold text-gray-800">
-                          {trail.subject}
-                        </h2>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-600">
-                          Reference
-                        </label>
-                        <p className="font-mono text-gray-700">
-                          REF-2024-03-QR
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-600">
-                          Sent To
-                        </label>
-                        <p className="text-gray-800">
-                          {trail?.trail?.map(
-                            (trailItem) =>
-                              trailItem?.sender.userId === user?.userId && (
-                                //
-                                <span> {trailItem?.receiver?.name}</span>
-                              )
-                          )}
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-600">
-                          Date Sent
-                        </label>
-                        <p className="text-gray-800">
-                          {new Date(trail?.createdAt).toLocaleDateString(
-                            'en-US',
-                            {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            }
-                          )}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-orange-200/20 via-orange-300/40 to-orange-200/20" />
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="flex justify-center items-center">
+                <span className="text-3xl text-zinc-600">
+                  No Trails Available
+                </span>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Lottie Animation on the Right Side (Shown Only in Grid View) */}
@@ -219,16 +228,14 @@ const Locator = () => {
       ) : (
         // Full-Width Ant Design Table Component for Trail Data (Table View)
         <Table
-          dataSource={trailDisplay?.data}
+          dataSource={isArray(trailDisplay) ? trailDisplay?.data : []}
           columns={columns}
           rowKey="docID"
           pagination={{ pageSize: 10 }}
           className="w-full" // Ensures the table takes full width
         />
       )}
-
       {/* Locator Modal for Trail Steps */}
-
       <Trail
         open={isModalOpen}
         handleCancel={handleCancel}

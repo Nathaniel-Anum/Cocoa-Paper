@@ -283,7 +283,6 @@ const Incoming = () => {
     ...s,
     key: s.docId,
   }));
-  // console.log(_data);
 
   return (
     <div className="">

@@ -5,6 +5,7 @@ import axiosInstance from '../Components/axiosInstance';
 import { EyeOutlined } from '@ant-design/icons';
 import Trail from '../Components/Trail/Trail';
 import { FaRegEye } from 'react-icons/fa';
+import { isArray } from 'lodash';
 const WorkHistory = () => {
   const [showModal, setShowModal] = React.useState(false);
   const [trails, setTrails] = React.useState([]);
@@ -70,24 +71,24 @@ const WorkHistory = () => {
         <span>{error.response?.data?.message}</span>
       </div>
     );
+  } else {
+    return (
+      <>
+        {/* <div className="pt-[70px] h-screen w-full pl-[200px] pr-[72px]"> */}
+        <Trail
+          open={showModal}
+          handleCancel={() => setShowModal(false)}
+          trails={trails}
+        />
+        <Table
+          loading={isLoading || isFetching}
+          dataSource={isArray(workHistory?.data) ? _data : []}
+          columns={columns}
+        />
+        {/* </div> */}
+      </>
+    );
   }
-
-  return (
-    <>
-      {/* <div className="pt-[70px] h-screen w-full pl-[200px] pr-[72px]"> */}
-      <Trail
-        open={showModal}
-        handleCancel={() => setShowModal(false)}
-        trails={trails}
-      />
-      <Table
-        loading={isLoading || isFetching}
-        dataSource={error?.status === 404 ? [] : _data}
-        columns={columns}
-      />
-      {/* </div> */}
-    </>
-  );
 };
 
 export default WorkHistory;
