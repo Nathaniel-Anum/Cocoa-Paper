@@ -1,13 +1,13 @@
-import Badge from "../Components/Badge";
-import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
-import { useTrail } from "./CustomHook/useTrail";
+import Badge from '../Components/Badge';
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useTrail } from './CustomHook/useTrail';
 
 const HomeDashboard = () => {
   const { outgoingLength, incomingLength, physicalLength } = useTrail();
 
   return (
-    <div className="pt-[70px]  h-screen w-full pl-[200px] pr-[72px] ">
+    <>
       <div className="grid grid-cols-2 bg-[#E3BC97] h-[230px] relative rounded-[15px]  mt-[50px] ">
         <div className="flex flex-col justify-center pl-[30px] ">
           <h2 className="font-bold text-[48px]">Cocoa Papers</h2>
@@ -116,7 +116,7 @@ const HomeDashboard = () => {
           </div>
         </Link>
       </div>
-    </div>
+    </>
   );
 };
 

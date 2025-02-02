@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { PlusOutlined } from "@ant-design/icons";
-import { Form, Input, Select, message, Button } from "antd";
-import axiosInstance from "../Components/axiosInstance";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Lottie from "react-lottie";
-import CreateDoc from "../../src/lotties/create-doc.json";
+import React, { useState, useEffect } from 'react';
+import { PlusOutlined } from '@ant-design/icons';
+import { Form, Input, Select, message, Button } from 'antd';
+import axiosInstance from '../Components/axiosInstance';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Lottie from 'react-lottie';
+import CreateDoc from '../../src/lotties/create-doc.json';
 
 const AddDocument = () => {
   const queryClient = useQueryClient();
@@ -13,13 +13,13 @@ const AddDocument = () => {
     autoplay: true,
     animationData: CreateDoc,
     rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice",
+      preserveAspectRatio: 'xMidYMid slice',
     },
   };
 
   const [form] = Form.useForm();
-  const [selectedDivision, setSelectedDivision] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
   const [loading, setLoading] = useState(false);
 
   // axiosInstance.get("/document").then((res) => {
@@ -28,16 +28,16 @@ const AddDocument = () => {
 
   // useQuery for getting all  divisions
   const { data: divisions } = useQuery({
-    queryKey: ["divisions"],
+    queryKey: ['divisions'],
     queryFn: () => {
-      return axiosInstance.get("/division");
+      return axiosInstance.get('/division');
     },
   });
   // console.log(divisions.data);
 
   // useQuery for getting all departments in a selected Division
   const { data: departments, refetch } = useQuery({
-    queryKey: ["departments", selectedDivision],
+    queryKey: ['departments', selectedDivision],
     queryFn: () => {
       return axiosInstance.get(`/department/${selectedDivision}`);
     },
@@ -47,7 +47,7 @@ const AddDocument = () => {
 
   // useQuery for getting all users in a selected Department
   const { data: users, refetch: fetchUsers } = useQuery({
-    queryKey: ["users", selectedDepartment],
+    queryKey: ['users', selectedDepartment],
     queryFn: () => {
       return axiosInstance.get(`/all-users/${selectedDepartment}`);
     },
@@ -57,16 +57,16 @@ const AddDocument = () => {
 
   // useMutation to add Documents
   const { mutate, isLoading } = useMutation({
-    mutationKey: "document",
+    mutationKey: 'document',
     mutationFn: (values) => {
       // console.log(values);
-      return axiosInstance.post("/document", values);
+      return axiosInstance.post('/document', values);
     },
     onSuccess: () => {
       setLoading(false);
-      message.success("Document Created Successfully!");
+      message.success('Document Created Successfully!');
       form.resetFields();
-      queryClient.invalidateQueries({ queryKey: ["trail"] });
+      queryClient.invalidateQueries({ queryKey: ['trail'] });
     },
     onError: (error) => {
       setLoading(false);
@@ -79,14 +79,14 @@ const AddDocument = () => {
   useEffect(() => {
     if (selectedDivision) {
       // refetch();
-      form.setFieldValue("departmentId", "");
+      form.setFieldValue('departmentId', '');
     }
   }, [selectedDivision]);
 
   useEffect(() => {
     if (selectedDepartment) {
       // fetchUsers();
-      form.setFieldValue("userId", "");
+      form.setFieldValue('userId', '');
     }
   }, [selectedDepartment]);
 
@@ -114,7 +114,7 @@ const AddDocument = () => {
 
   return (
     <div>
-      <div className=" px-[150px] pt-[60px] grid gap-8 place-items-center grid-cols-2">
+      <div className="  grid gap-8 place-items-center grid-cols-2">
         <div className="  bg-white rounded-md px-[3rem] ">
           <div className=" bg-white ">
             <p className="font-bold text-[29px] text-[#694421] py-2 ">
@@ -136,7 +136,7 @@ const AddDocument = () => {
                   rules={[
                     {
                       required: true,
-                      message: "Please input a Reference!",
+                      message: 'Please input a Reference!',
                     },
                   ]}
                 >
@@ -148,7 +148,7 @@ const AddDocument = () => {
                   rules={[
                     {
                       required: true,
-                      message: "Please input a Subject",
+                      message: 'Please input a Subject',
                     },
                   ]}
                 >
@@ -160,7 +160,7 @@ const AddDocument = () => {
                   rules={[
                     {
                       required: true,
-                      message: "Please select a Document Category!",
+                      message: 'Please select a Document Category!',
                     },
                   ]}
                 >
@@ -178,7 +178,7 @@ const AddDocument = () => {
                   rules={[
                     {
                       required: true,
-                      message: "Please choose your Division!",
+                      message: 'Please choose your Division!',
                     },
                   ]}
                 >
@@ -200,7 +200,7 @@ const AddDocument = () => {
                   rules={[
                     {
                       required: true,
-                      message: "Please choose your Department!",
+                      message: 'Please choose your Department!',
                     },
                   ]}
                 >
@@ -224,7 +224,7 @@ const AddDocument = () => {
                   rules={[
                     {
                       required: true,
-                      message: "Please select a User!",
+                      message: 'Please select a User!',
                     },
                   ]}
                 >

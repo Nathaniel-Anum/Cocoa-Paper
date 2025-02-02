@@ -1,8 +1,8 @@
-import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useUser } from "../CustomHook/useUser";
-import { useEffect } from "react";
-import { Spin } from "antd";
-import { LoadingOutlined } from "@ant-design/icons";
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useUser } from '../CustomHook/useUser';
+import { useEffect } from 'react';
+import { Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 
 function ProtectedRoutes({ isAllowed, children }) {
   const { user, isLoading } = useUser();
@@ -12,7 +12,7 @@ function ProtectedRoutes({ isAllowed, children }) {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      sessionStorage.setItem("lastVisitedPath", location.pathname);
+      sessionStorage.setItem('lastVisitedPath', location.pathname);
     }
   }, [isLoading, user, location]);
 
@@ -25,8 +25,6 @@ function ProtectedRoutes({ isAllowed, children }) {
         />
       </div>
     );
-
-  console.log(isLoading, user);
 
   if (user) {
     if (!isAllowed) {

@@ -1,13 +1,14 @@
-import React, { useState } from "react";
-import { Table, Popover, Steps, Modal } from "antd";
-import { useTrail } from "./CustomHook/useTrail";
-import { FaRegEye } from "react-icons/fa";
-import axiosInstance from "../Components/axiosInstance";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import React, { useState } from 'react';
+import { Table, Popover, Steps, Modal } from 'antd';
+import { useTrail } from './CustomHook/useTrail';
+import { FaRegEye } from 'react-icons/fa';
+import axiosInstance from '../Components/axiosInstance';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+import Trail from '../Components/Trail/Trail';
 
 const Outgoing = () => {
-  const { trails, isLoading } = useTrail("outgoing");
-  const [trailId, setTrailId] = useState("");
+  const { trails, isLoading } = useTrail('outgoing');
+  const [trailId, setTrailId] = useState('');
   const [open, SetOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -25,7 +26,7 @@ const Outgoing = () => {
   //useQUery to fetch trail associated to doc ID
 
   const { data: trailData } = useQuery({
-    queryKey: ["trailData", trailId],
+    queryKey: ['trailData', trailId],
     queryFn: async () => {
       return axiosInstance.get(`/trail/${trailId}`);
     },
@@ -34,63 +35,63 @@ const Outgoing = () => {
 
   const columns = [
     {
-      title: "Subject",
-      dataIndex: "document",
-      key: "subject",
+      title: 'Subject',
+      dataIndex: 'document',
+      key: 'subject',
       render: (document) => {
         //   console.log(document);
         return <div>{document.subject}</div>;
       },
     },
     {
-      title: "Reference",
-      dataIndex: "document",
-      key: "ref",
+      title: 'Reference',
+      dataIndex: 'document',
+      key: 'ref',
       render: (document) => {
         return <div>{document.ref}</div>;
       },
     },
     {
-      title: "Receiver",
-      dataIndex: ["receiver", "name"],
-      key: "receiver",
+      title: 'Receiver',
+      dataIndex: ['receiver', 'name'],
+      key: 'receiver',
     },
 
     {
-      title: "Division",
-      key: "division",
+      title: 'Division',
+      key: 'division',
       render: (document) => {
         return <div>{document.document.division.divisionName}</div>;
       },
     },
     {
-      title: "Department",
-      key: "department",
+      title: 'Department',
+      key: 'department',
       render: (document) => {
         return <div>{document.document.department.departmentName}</div>;
       },
     },
     {
-      title: "Date",
-      key: "action",
-      dataIndex: "createdAt",
+      title: 'Date',
+      key: 'action',
+      dataIndex: 'createdAt',
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         return <div>{dateTime.toDateString()}</div>;
       },
     },
     {
-      title: "Time",
-      key: "action",
-      dataIndex: "createdAt",
+      title: 'Time',
+      key: 'action',
+      dataIndex: 'createdAt',
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         return <div>{dateTime.toLocaleTimeString()}</div>;
       },
     },
     {
-      title: "Action",
-      key: "action",
+      title: 'Action',
+      key: 'action',
       render: (selectedRecord) => (
         <div className="flex gap-2">
           <Popover
@@ -101,7 +102,7 @@ const Outgoing = () => {
             }
           >
             <button onClick={() => handleView(selectedRecord)}>
-              <FaRegEye className="text-[20px]" />
+              <FaRegEye className="text-[20px] text-blue-500" />
             </button>
           </Popover>
         </div>
@@ -115,42 +116,12 @@ const Outgoing = () => {
   // console.log(_data);
 
   return (
-    <div className="pt-[70px]  h-screen w-full pl-[200px] pr-[72px]  ">
-      <Modal
-        title="Locator"
+    <div className="">
+      <Trail
         open={open}
-        onCancel={handleClose}
-        footer={null}
-        centered="true"
-        width={"60%"}
-      >
-        <div className="space-y-4  ">
-          <Steps
-            responsive
-            direction
-            className="grid grid-cols-2 gap-x-4 gap-y-6  "
-            items={trailData?.data?.trails.flatMap((trail, index) => {
-              if (index === 0) {
-                return [
-                  {
-                    title: "Sent",
-                    description: trail.sender.name,
-                  },
-                  {
-                    title: trail?.status,
-                    description: trail.receiver.name,
-                  },
-                ];
-              } else {
-                return {
-                  title: trail.status,
-                  description: trail.receiver.name,
-                };
-              }
-            })}
-          />
-        </div>
-      </Modal>
+        handleCancel={handleClose}
+        trails={trailData?.data?.trails}
+      />
       <Table columns={columns} dataSource={_data} loading={isLoading} />
     </div>
   );

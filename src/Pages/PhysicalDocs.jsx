@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { Table, message, Popover, Form, Input, Select } from "antd";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTrail } from "./CustomHook/useTrail";
-import axiosInstance from "../Components/axiosInstance";
-import { CheckOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Table, message, Popover, Form, Input, Select } from 'antd';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTrail } from './CustomHook/useTrail';
+import axiosInstance from '../Components/axiosInstance';
+import { CheckOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 
 const PhysicalDocs = () => {
   const { trails, isLoading } = useTrail();
@@ -16,18 +16,18 @@ const PhysicalDocs = () => {
 
   // useMutation to update Document Trial Status
   const { mutate: updateTrial } = useMutation({
-    mutationKey: "updateTrial",
+    mutationKey: 'updateTrial',
     mutationFn: (selectedRecord) => {
       return axiosInstance.patch(`/trail/${selectedRecord?.docID}`, {
         userId: selectedRecord?.sender?.userId,
-        status: "Received",
+        status: 'Received',
       });
     },
     onSuccess: () => {
-      message.success("Document Received Successfully!");
-      queryClient.invalidateQueries({ queryKey: ["trail"] });
+      message.success('Document Received Successfully!');
+      queryClient.invalidateQueries({ queryKey: ['trail'] });
       if (_data.length < 1) {
-        navigate("//dashboard/incoming");
+        navigate('//dashboard/incoming');
       }
     },
     onError: (error) => {
@@ -48,46 +48,46 @@ const PhysicalDocs = () => {
   //   );
   const columns = [
     {
-      title: "Subject",
-      dataIndex: "document",
-      key: "subject",
+      title: 'Subject',
+      dataIndex: 'document',
+      key: 'subject',
       render: (document) => {
         //   console.log(document);
         return <div>{document.subject}</div>;
       },
     },
     {
-      title: "Reference",
-      dataIndex: "document",
-      key: "ref",
+      title: 'Reference',
+      dataIndex: 'document',
+      key: 'ref',
       render: (document) => {
         return <div>{document.ref}</div>;
       },
     },
     {
-      title: "Sender",
-      dataIndex: ["sender", "name"],
-      key: "sender",
+      title: 'Sender',
+      dataIndex: ['sender', 'name'],
+      key: 'sender',
     },
 
     {
-      title: "Division",
-      key: "division",
+      title: 'Division',
+      key: 'division',
       render: (document) => {
         return <div>{document.document.division.divisionName}</div>;
       },
     },
     {
-      title: "Department",
-      key: "department",
+      title: 'Department',
+      key: 'department',
       render: (document) => {
         return <div>{document.document.department.departmentName}</div>;
       },
     },
     {
-      title: "Date",
-      key: "action",
-      dataIndex: "createdAt",
+      title: 'Date',
+      key: 'action',
+      dataIndex: 'createdAt',
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         //   console.log(dateTime.toDateString());
@@ -100,17 +100,17 @@ const PhysicalDocs = () => {
       },
     },
     {
-      title: "Time",
-      key: "action",
-      dataIndex: "createdAt",
+      title: 'Time',
+      key: 'action',
+      dataIndex: 'createdAt',
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         return <div>{dateTime.toLocaleTimeString()}</div>;
       },
     },
     {
-      title: "Actions",
-      key: "action",
+      title: 'Actions',
+      key: 'action',
 
       render: (selectedRecord) => (
         <div>
@@ -143,7 +143,7 @@ const PhysicalDocs = () => {
   }));
   // console.log(_data);
   return (
-    <div className="pt-[70px]  h-screen w-full pl-[200px] pr-[72px]  ">
+    <div className="">
       <Table columns={columns} dataSource={_data} loading={isLoading} />
     </div>
   );

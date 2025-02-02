@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   Modal,
@@ -8,28 +8,28 @@ import {
   Popover,
   Button,
   Steps,
-} from "antd";
-import { useTrail } from "./CustomHook/useTrail";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import axiosInstance from "../Components/axiosInstance";
-import { ForwardOutlined } from "@ant-design/icons";
-import { LuForward } from "react-icons/lu";
-import { RiInboxArchiveFill } from "react-icons/ri";
-import ArchiveFiles from "../Components/modals/Archive/ArchiveFiles";
-import { FaRegEye } from "react-icons/fa";
+} from 'antd';
+import { useTrail } from './CustomHook/useTrail';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import axiosInstance from '../Components/axiosInstance';
+import { ForwardOutlined } from '@ant-design/icons';
+import { LuForward } from 'react-icons/lu';
+import { RiInboxArchiveFill } from 'react-icons/ri';
+import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
+import { FaRegEye } from 'react-icons/fa';
 
-import { useParams } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 
 const Incoming = () => {
-  const { trails } = useTrail("incoming");
+  const { trails } = useTrail('incoming');
   const [show, setShow] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [record, setRecord] = useState({});
-  const [trailId, setTrailId] = useState("");
+  const [trailId, setTrailId] = useState('');
   const [open, SetOpen] = useState(false);
 
-  const [senderId, setSenderId] = useState("");
+  const [senderId, setSenderId] = useState('');
 
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
@@ -50,22 +50,22 @@ const Incoming = () => {
     SetOpen(false);
   };
 
-  const [selectedDivision, setSelectedDivision] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selected, setSelected] = useState("");
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selected, setSelected] = useState('');
 
   // useQuery for getting all  divisions
   const { data: divisions } = useQuery({
-    queryKey: ["divisions"],
+    queryKey: ['divisions'],
     queryFn: () => {
-      return axiosInstance.get("/division");
+      return axiosInstance.get('/division');
     },
   });
   // console.log(divisions?.data);
 
   // useQuery for getting all departments in a selected Division
   const { data: departments, refetch } = useQuery({
-    queryKey: ["options"],
+    queryKey: ['options'],
     queryFn: () => {
       return axiosInstance.get(`/department/${selectedDivision}`);
     },
@@ -75,7 +75,7 @@ const Incoming = () => {
 
   // useQuery for getting all users in a selected Department
   const { data: users, refetch: fetchUsers } = useQuery({
-    queryKey: ["users"],
+    queryKey: ['users'],
     queryFn: () => {
       return axiosInstance.get(`/all-users/${selectedDepartment}`);
     },
@@ -86,21 +86,21 @@ const Incoming = () => {
   // useMutation to forward Document
 
   const { mutate: forwardDocument } = useMutation({
-    mutationKey: "forwardDocument",
+    mutationKey: 'forwardDocument',
     mutationFn: (values) => {
       console.log(values);
       console.log(`Document Id: ${selected}`);
       return axiosInstance.patch(`/trail/${selected}`, {
         userId: values?.userId,
-        status: "Forwarded",
+        status: 'Forwarded',
       });
     },
     onSuccess: () => {
       setLoading(false);
       setIsModalOpen(false);
-      message.success("Document has been successfully forwarded!");
+      message.success('Document has been successfully forwarded!');
       form.resetFields();
-      queryClient.invalidateQueries({ queryKey: ["trail"] });
+      queryClient.invalidateQueries({ queryKey: ['trail'] });
     },
     onError: (error) => {
       setLoading(false);
@@ -124,7 +124,7 @@ const Incoming = () => {
 
   //useQUery to fetch trail associated to doc ID
   const { data: trailData } = useQuery({
-    queryKey: ["trailData", trailId],
+    queryKey: ['trailData', trailId],
     queryFn: async () => {
       return axiosInstance.get(`/trail/${trailId}`);
     },
@@ -167,48 +167,48 @@ const Incoming = () => {
 
   const columns = [
     {
-      title: "Subject",
-      dataIndex: "document",
-      key: "subject",
+      title: 'Subject',
+      dataIndex: 'document',
+      key: 'subject',
       render: (document) => {
         //   console.log(document);
         return <div>{document.subject}</div>;
       },
     },
     {
-      title: "Reference",
-      dataIndex: "document",
-      key: "ref",
+      title: 'Reference',
+      dataIndex: 'document',
+      key: 'ref',
       render: (document) => {
         return <div>{document.ref}</div>;
       },
     },
 
     {
-      title: "Sender",
-      dataIndex: ["sender", "name"],
-      key: "receiver",
+      title: 'Sender',
+      dataIndex: ['sender', 'name'],
+      key: 'receiver',
     },
 
     {
-      title: "Division",
-      key: "division",
+      title: 'Division',
+      key: 'division',
       render: (document) => {
         return <div>{document.document.division.divisionName}</div>;
       },
     },
 
     {
-      title: "Department",
-      key: "department",
+      title: 'Department',
+      key: 'department',
       render: (document) => {
         return <div>{document.document.department.departmentName}</div>;
       },
     },
     {
-      title: "Date",
-      key: "action",
-      dataIndex: "createdAt",
+      title: 'Date',
+      key: 'action',
+      dataIndex: 'createdAt',
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         //   console.log(dateTime.toDateString());
@@ -221,17 +221,17 @@ const Incoming = () => {
       },
     },
     {
-      title: "Time",
-      key: "time",
-      dataIndex: "createdAt",
+      title: 'Time',
+      key: 'time',
+      dataIndex: 'createdAt',
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         return <div>{dateTime.toLocaleTimeString()}</div>;
       },
     },
     {
-      title: "Actions",
-      key: "action",
+      title: 'Actions',
+      key: 'action',
       render: (selectedRecord) => (
         <div className="flex gap-4">
           <Popover
@@ -286,7 +286,7 @@ const Incoming = () => {
   // console.log(_data);
 
   return (
-    <div className="pt-[70px]  h-screen w-full pl-[200px] pr-[72px]  ">
+    <div className="">
       <Table columns={columns} dataSource={_data} />
       <Modal
         name="Forward Document"
@@ -306,7 +306,7 @@ const Incoming = () => {
             rules={[
               {
                 required: true,
-                message: "Please choose your Division!",
+                message: 'Please choose your Division!',
               },
             ]}
           >
@@ -329,7 +329,7 @@ const Incoming = () => {
             rules={[
               {
                 required: true,
-                message: "Please choose your Department!",
+                message: 'Please choose your Department!',
               },
             ]}
           >
@@ -352,7 +352,7 @@ const Incoming = () => {
             rules={[
               {
                 required: true,
-                message: "Please select a User!",
+                message: 'Please select a User!',
               },
             ]}
           >
@@ -386,7 +386,7 @@ const Incoming = () => {
         onCancel={handleClose}
         footer={null}
         centered="true"
-        width={"60%"}
+        width={'60%'}
       >
         <div className="py-6">
           <Steps
@@ -397,7 +397,7 @@ const Incoming = () => {
               if (index === 0) {
                 return [
                   {
-                    title: "Sent",
+                    title: 'Sent',
                     description: trail.sender.name,
                   },
                   {

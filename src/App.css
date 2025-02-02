@@ -15,7 +15,7 @@
   --green: #009014;
   --brown-text: #d2aa85;
   --text-background: #e4a66c;
-  font-family: "Quicksand", sans-serif;
+  font-family: 'Quicksand', sans-serif;
   --background-picture: #966945;
 }
 
@@ -80,4 +80,54 @@ table th {
 .popconfirm-custom .ant-btn {
   color: #582f08;
   border-color: #582f08;
+}
+.ant-table-thead .ant-table-cell {
+  color: white !important;
+  font-family: 'Quicksand', serif !important;
+}
+
+.ant-table-cell {
+  /* background-color: transparent !important; */
+  font-family: 'Quicksand', serif !important;
+  font-weight: 500 !important;
+}
+
+.ant-steps .ant-steps-item {
+  font-family: 'Quicksand', serif !important;
+}
+
+.ant-modal .ant-modal-content {
+  font-family: 'Quicksand', serif !important;
+}
+
+.ant-steps
+  .ant-steps-item-wait
+  > .ant-steps-item-container
+  > .ant-steps-item-content
+  > .ant-steps-item-title {
+  font-weight: 500 !important;
+}
+
+.ant-steps .ant-steps-item-description {
+  font-weight: 500 !important;
+}
+.ant-modal-root .ant-modal-mask {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.ant-steps .ant-steps-item-process .ant-steps-item-icon {
+  border-color: none !important;
+}
+
+.ant-form {
+  font-family: 'Quicksand', serif !important;
+}
+
+.ant-form-item .ant-form-item-label > label {
+  font-family: 'Quicksand', serif !important;
+  font-weight: 500 !important;
+}
+.ant-tooltip .ant-tooltip-inner {
+  background-color: #c27731 !important;
+  /* color: black !important; */
 }

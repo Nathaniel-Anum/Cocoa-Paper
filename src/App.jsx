@@ -1,31 +1,32 @@
-import "./App.css";
-import Home from "./Pages/Home";
-import Layout from "./Pages/Layout";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomeDashboard from "./Pages/HomeDashboard";
-import PublicRoutes from ".././src/Pages/Routes/PublicRoutes";
-import ProtectedRoutes from ".././src/Pages/Routes/ProtectedRoutes";
-import axiosInstance from "./Components/axiosInstance";
-import Dashboard from "./../src/Components/BackOffice/Dashboard";
-import Staff from "./Components/BackOffice/Staff";
-import Department from "./Components/BackOffice/Department";
-import Division from "./Components/BackOffice/Division";
-import Role from "./Components/BackOffice/Role";
-import RoleManagement from "./Components/BackOffice/RoleManagement";
-import AddDocument from "./Pages/AddDocument";
-import Incoming from "./Pages/Incoming";
-import Outgoing from "./Pages/Outgoing";
-import { useEffect } from "react";
-import { useUser } from "./Pages/CustomHook/useUser";
-import { useTrail } from "./Pages/CustomHook/useTrail";
-import Locator from "./Pages/Locator";
-import PhysicalDocs from "./Pages/PhysicalDocs";
-import Archive from "./Pages/Archive";
-import { SignIn } from "./Pages/SignIn";
-import ConfirmEmail from "./Pages/ConfirmEmail";
-import ResetPassword from "./Pages/ResetPassword";
-import { hasPermission, requiredPermissions } from "../utils/Roles";
-import WorkHistory from "./Pages/WorkHistory";
+import './App.css';
+import Home from './Pages/Home';
+import Layout from './Pages/Layout';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import HomeDashboard from './Pages/HomeDashboard';
+import PublicRoutes from '.././src/Pages/Routes/PublicRoutes';
+import ProtectedRoutes from '.././src/Pages/Routes/ProtectedRoutes';
+import axiosInstance from './Components/axiosInstance';
+import Dashboard from './../src/Components/BackOffice/Dashboard';
+import Staff from './Components/BackOffice/Staff';
+import Department from './Components/BackOffice/Department';
+import Division from './Components/BackOffice/Division';
+import Role from './Components/BackOffice/Role';
+import RoleManagement from './Components/BackOffice/RoleManagement';
+import AddDocument from './Pages/AddDocument';
+import Incoming from './Pages/Incoming';
+import Outgoing from './Pages/Outgoing';
+import { useEffect } from 'react';
+import { useUser } from './Pages/CustomHook/useUser';
+import { useTrail } from './Pages/CustomHook/useTrail';
+import Locator from './Pages/Locator';
+import PhysicalDocs from './Pages/PhysicalDocs';
+import Archive from './Pages/Archive';
+import { SignIn } from './Pages/SignIn';
+import ConfirmEmail from './Pages/ConfirmEmail';
+import ResetPassword from './Pages/ResetPassword';
+import { hasPermission, requiredPermissions } from '../utils/Roles';
+import WorkHistory from './Pages/WorkHistory';
+import RecycleBin from './Pages/RecycleBin';
 
 function App() {
   // API call for the users.
@@ -39,7 +40,7 @@ function App() {
   useEffect(() => {
     const fetchUser = () => {
       axiosInstance
-        .get("/user")
+        .get('/user')
         .then((res) => {
           setUser(res?.data?.user);
         })
@@ -189,6 +190,21 @@ function App() {
                   ])}
                 >
                   <WorkHistory />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/trash"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.CREATE_ARCHIVE,
+                    requiredPermissions.READ_ARCHIVE,
+                    requiredPermissions.DELETE_ARCHIVE,
+                    requiredPermissions.UPDATE_ARCHIVE,
+                  ])}
+                >
+                  <RecycleBin />
                 </ProtectedRoutes>
               }
             />

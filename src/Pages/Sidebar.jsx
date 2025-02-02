@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
-import { useUser } from "./CustomHook/useUser";
-import "./Home.css";
-import { hasPermission, requiredPermissions } from "../../utils/Roles";
+import { Link } from 'react-router-dom';
+import { useUser } from './CustomHook/useUser';
+import './Home.css';
+import { hasPermission, requiredPermissions } from '../../utils/Roles';
 
 const Sidebar = () => {
   const { user } = useUser();
@@ -9,7 +9,7 @@ const Sidebar = () => {
   return (
     <div>
       <div className="w-full h-full bg-center">
-        <div className="w-[140px] h-screen fixed top-0 left-0 px-[15px] py-[19px] bg-[#582f08]  ">
+        <div className="w-[140px] h-screen fixed top-0 left-0 px-[15px] py-[19px] bg-[#582f08] overflow-y-auto no-scrollbar">
           <div>
             <img src="../../src/assets/logo.9a18109e1c16584832d5.png" alt="" />
           </div>
@@ -66,15 +66,17 @@ const Sidebar = () => {
               </Link>
             )}
 
-            <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-              <img
-                className="w-[43px]"
-                src="../../src/full trash.6648e39921b830096f076502815f16eb.svg"
-                alt=""
-              />
+            <Link to="/trash">
+              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+                <img
+                  className="w-[43px]"
+                  src="../../src/full trash.6648e39921b830096f076502815f16eb.svg"
+                  alt=""
+                />
 
-              <p>Recycle Bin</p>
-            </li>
+                <p>Recycle Bin</p>
+              </li>
+            </Link>
           </ul>
         </div>
       </div>

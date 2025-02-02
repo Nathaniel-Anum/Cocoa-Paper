@@ -1,20 +1,20 @@
-import { DownOutlined, LoadingOutlined } from "@ant-design/icons";
-import { Dropdown, Space, Modal, Button, Steps } from "antd";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { useUser } from "./CustomHook/useUser";
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import axiosInstance from "../Components/axiosInstance";
-import _ from "lodash";
-import useDebounce from "./CustomHook/use-debounce";
-import { useNavigate } from "react-router-dom";
-import DocViewer, { DocViewerRenderers } from "react-doc-viewer";
-import useOutsideClick from "./CustomHook/useOutsideClick";
+import { DownOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Dropdown, Space, Modal, Button, Steps } from 'antd';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useUser } from './CustomHook/useUser';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import axiosInstance from '../Components/axiosInstance';
+import _ from 'lodash';
+import useDebounce from './CustomHook/use-debounce';
+import { useNavigate } from 'react-router-dom';
+import DocViewer, { DocViewerRenderers } from 'react-doc-viewer';
+import useOutsideClick from './CustomHook/useOutsideClick';
 
 const Navbar = () => {
   //Searching files components
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false); // New: State to track loading
   const [trailId, setTrailId] = useState(null);
@@ -58,7 +58,7 @@ const Navbar = () => {
 
   // Handle search input change
   const handleInputChange = (searchTerm) => {
-    if (searchTerm.trim() !== "") {
+    if (searchTerm.trim() !== '') {
       setResults([]);
       setLoading(true); // Start loading animation
 
@@ -90,8 +90,8 @@ const Navbar = () => {
   // console.log(currentDate);
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
   };
 
   // Assuming `user` is accessible globally in your app
@@ -102,15 +102,15 @@ const Navbar = () => {
           Logout
         </a>
       ),
-      key: "0",
+      key: '0',
     },
   ];
 
   // Conditionally add the "Go to Admin Console" option if the user is an admin
-  if (user?.role[0].role === "ADMIN") {
+  if (user?.role[0].role === 'ADMIN') {
     items.push({
       label: <a href="/backoffice/bod">Admin Console</a>,
-      key: "1",
+      key: '1',
     });
   }
 
@@ -125,9 +125,9 @@ const Navbar = () => {
     (results?.incomingAndOutgoing || []).forEach((item) => {
       const { document, status, sender, receiver } = item;
       const isArchivedByUser =
-        status === "Archived" && sender.userId === user?.userId;
+        status === 'Archived' && sender.userId === user?.userId;
       const isArchiver =
-        status === "Archived" && receiver.userId === user?.userId;
+        status === 'Archived' && receiver.userId === user?.userId;
 
       if (!uniqueItemsMap.has(document.ref)) {
         uniqueItemsMap.set(document.ref, {
@@ -135,7 +135,7 @@ const Navbar = () => {
           isArchivedByUser,
           isArchiver,
           status,
-          type: "Document",
+          type: 'Document',
         });
       }
     });
@@ -153,7 +153,7 @@ const Navbar = () => {
       } else {
         uniqueItemsMap.set(file.ref, {
           ...file,
-          type: "File",
+          type: 'File',
           hasFile: true,
         });
       }
@@ -161,8 +161,8 @@ const Navbar = () => {
 
     return Array.from(uniqueItemsMap.values()).map((item, index) => {
       const showTrailButton =
-        item.isArchiver || (item.type === "Document" && item.isArchivedByUser);
-      const showTrackButton = !item.isArchiver && item.type === "Document";
+        item.isArchiver || (item.type === 'Document' && item.isArchivedByUser);
+      const showTrackButton = !item.isArchiver && item.type === 'Document';
 
       return (
         <div
@@ -171,34 +171,35 @@ const Navbar = () => {
         >
           <div className="text-lg font-semibold">{item.subject}</div>
           <div className="text-sm text-gray-500">Ref: {item.ref}</div>
-
-          {item.hasFile && (
-            <Button
-              type="primary"
-              className="mt-2 bg-[#582F08] mr-2"
-              onClick={() => handleButtonClick(item, "View")}
-            >
-              View
-            </Button>
-          )}
-          {showTrailButton && (
-            <Button
-              type="primary"
-              className="mt-2 bg-[#582F08]"
-              onClick={() => handleButtonClick(item, "Trail")}
-            >
-              Trail
-            </Button>
-          )}
-          {showTrackButton && (
-            <Button
-              type="primary"
-              className="mt-2 bg-[#582F08]"
-              onClick={() => handleButtonClick(item, "Track")}
-            >
-              Track
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {item.hasFile && (
+              <Button
+                type="primary"
+                className="mt-2 bg-[#582F08] mr-2"
+                onClick={() => handleButtonClick(item, 'View')}
+              >
+                View
+              </Button>
+            )}
+            {showTrailButton && (
+              <Button
+                type="primary"
+                className="mt-2 bg-[#582F08]"
+                onClick={() => handleButtonClick(item, 'Trail')}
+              >
+                Trail
+              </Button>
+            )}
+            {showTrackButton && (
+              <Button
+                type="primary"
+                className="mt-2 bg-[#582F08]"
+                onClick={() => handleButtonClick(item, 'Track')}
+              >
+                Track
+              </Button>
+            )}
+          </div>
         </div>
       );
     });
@@ -206,7 +207,7 @@ const Navbar = () => {
 
   //useQUery to fetch trail associated to doc ID
   const { data: trailData } = useQuery({
-    queryKey: ["trailData", trailId],
+    queryKey: ['trailData', trailId],
     queryFn: async () => {
       return axiosInstance.get(`/trail/${trailId}`);
     },
@@ -217,13 +218,13 @@ const Navbar = () => {
 
   // Function to handle button click actions based on button type and item properties
   const handleButtonClick = async (item, actionType) => {
-    if (actionType === "View") {
+    if (actionType === 'View') {
       try {
         // Fetch the file as a blob if the "View" button is clicked
         const response = await axiosInstance.get(
           `/archive/file/${item.fileId}`,
           {
-            responseType: "blob", // Important for handling binary PDF data
+            responseType: 'blob', // Important for handling binary PDF data
           }
         );
 
@@ -237,12 +238,12 @@ const Navbar = () => {
       } catch (error) {
         console.error(`Error viewing file with file ID: ${item.fileId}`, error);
       }
-    } else if (actionType === "Trail") {
+    } else if (actionType === 'Trail') {
       // Log trailing action for the document and set the trail ID
       console.log(`Trailing document with ID: ${item.docID}`);
       setTrailId(item.docID);
       setIsModalOpen(true);
-    } else if (actionType === "Track") {
+    } else if (actionType === 'Track') {
       // Log tracking action for the document and set the trail ID
       console.log(`Tracking document with ID: ${item.docID}`);
       setTrailId(item.docID);
@@ -331,7 +332,7 @@ const Navbar = () => {
             menu={{
               items,
             }}
-            trigger={["click"]}
+            trigger={['click']}
           >
             <a
               className="font-semibold text-[#9D4D01] cursor-pointer"
@@ -352,7 +353,7 @@ const Navbar = () => {
         onCancel={handleCancel}
         footer={null}
         centered="true"
-        width={"60%"}
+        width={'60%'}
       >
         <div className="py-6">
           <Steps
@@ -363,7 +364,7 @@ const Navbar = () => {
               if (index === 0) {
                 return [
                   {
-                    title: "Sent",
+                    title: 'Sent',
                     description: trail.sender.name,
                   },
                   {
@@ -382,7 +383,7 @@ const Navbar = () => {
         </div>
       </Modal>
       <Modal
-        title={currentFile?.fileName || "Document Viewer"}
+        title={currentFile?.fileName || 'Document Viewer'}
         visible={isFileModalVisible}
         onCancel={() => {
           setFileModalVisible(false);
