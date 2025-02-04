@@ -15,7 +15,7 @@
   --green: #009014;
   --brown-text: #d2aa85;
   --text-background: #e4a66c;
-  font-family: 'Quicksand', sans-serif;
+  font-family: "Quicksand", sans-serif;
   --background-picture: #966945;
 }
 
@@ -83,21 +83,21 @@ table th {
 }
 .ant-table-thead .ant-table-cell {
   color: white !important;
-  font-family: 'Quicksand', serif !important;
+  font-family: "Quicksand", serif !important;
 }
 
 .ant-table-cell {
   /* background-color: transparent !important; */
-  font-family: 'Quicksand', serif !important;
+  font-family: "Quicksand", serif !important;
   font-weight: 500 !important;
 }
 
 .ant-steps .ant-steps-item {
-  font-family: 'Quicksand', serif !important;
+  font-family: "Quicksand", serif !important;
 }
 
 .ant-modal .ant-modal-content {
-  font-family: 'Quicksand', serif !important;
+  font-family: "Quicksand", serif !important;
 }
 
 .ant-steps
@@ -120,14 +120,94 @@ table th {
 }
 
 .ant-form {
-  font-family: 'Quicksand', serif !important;
+  font-family: "Quicksand", serif !important;
 }
 
 .ant-form-item .ant-form-item-label > label {
-  font-family: 'Quicksand', serif !important;
+  font-family: "Quicksand", serif !important;
   font-weight: 500 !important;
 }
 .ant-tooltip .ant-tooltip-inner {
   background-color: #c27731 !important;
   /* color: black !important; */
 }
+
+/* Override Ant Design popconfirm styles */
+.ant-popover.ant-popconfirm {
+  max-width: 280px;
+}
+
+.ant-popconfirm .ant-popover-inner {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.ant-popconfirm .ant-popover-inner-content {
+  padding: 16px;
+}
+
+.ant-popconfirm .ant-popconfirm-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ant-popconfirm .ant-popconfirm-message-icon {
+  color: #0e0f0f; /* blue-500 */
+  font-size: 16px;
+  margin-top: 2px;
+}
+
+.ant-popconfirm .ant-popconfirm-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827; /* gray-900 */
+}
+
+.ant-popconfirm .ant-popconfirm-description {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #6b7280; /* gray-500 */
+}
+
+.ant-popconfirm .ant-popconfirm-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ant-popconfirm .ant-btn-default {
+  border-radius: 6px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.ant-popconfirm .ant-btn-primary {
+  border-radius: 6px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+  background-color: #582f08; /* blue-500 */
+  border-color: #582f08;
+}
+
+.ant-popconfirm .ant-btn-primary:hover {
+  background-color: #c37126 !important;
+  border-color: #c37126 !important;
+}
+
+/* This is for the "No" (cancel) button */
+.ant-popconfirm .ant-btn-default {
+  border-radius: 6px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+
+  /* Add any specific styles for the No button here */
+  background-color: white;
+  border: 1px solid #d1d5db; /* gray border */
+  border-color: #374151; /* gray-700 */
+}
+
