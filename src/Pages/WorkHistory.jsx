@@ -2,7 +2,6 @@ import React from "react";
 import { Popover, Table, Tooltip } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../Components/axiosInstance";
-import { EyeOutlined } from "@ant-design/icons";
 import Trail from "../Components/Trail/Trail";
 import { FaRegEye } from "react-icons/fa";
 import { isArray } from "lodash";

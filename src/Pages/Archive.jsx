@@ -29,6 +29,7 @@ import axiosInstance from "../Components/axiosInstance";
 import useArchiveTransform from "./CustomHook/useArchiveTransform";
 import CreateFolder from "../Components/modals/Archive/CreateFolder";
 import UploadFile from "../Components/modals/Archive/UploadFile";
+import { isArray } from "lodash";
 
 const Archive = () => {
   const queryClient = useQueryClient();
@@ -466,7 +467,7 @@ const Archive = () => {
 
       <Table
         columns={columns}
-        dataSource={tableData}
+        dataSource={isArray(tableData) ? tableData : []}
         rowSelection={{
           selectedRowKeys: selectedItem.rowKeys,
           onChange: (keys, rows) =>
