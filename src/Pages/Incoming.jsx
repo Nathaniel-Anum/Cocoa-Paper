@@ -21,7 +21,7 @@ import { FaRegEye } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 
 const Incoming = () => {
-  const { trails } = useTrail('incoming');
+  const { trails, isLoading } = useTrail('incoming');
   const [show, setShow] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -271,7 +271,7 @@ const Incoming = () => {
             }
           >
             <button onClick={() => handleView(selectedRecord)}>
-              <FaRegEye className="text-[20px]" />
+              <FaRegEye className="text-[20px] text-blue-500" />
             </button>
           </Popover>
         </div>
@@ -286,7 +286,7 @@ const Incoming = () => {
 
   return (
     <div className="">
-      <Table columns={columns} dataSource={_data} />
+      <Table columns={columns} dataSource={_data} loading={isLoading} />
       <Modal
         name="Forward Document"
         open={isModalOpen}

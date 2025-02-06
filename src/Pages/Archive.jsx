@@ -136,6 +136,10 @@ const Archive = () => {
       },
     }),
 
+
+    
+    
+
     edit: useMutation({
       mutationFn: (values) => {
         const record = selectedItem.record;
@@ -271,6 +275,9 @@ const Archive = () => {
       ]);
     }
   };
+
+
+
 
   // Table Configuration
   const columns = [

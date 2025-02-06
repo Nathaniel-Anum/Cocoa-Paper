@@ -86,8 +86,9 @@ const WorkHistory = () => {
           trails={trails}
         />
         <Table
-          loading={isLoading || isFetching}
-          dataSource={isArray(workHistory?.data) ? _data : []}
+          // loading={isLoading || isFetching}
+          // dataSource={isArray(workHistory?.data) ? _data : []}
+          dataSource={_data}
           columns={columns}
         />
         {/* </div> */}
