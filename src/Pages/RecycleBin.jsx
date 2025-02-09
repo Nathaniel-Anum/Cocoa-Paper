@@ -20,8 +20,8 @@ const RecycleBin = () => {
   const formattedData = [
     ...(recycle?.data?.result?.deletedFiles || []).map((file) => ({
       key: file.fileId, // Used as unique row key
-      fileId: file.fileId, // Store fileId but don't display it
-      isDeleted: file.isDeleted, // Store isDeleted but don't display it
+      fileId: file.fileId,
+      isDeleted: file.isDeleted, 
       name: (
         <div className="flex items-center align-center">
           <FilePdfFilled className="text-[24px] text-[#eb3b3b]" />
@@ -34,35 +34,37 @@ const RecycleBin = () => {
     })),
     ...(recycle?.data?.result?.deletedFolders || []).map((folder) => ({
       key: folder.folderId, // Used as unique row key
-      folderId: folder.folderId, // Store folderId but don't display it
-      isDeleted: folder.isDeleted, // Store isDeleted but don't display it
+      folderId: folder.folderId, 
+      isDeleted: folder.isDeleted, 
       name: (
         <div className="flex items-center align-center">
           <FolderFilled className="text-[24px] text-[#FFAC28]" />
           {folder.folderName}
         </div>
       ),
-      subject: "-", // Folders don't have subjects
-      reference: "-", // Folders don't have references
+      subject: "-", 
+      reference: "-", 
       type: "Folder",
     })),
   ];
+
+ const Restore = () => {
+  console.log("object");
+ }
+
 
   const handleRestore = async (record) => {
     // console.log("Restoring:", record);
 
     try {
-      // Determine if it's a file or folder and send the appropriate request
       if (record.type === "File") {
         await axiosInstance.patch(`/restore/${record.fileId}`);
       } else {
         await axiosInstance.patch(`/restore/${record.folderId}`);
       }
 
-      // Show success message
       message.success("Item restored successfully!");
 
-      // Refetch data to update the table without refreshing the page
       await queryClient.invalidateQueries("recycle");
     } catch (error) {
       console.error("Restore failed:", error);
