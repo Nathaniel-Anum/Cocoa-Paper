@@ -130,12 +130,12 @@ const Locator = () => {
           </button>
         </Popover>
       </div>
-      {console.log(trailDisplay && trailDisplay)}
+      {console.log(trailDisplay && { trailDisplay })}
       {/* Conditional Rendering for Grid or Table View */}
       {isGridView ? (
         <div className="grid grid-cols-2 border-red-500">
           <div className="max-h-[90%] grid grid-cols-2 overflow-scroll no-scrollbar h-screen">
-            {isArray(trailDisplay) ? (
+            {isArray(trailDisplay?.data) ? (
               trailDisplay?.data?.map((trail) => (
                 <div className=" flex items-center  p-6 cursor-pointer ">
                   <div className="w-full max-w-2xl">
@@ -228,7 +228,7 @@ const Locator = () => {
       ) : (
         // Full-Width Ant Design Table Component for Trail Data (Table View)
         <Table
-          dataSource={isArray(trailDisplay) ? trailDisplay?.data : []}
+          dataSource={isArray(trailDisplay?.data) ? trailDisplay?.data : []}
           columns={columns}
           rowKey="docID"
           pagination={{ pageSize: 10 }}
