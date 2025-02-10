@@ -62,7 +62,7 @@ const Home = () => {
         <div className="">
           <img
             className="w-[530px] h-auto object-contain "
-            src="../../src/assets/login-image.9da40248fe499c8eb28c2a4efe3b916e.svg"
+            src="/asset/login-image.9da40248fe499c8eb28c2a4efe3b916e.svg"
             alt=""
           />
         </div>
@@ -76,7 +76,7 @@ const Home = () => {
           <div className="flex items-center">
             <img
               className="w-[70px] h-auto"
-              src="../../src/assets/logo.9a18109e1c16584832d5.png"
+              src="/asset/logo.9a18109e1c16584832d5.png"
               alt=""
             />
             <div className="h-[20px] w-[2px] bg-[#9D4D01] mr-2"></div>

@@ -18,7 +18,7 @@ const HomeDashboard = () => {
         <div>
           <img
             className="absolute right-0 bottom-[0px]"
-            src="../../src/assets/dashboard-hero-icon.22f0582028e1c313326c6fd4c443be43.svg"
+            src="/asset/dashboard-hero-icon.22f0582028e1c313326c6fd4c443be43.svg"
             alt=""
           />
         </div>
@@ -29,7 +29,7 @@ const HomeDashboard = () => {
             <div className=" relative hover:bg-[#E3BC97] duration-500 px-3 hover:rounded-lg py-2 hover:scale-110 ">
               <img
                 className="w-[140px]"
-                src="../../src/assets/Incoming.svg"
+                src="/asset/Incoming.svg"
                 alt=""
               />
               <p className="text-center font-semibold text-[21px] text-[#582F08]">
@@ -47,7 +47,7 @@ const HomeDashboard = () => {
             <div className="relative hover:bg-[#E3BC97] duration-500 hover:px-3 hover:rounded-lg py-2 hover:scale-110 ">
               <img
                 className="w-[140px]"
-                src="../../src/assets/Outgoing.svg"
+                src="/asset/Outgoing.svg"
                 alt=""
               />
               <p className="text-center font-semibold text-[21px] text-[#582F08]">
@@ -65,7 +65,7 @@ const HomeDashboard = () => {
             <div className="relative hover:bg-[#E3BC97] duration-500 hover:px-3 hover:rounded-lg py-2 hover:scale-110">
               <img
                 className="w-[140px]"
-                src="../../src/assets/PhysicalDocs.svg"
+                src="/asset/PhysicalDocs.svg"
                 alt=""
               />
               <div>

@@ -133,7 +133,7 @@ const Locator = () => {
       {console.log(trailDisplay && { trailDisplay })}
       {/* Conditional Rendering for Grid or Table View */}
       {isGridView ? (
-        <div className="grid grid-cols-2 border-red-500">
+        <div className="grid grid-cols-2 ">
           <div className="max-h-[90%] grid grid-cols-2 overflow-scroll no-scrollbar h-screen">
             {isArray(trailDisplay?.data) ? (
               trailDisplay?.data?.map((trail) => (
