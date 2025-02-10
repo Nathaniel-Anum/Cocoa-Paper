@@ -136,10 +136,6 @@ const Archive = () => {
       },
     }),
 
-
-    
-    
-
     edit: useMutation({
       mutationFn: (values) => {
         const record = selectedItem.record;
@@ -166,11 +162,8 @@ const Archive = () => {
 
         //Only send parentFolderId in the payload
         return axiosInstance.patch(endpoint, {
-          parentFolderId:
-            moveModalState.currentFolderId !== undefined
-              ? moveModalState.currentFolderId
-              : null,
           ...record,
+          parentFolderId: moveModalState.currentFolderId,
         });
       },
       onSuccess: () => {
@@ -275,9 +268,6 @@ const Archive = () => {
       ]);
     }
   };
-
-
-
 
   // Table Configuration
   const columns = [
@@ -403,7 +393,7 @@ const Archive = () => {
   }, [selectedItem.record, form]);
 
   // console.log(moveModalState.availableFolders);
-  
+
   const onlyFolders = moveModalState.availableFolders?.filter(
     (i) => i.type === "Folder"
   );
@@ -561,22 +551,24 @@ const Archive = () => {
         open={modalStates.moveModal}
         onCancel={handleCloseMoveModal}
         footer={[
-          <div className=""> 
-          <button key="cancel" 
-          className='border mr-1 border-[#9D4D01] py-2 px-2 rounded-lg text-[#9D4D01] font-semibold hover:bg-[#9D4D01] hover:text-white'
-          onClick={handleCloseMoveModal}>
-            Cancel
-          </button>
-          <Button
-            key="move"
-            type="primary"
-            onClick={() => mutations.move.mutate()}
-            className="bg-[#9D4D01] "
-            // disabled={!moveModalState.currentFolderId}
-          >
-            Move Here
-          </Button>
-          </div>
+          <div className="">
+            <button
+              key="cancel"
+              className="border mr-1 border-[#9D4D01] py-2 px-2 rounded-lg text-[#9D4D01] font-semibold hover:bg-[#9D4D01] hover:text-white"
+              onClick={handleCloseMoveModal}
+            >
+              Cancel
+            </button>
+            <Button
+              key="move"
+              type="primary"
+              onClick={() => mutations.move.mutate()}
+              className="bg-[#9D4D01] "
+              // disabled={!moveModalState.currentFolderId}
+            >
+              Move Here
+            </Button>
+          </div>,
         ]}
         width={900}
       >
