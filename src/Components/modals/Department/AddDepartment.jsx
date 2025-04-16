@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Modal,
   Table,
@@ -8,10 +8,10 @@ import {
   Select,
   message,
   Popconfirm,
-} from "antd";
+} from 'antd';
 // import axiosInstance from "../axiosInstance";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axiosInstance from "../../axiosInstance";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axiosInstance from '../../axiosInstance';
 
 const AddDepartment = ({ setOpen, open }) => {
   const handleCancel = () => {
@@ -38,13 +38,13 @@ const AddDepartment = ({ setOpen, open }) => {
   };
   // useMutation to add department
   const { mutate } = useMutation({
-    mutationKey: "departments",
+    mutationKey: 'departments',
     mutationFn: async (values) => {
-      console.log(values);
+      // console.log(values);
       setIsLoading(true); // Start loading
       // Wait for both API request and delay to complete
       await Promise.all([
-        axiosInstance.post("/department", values), // API call
+        axiosInstance.post('/department', values), // API call
         delay(2500), // Minimum 30-second delay
       ]);
     },
@@ -52,8 +52,8 @@ const AddDepartment = ({ setOpen, open }) => {
       setIsLoading(false); // Stop loading
       setOpen(false);
       form.resetFields();
-      message.success("Department Created Successfully!");
-      queryClient.invalidateQueries({ mutationKey: "departments" });
+      message.success('Department Created Successfully!');
+      queryClient.invalidateQueries({ mutationKey: 'departments' });
     },
     onError: (error) => {
       setIsLoading(false); // Stop loading
@@ -66,9 +66,9 @@ const AddDepartment = ({ setOpen, open }) => {
 
   // useQuery to fetch divisions
   const { data: divisions } = useQuery({
-    queryKey: ["divisions"],
+    queryKey: ['divisions'],
     queryFn: () => {
-      return axiosInstance.get("/division");
+      return axiosInstance.get('/division');
     },
   });
   // console.log(divisions && divisions?.data);
@@ -91,7 +91,7 @@ const AddDepartment = ({ setOpen, open }) => {
             rules={[
               {
                 required: true,
-                message: "Please input your Department Name!",
+                message: 'Please input your Department Name!',
               },
             ]}
           >
@@ -104,7 +104,7 @@ const AddDepartment = ({ setOpen, open }) => {
             rules={[
               {
                 required: true,
-                message: "Please choose your Division!",
+                message: 'Please choose your Division!',
               },
             ]}
           >

@@ -36,7 +36,7 @@ const BackOfficeNavBar = () => {
   }
 
   const currentDate = new Date();
-  console.log(currentDate);
+  // console.log(currentDate);
 
   return (
     <div>

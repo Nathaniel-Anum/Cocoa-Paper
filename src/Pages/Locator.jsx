@@ -111,9 +111,9 @@ const Locator = () => {
   ];
 
   return (
-    <div>
+    <div className="">
       {/* Toggle Button to Switch Views */}
-      <div className="mb-4 flex justify-end ">
+      <div className="mb-4 flex justify-end fixed top-[10rem] right-[4.5rem]">
         <Popover
           content={
             <div>
@@ -134,7 +134,7 @@ const Locator = () => {
       {/* Conditional Rendering for Grid or Table View */}
       {isGridView ? (
         <div className="grid grid-cols-2 ">
-          <div className="max-h-[90%] grid grid-cols-2 overflow-scroll no-scrollbar h-screen">
+          <div className=" grid grid-cols-2 no-scrollbar h-screen">
             {isArray(trailDisplay?.data) ? (
               trailDisplay?.data?.map((trail) => (
                 <div className=" flex items-center  p-6 cursor-pointer ">
@@ -221,7 +221,7 @@ const Locator = () => {
           </div>
 
           {/* Lottie Animation on the Right Side (Shown Only in Grid View) */}
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center items-center fixed bottom-10 right-[5rem]">
             <Lottie options={defaultOptions} height={450} width={650} />
           </div>
         </div>

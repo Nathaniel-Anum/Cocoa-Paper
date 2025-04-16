@@ -40,7 +40,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
   const { mutate: uploadFile } = useMutation({
     mutationKey: "fileUpload",
     mutationFn: (values) => {
-      console.log(values);
+      // console.log(values);
       return axiosInstance.post("/upload", values);
     },
     onSuccess: () => {
@@ -91,7 +91,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
       const folderId = values?.folderId
         ? values?.folderId[values.folderId.length - 1]
         : "undefined";
-      console.log(values, typeof folderId);
+      // console.log(values, typeof folderId);
 
       let formData = new FormData();
       formData.append("file", selectedFile);
@@ -100,7 +100,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
       formData.append("folderId", folderId);
       formData.append("docId", record?.docID);
 
-      console.log(formData);
+      // console.log(formData);
       uploadFile(formData);
     }
   };
@@ -109,7 +109,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
   useEffect(() => {
     function getInitialArchiveFolders() {
       getArchive().then((data) => {
-        console.log(data);
+        // console.log(data);
         const folderOptions = transformData(data);
         setOptions(folderOptions);
       });
@@ -117,7 +117,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
     getInitialArchiveFolders();
   }, []);
 
-  console.log(record);
+  // console.log(record);
   return (
     <Modal open={show} title="Upload File" footer={null} onCancel={handleClose}>
       <Form

@@ -27,6 +27,11 @@ import ResetPassword from './Pages/ResetPassword';
 import { hasPermission, requiredPermissions } from '../utils/Roles';
 import WorkHistory from './Pages/WorkHistory';
 import RecycleBin from './Pages/RecycleBin';
+import ViewDocument from './Pages/ViewDocument';
+import BudgetIndex from './Pages/Routes/Budget/BudgetIndex';
+import AddBudget from './Pages/Routes/Budget/Add';
+import UpdateBudget from './Pages/Routes/Budget/Update';
+import Analytics from './Pages/Analytics';
 
 function App() {
   // API call for the users.
@@ -49,14 +54,14 @@ function App() {
     fetchUser();
   }, []);
 
-  console.log(
-    hasPermission(user?.role[0].rolePermissions, [
-      requiredPermissions.CREATE_ARCHIVE,
-      requiredPermissions.DELETE_ARCHIVE,
-      requiredPermissions.CREATE_DOCUMENT,
-      requiredPermissions.DELETE_DOCUMENT,
-    ])
-  );
+  // console.log(
+  //   hasPermission(user?.role[0].rolePermissions, [
+  //     requiredPermissions.CREATE_ARCHIVE,
+  //     requiredPermissions.DELETE_ARCHIVE,
+  //     requiredPermissions.CREATE_DOCUMENT,
+  //     requiredPermissions.DELETE_DOCUMENT,
+  //   ])
+  // );
 
   return (
     <div>
@@ -104,6 +109,66 @@ function App() {
               }
             />
             <Route
+              path="/add-budget-item"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.UPDATE_DOCUMENT,
+                    requiredPermissions.DELETE_DOCUMENT,
+                    requiredPermissions.READ_DOCUMENT,
+                    requiredPermissions.CREATE_DOCUMENT,
+                  ])}
+                >
+                  <AddBudget />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/update-budget-item/:id"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.UPDATE_DOCUMENT,
+                    requiredPermissions.DELETE_DOCUMENT,
+                    requiredPermissions.READ_DOCUMENT,
+                    requiredPermissions.CREATE_DOCUMENT,
+                  ])}
+                >
+                  <UpdateBudget />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.UPDATE_DOCUMENT,
+                    requiredPermissions.DELETE_DOCUMENT,
+                    requiredPermissions.READ_DOCUMENT,
+                    requiredPermissions.CREATE_DOCUMENT,
+                  ])}
+                >
+                  <Analytics />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/view-document/:id"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.UPDATE_DOCUMENT,
+                    requiredPermissions.DELETE_DOCUMENT,
+                    requiredPermissions.READ_DOCUMENT,
+                    requiredPermissions.CREATE_DOCUMENT,
+                  ])}
+                >
+                  <ViewDocument />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
               path="/incoming"
               element={
                 <ProtectedRoutes
@@ -115,6 +180,22 @@ function App() {
                   ])}
                 >
                   <Incoming />
+                </ProtectedRoutes>
+              }
+            />
+            {/* TODO: Change Permissions */}
+            <Route
+              path="/budget"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.CREATE_TRAIL,
+                    requiredPermissions.DELETE_TRAIL,
+                    requiredPermissions.READ_TRAIL,
+                    requiredPermissions.UPDATE_TRAIL,
+                  ])}
+                >
+                  <BudgetIndex />
                 </ProtectedRoutes>
               }
             />

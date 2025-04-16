@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axiosInstance from "../axiosInstance";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import axiosInstance from '../axiosInstance';
 import {
   Table,
   Tag,
@@ -10,10 +10,10 @@ import {
   Button,
   message,
   Popconfirm,
-} from "antd";
-import { EditTwoTone, DeleteTwoTone } from "@ant-design/icons";
-import { useEffect, useState } from "react";
-import { set } from "lodash";
+} from 'antd';
+import { EditTwoTone, DeleteTwoTone } from '@ant-design/icons';
+import { useEffect, useState } from 'react';
+import { set } from 'lodash';
 
 const RoleManagement = () => {
   const queryClient = useQueryClient();
@@ -23,23 +23,23 @@ const RoleManagement = () => {
   const [form] = Form.useForm();
 
   const handleChange = (value) => {
-    console.log(`selected: ${value}`);
+    // console.log(`selected: ${value}`);
   };
 
   const showPopup = (role) => {
     setOpen(true);
     setWholeRecord(role);
   };
-  console.log(wholeRecord);
+  // console.log(wholeRecord);
 
   const colors = [
-    "#f50",
-    "#2db7f5",
-    "#87d068",
-    "#108ee9",
-    "#e84118",
-    "#fbc531",
-    "#9c88ff",
+    '#f50',
+    '#2db7f5',
+    '#87d068',
+    '#108ee9',
+    '#e84118',
+    '#fbc531',
+    '#9c88ff',
   ];
 
   // Function to get a color based on the index
@@ -47,17 +47,17 @@ const RoleManagement = () => {
 
   //useQuery to get permissions
   const { data: permission } = useQuery({
-    queryKey: ["permissions"],
+    queryKey: ['permissions'],
     queryFn: () => {
-      return axiosInstance.get("/permission");
+      return axiosInstance.get('/permission');
     },
   });
 
   //useQuery to get role
   const { data: roles } = useQuery({
-    queryKey: ["roles"],
+    queryKey: ['roles'],
     queryFn: () => {
-      return axiosInstance.get("/role");
+      return axiosInstance.get('/role');
     },
   });
   //   console.log(roles?.data);
@@ -71,7 +71,7 @@ const RoleManagement = () => {
 
   useEffect(() => {
     if (wholeRecord) {
-      console.log(wholeRecord.role);
+      // console.log(wholeRecord.role);
       form.setFieldsValue({
         role: wholeRecord?.role,
         permissions: wholeRecord?.rolePermissions?.map((permission, index) => {
@@ -83,31 +83,31 @@ const RoleManagement = () => {
 
   //UsMutation to edit permissions assigned to roles
   const { mutate } = useMutation({
-    mutationKey: "permission",
+    mutationKey: 'permission',
     mutationFn: (values) => {
-      console.log(values);
+      // console.log(values);
       return axiosInstance.patch(`/role/${wholeRecord?.roleId}`, values);
     },
     onSuccess: () => {
       setOpen(false);
-      message.success("Successfully Updated");
-      queryClient.invalidateQueries({ mutationKey: "permission" });
+      message.success('Successfully Updated');
+      queryClient.invalidateQueries({ mutationKey: 'permission' });
     },
     onError: (error) => {
-      console.log(error);
+      message.error(error);
     },
   });
 
   //UseMutation to delete Role
   const { mutate: deleteMutate } = useMutation({
-    mutationKey: "deleteRole",
+    mutationKey: 'deleteRole',
     mutationFn: (roleId) => {
       return axiosInstance.delete(`/role/${roleId}`);
     },
     onSuccess: () => {
       setOpen(false);
-      queryClient.invalidateQueries({ mutationKey: "deleteRole" });
-      message.success("Role Successfully Deleted!");
+      queryClient.invalidateQueries({ mutationKey: 'deleteRole' });
+      message.success('Role Successfully Deleted!');
     },
     onError: (error) => {
       console.log(error);
@@ -118,7 +118,7 @@ const RoleManagement = () => {
     setOpen(false);
   };
   const cancel = (e) => {
-    console.log(e);
+    // console.log(e);
   };
 
   const confirm = (roleId) => {
@@ -130,14 +130,14 @@ const RoleManagement = () => {
   };
   const columns = [
     {
-      title: " Role Title",
-      dataIndex: "role",
-      key: "name",
+      title: ' Role Title',
+      dataIndex: 'role',
+      key: 'name',
       render: (text) => <a>{text}</a>,
     },
     {
-      title: "Permissions",
-      dataIndex: "rolePermissions",
+      title: 'Permissions',
+      dataIndex: 'rolePermissions',
       render: (rolePermissions) => {
         // console.log(rolePermissions);
         return rolePermissions.map((permission, index) => (
@@ -149,7 +149,7 @@ const RoleManagement = () => {
       },
     },
     {
-      title: "Actions",
+      title: 'Actions',
       render: (x) => (
         <div className="flex gap-3 text-[17px]">
           <button onClick={() => showPopup(x)}>
@@ -192,7 +192,7 @@ const RoleManagement = () => {
               rules={[
                 {
                   required: true,
-                  message: "Please input your name!",
+                  message: 'Please input your name!',
                 },
               ]}
             >

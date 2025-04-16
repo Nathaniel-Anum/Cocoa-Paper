@@ -1,23 +1,23 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Input, Modal, message } from "antd";
-import React from "react";
-import axiosInstance from "../../axiosInstance";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button, Form, Input, Modal, message } from 'antd';
+import React from 'react';
+import axiosInstance from '../../axiosInstance';
 
 const CreateFolder = ({ setOpen, open, id }) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
   const { mutate } = useMutation({
-    mutationKey: "folder",
+    mutationKey: 'folder',
     mutationFn: (values) => {
-      console.log(values);
-      return axiosInstance.post("/archive", { ...values, folderId: id });
+      // console.log(values);
+      return axiosInstance.post('/archive', { ...values, folderId: id });
     },
     onSuccess: () => {
       setOpen(false);
       form.resetFields();
-      message.success("Folder created successfully!");
-      queryClient.invalidateQueries({ mutationKey: "folder" });
+      message.success('Folder created successfully!');
+      queryClient.invalidateQueries({ mutationKey: 'folder' });
     },
     onError: (error) => {
       setOpen(false);
@@ -49,7 +49,7 @@ const CreateFolder = ({ setOpen, open, id }) => {
             rules={[
               {
                 required: true,
-                message: "Please input a name for the Folder!",
+                message: 'Please input a name for the Folder!',
               },
             ]}
           >

@@ -73,7 +73,7 @@ const Navbar = () => {
         })
         .then((res) => {
           setResults(res?.data);
-          console.log(res?.data);
+          // console.log(res?.data);
         })
         .catch((err) => {
           console.error(err?.response?.data?.error);
@@ -253,7 +253,7 @@ const Navbar = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center pt-[20px]">
+      <div className="flex justify-between items-center pt-[20px] fixed w-full  z-10 bg-[#eadfd5]  ">
         <div className="pl-[200px]">
           <p className="font-semibold text-[23px]">Dashboard</p>
 

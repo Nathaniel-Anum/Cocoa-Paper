@@ -16,7 +16,7 @@ const Role = () => {
     ...s,
     key: s?.roleId,
   }));
-  console.log(_data);
+  // console.log(_data);
 
   const columns = [
     {

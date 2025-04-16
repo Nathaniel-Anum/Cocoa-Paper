@@ -13,7 +13,7 @@ const UploadFile = ({ setShow, show, id }) => {
   const { mutate: uploadFile } = useMutation({
     mutationKey: "fileUpload",
     mutationFn: (values) => {
-      console.log(values);
+      // console.log(values);
       return axiosInstance.post("/upload", values);
     },
     onSuccess: () => {
@@ -34,7 +34,7 @@ const UploadFile = ({ setShow, show, id }) => {
   };
 
   const handleUpload = (values) => {
-    console.log(values);
+    // console.log(values);
     if (selectedFile) {
       const formData = new FormData();
       formData.append("file", selectedFile);

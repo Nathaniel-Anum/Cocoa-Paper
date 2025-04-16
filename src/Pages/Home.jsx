@@ -1,20 +1,20 @@
-import axios from "axios";
-import "./Home.css";
-import { Button, Form, Input, message } from "antd";
-import { useLocation, useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import axiosInstance, { baseURL } from "../Components/axiosInstance";
-import { useCookies } from "react-cookie";
-import { useState } from "react";
-import { useUser } from "./CustomHook/useUser";
+import axios from 'axios';
+import './Home.css';
+import { Button, Form, Input, message } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axiosInstance, { baseURL } from '../Components/axiosInstance';
+import { useCookies } from 'react-cookie';
+import { useState } from 'react';
+import { useUser } from './CustomHook/useUser';
 
 const Home = () => {
   const [form] = Form.useForm();
 
   const location = useLocation();
 
-  console.log(location.state);
+  // console.log(location.state);
 
   const [loading, setLoading] = useState(false);
   const { setUser, setIsLoading } = useUser();
@@ -22,25 +22,25 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (values) => {
-    console.log(values);
+    // console.log(values);
     setLoading(true);
     await setTimeout(() => {
       setLoading(false);
       form.resetFields();
     }, 2500);
     try {
-      const res = await axiosInstance.post("/login", values);
-      localStorage.setItem("accessToken", res?.data?.token);
-      localStorage.setItem("refreshToken", res?.data?.refreshToken);
+      const res = await axiosInstance.post('/login', values);
+      localStorage.setItem('accessToken', res?.data?.token);
+      localStorage.setItem('refreshToken', res?.data?.refreshToken);
 
       if (res.data) {
         setIsLoading(true);
-        const user = await axiosInstance.get("/user");
+        const user = await axiosInstance.get('/user');
         setUser(user?.data?.user);
         setIsLoading(false);
       }
 
-      navigate("/");
+      navigate('/');
       // setTimeout(() => {
       //   // message.success("Login successful!");
       //   navigate("/dashboard");
@@ -104,7 +104,7 @@ const Home = () => {
             rules={[
               {
                 required: true,
-                message: "Please input your email!",
+                message: 'Please input your email!',
               },
             ]}
           >
@@ -116,7 +116,7 @@ const Home = () => {
             rules={[
               {
                 required: true,
-                message: "Please input your password!",
+                message: 'Please input your password!',
               },
             ]}
           >
@@ -137,7 +137,7 @@ const Home = () => {
         <div className="text-center">
           <button
             className="font-semibold"
-            onClick={() => navigate("/confirm-email")}
+            onClick={() => navigate('/confirm-email')}
           >
             Forgot Password?
           </button>

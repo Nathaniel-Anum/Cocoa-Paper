@@ -15,7 +15,7 @@ const RecycleBin = () => {
       return axiosInstance.get("/recycle");
     },
   });
-  console.log(recycle?.data?.result);
+  // console.log(recycle?.data?.result);
 
   const formattedData = [
     ...(recycle?.data?.result?.deletedFiles || []).map((file) => ({
@@ -49,7 +49,7 @@ const RecycleBin = () => {
   ];
 
  const Restore = () => {
-  console.log("object");
+  // console.log("object");
  }
 
 

@@ -28,7 +28,7 @@ const ResetPassword = () => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        console.log(res?.data?.message);
+        // console.log(res?.data?.message);
         setRedirectLoading(true);
         setTimeout(() => {
           setRedirectLoading(false);

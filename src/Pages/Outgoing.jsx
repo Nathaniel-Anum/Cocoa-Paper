@@ -13,8 +13,8 @@ const Outgoing = () => {
   const queryClient = useQueryClient();
 
   const handleView = (selectedRecord) => {
-    console.log(selectedRecord);
-    console.log(`Vieweing trail with ${selectedRecord?.docID}`);
+    // console.log(selectedRecord);
+    // console.log(`Vieweing trail with ${selectedRecord?.docID}`);
     setTrailId(selectedRecord?.docID);
     SetOpen(true);
   };

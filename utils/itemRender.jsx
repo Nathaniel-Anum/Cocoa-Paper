@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export const itemrenderer = (crumbs) => {
   return function itemRender(currentRoute, params, items, paths) {
-    console.log('I have been called');
+    // console.log('I have been called');
     // const isLast = currentRoute?.path === items[items.length - 1]?.path;
     localStorage.removeItem('crumbs');
     localStorage.setItem('crumbs', JSON.stringify(crumbs));

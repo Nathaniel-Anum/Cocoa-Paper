@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
 const useArchiveTransform = (archives, id) => {
   const [data, setData] = useState([]);
@@ -18,7 +18,7 @@ const useArchiveTransform = (archives, id) => {
   function flattenSubArchiveDataArr(arr) {
     let temp = [];
 
-    console.log({ arr });
+    // console.log({ arr });
 
     if (arr?.files && arr?.files?.length > 0) temp = [...arr.files];
 
@@ -31,7 +31,7 @@ const useArchiveTransform = (archives, id) => {
 
   useEffect(() => {
     if (id) {
-      console.log({ id });
+      // console.log({ id });
       const temp = flattenSubArchiveDataArr(archives);
 
       setData(temp);

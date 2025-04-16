@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Modal,
   Table,
@@ -8,12 +8,12 @@ import {
   Select,
   message,
   Popconfirm,
-} from "antd";
-import axiosInstance from "../axiosInstance";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { EditTwoTone, DeleteTwoTone, LoadingOutlined } from "@ant-design/icons";
-import AddDepartment from "../modals/Department/AddDepartment";
-import EditDepartment from "../modals/Department/EditDepartment";
+} from 'antd';
+import axiosInstance from '../axiosInstance';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { EditTwoTone, DeleteTwoTone, LoadingOutlined } from '@ant-design/icons';
+import AddDepartment from '../modals/Department/AddDepartment';
+import EditDepartment from '../modals/Department/EditDepartment';
 
 const Department = () => {
   const [open, setOpen] = useState(false);
@@ -45,12 +45,12 @@ const Department = () => {
 
   // Usequery for getting department
   const { data: department } = useQuery({
-    queryKey: ["departments"],
+    queryKey: ['departments'],
     queryFn: () => {
-      return axiosInstance.get("/department");
+      return axiosInstance.get('/department');
     },
   });
-  console.log(department && department?.data);
+  // console.log(department && department?.data);
 
   // Department data passed to table
   const _data = department?.data?.map((s) => ({
@@ -61,24 +61,24 @@ const Department = () => {
 
   // useQuery to fetch divisions
   const { data: divisions } = useQuery({
-    queryKey: ["divisions"],
+    queryKey: ['divisions'],
     queryFn: () => {
-      return axiosInstance.get("/division");
+      return axiosInstance.get('/division');
     },
   });
   // console.log(divisions && divisions?.data);
 
   // useMutation to delete department
   const { mutate: deleteMutate } = useMutation({
-    mutationKey: "deleteDepartment",
+    mutationKey: 'deleteDepartment',
     mutationFn: (departmentId) => {
       return axiosInstance.delete(`/department/${departmentId}`);
     },
     onSuccess: () => {
       setOpen(false);
       form.resetFields();
-      message.success("Department deleted successfully!");
-      queryClient.invalidateQueries({ mutationKey: "staffDelete" });
+      message.success('Department deleted successfully!');
+      queryClient.invalidateQueries({ mutationKey: 'staffDelete' });
     },
     onError: (error) => {
       console.log(error);
@@ -86,19 +86,19 @@ const Department = () => {
   });
   const columns = [
     {
-      title: " Department Name",
-      dataIndex: "departmentName",
-      key: "name",
+      title: ' Department Name',
+      dataIndex: 'departmentName',
+      key: 'name',
       render: (text) => <a>{text}</a>,
     },
     {
-      title: "Division",
-      dataIndex: ["division", ["divisionName"]],
+      title: 'Division',
+      dataIndex: ['division', ['divisionName']],
     },
 
     {
-      title: "Actions",
-      dataIndex: "departmentId",
+      title: 'Actions',
+      dataIndex: 'departmentId',
       render: (x, individualDepartment) => (
         <div className="flex gap-3 text-[17px]">
           <button onClick={() => showPopup(individualDepartment)}>

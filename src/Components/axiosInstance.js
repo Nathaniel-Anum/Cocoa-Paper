@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios';
 
 // export const baseURL = "http://localhost:5000";
 
@@ -11,7 +11,7 @@ export const axiosInstance = axios.create({
 // Request Interceptor
 axiosInstance.interceptors.request.use(
   (req) => {
-    const authAccess = localStorage.getItem("accessToken");
+    const authAccess = localStorage.getItem('accessToken');
     if (authAccess) {
       req.headers.Authorization = `Bearer ${authAccess}`;
     }
@@ -19,7 +19,7 @@ axiosInstance.interceptors.request.use(
     return req;
   },
   (error) => {
-    console.error("Request interceptor error:", error);
+    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
@@ -39,10 +39,10 @@ axiosInstance.interceptors.response.use(
 
       try {
         // console.log("Access token expired, attempting refresh...");
-        const refreshToken = localStorage.getItem("refreshToken");
+        const refreshToken = localStorage.getItem('refreshToken');
 
         if (!refreshToken) {
-          throw new Error("Refresh token not found in localStorage");
+          throw new Error('Refresh token not found in localStorage');
         }
 
         // Fetch new access token
@@ -51,25 +51,25 @@ axiosInstance.interceptors.response.use(
         );
 
         // Log the response data for debugging
-        console.log("Refresh token response:", refreshResponse.data);
+        // console.log("Refresh token response:", refreshResponse.data);
 
         // Update tokens in localStorage
-        localStorage.setItem("accessToken", refreshResponse.data.token);
-        localStorage.setItem("refreshToken", refreshResponse.data.refreshToken);
+        localStorage.setItem('accessToken', refreshResponse.data.token);
+        localStorage.setItem('refreshToken', refreshResponse.data.refreshToken);
 
-        console.log("Access token refreshed successfully");
+        // console.log("Access token refreshed successfully");
 
         // Retry the original request with the new access token
         originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.token}`;
-        console.log("Retrying original request:", originalRequest);
+        // console.log("Retrying original request:", originalRequest);
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.error("Failed to refresh token:", refreshError);
+        console.error('Failed to refresh token:', refreshError);
         // Optional: Redirect to login or handle logout if refresh fails
       }
     }
 
-    console.error("Response interceptor error:", error);
+    console.error('Response interceptor error:', error);
     return Promise.reject(error);
   }
 );

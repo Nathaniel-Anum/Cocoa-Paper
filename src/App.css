@@ -15,7 +15,7 @@
   --green: #009014;
   --brown-text: #d2aa85;
   --text-background: #e4a66c;
-  font-family: "Quicksand", sans-serif;
+  font-family: 'Quicksand', sans-serif;
   --background-picture: #966945;
 }
 
@@ -83,21 +83,21 @@ table th {
 }
 .ant-table-thead .ant-table-cell {
   color: white !important;
-  font-family: "Quicksand", serif !important;
+  font-family: 'Quicksand', serif !important;
 }
 
 .ant-table-cell {
   /* background-color: transparent !important; */
-  font-family: "Quicksand", serif !important;
+  font-family: 'Quicksand', serif !important;
   font-weight: 500 !important;
 }
 
 .ant-steps .ant-steps-item {
-  font-family: "Quicksand", serif !important;
+  font-family: 'Quicksand', serif !important;
 }
 
 .ant-modal .ant-modal-content {
-  font-family: "Quicksand", serif !important;
+  font-family: 'Quicksand', serif !important;
 }
 
 .ant-steps
@@ -120,11 +120,11 @@ table th {
 }
 
 .ant-form {
-  font-family: "Quicksand", serif !important;
+  font-family: 'Quicksand', serif !important;
 }
 
 .ant-form-item .ant-form-item-label > label {
-  font-family: "Quicksand", serif !important;
+  font-family: 'Quicksand', serif !important;
   font-weight: 500 !important;
 }
 .ant-tooltip .ant-tooltip-inner {
@@ -211,3 +211,45 @@ table th {
   border-color: #374151; /* gray-700 */
 }
 
+.ant-btn-dashed:not(:disabled):not(.ant-btn-disabled):hover {
+  color: white !important;
+  border-color: transparent !important;
+}
+
+.ant-btn-default:not(:disabled):not(.ant-btn-disabled):hover {
+  color: white !important;
+  border-color: transparent !important;
+  /* background: #ffffff; */
+}
+
+.ant-layout-header {
+  padding: 0 24px;
+  height: auto;
+}
+
+.ant-card {
+  border-radius: 8px;
+  background: white;
+}
+
+.ant-table-wrapper {
+  background: white;
+  border-radius: 8px;
+}
+
+.ant-table-cell {
+  color: #582f08 !important;
+}
+
+.ant-table-thead .ant-table-cell {
+  background: #e4c8ad !important;
+  color: #582f08 !important;
+}
+
+.ant-table-tbody .ant-table-row:hover > td {
+  background: #e4c8ad20 !important;
+}
+
+.recharts-legend-item-text {
+  color: #582f08 !important;
+}

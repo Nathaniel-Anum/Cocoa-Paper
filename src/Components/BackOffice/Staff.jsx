@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Modal,
   Table,
@@ -9,15 +9,15 @@ import {
   Select,
   Popconfirm,
   Spin,
-} from "antd";
-import axiosInstance from "../axiosInstance";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { addUser } from "../../http/users";
-import { getStaff } from "../../http/staff";
-import { getDepartments } from "../../http/department";
-import { EditTwoTone, DeleteTwoTone, LoadingOutlined } from "@ant-design/icons";
-import Edit from "../modals/Staff/Edit";
+} from 'antd';
+import axiosInstance from '../axiosInstance';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
+import { addUser } from '../../http/users';
+import { getStaff } from '../../http/staff';
+import { getDepartments } from '../../http/department';
+import { EditTwoTone, DeleteTwoTone, LoadingOutlined } from '@ant-design/icons';
+import Edit from '../modals/Staff/Edit';
 
 const Staff = () => {
   const queryClient = useQueryClient();
@@ -32,7 +32,7 @@ const Staff = () => {
 
   const [open, setOpen] = useState(false);
   const [popup, setPopup] = useState(false);
-  const [selectedDivision, setSelectedDivision] = useState("");
+  const [selectedDivision, setSelectedDivision] = useState('');
   const [loading, setLoading] = useState(false); // Loading state for button
 
   const [staffDetail, setStaffDetail] = useState({});
@@ -47,16 +47,16 @@ const Staff = () => {
 
   // useQuery for divisions
   const { data: divisions } = useQuery({
-    queryKey: ["divisions"],
+    queryKey: ['divisions'],
     queryFn: () => {
-      return axiosInstance.get("/division");
+      return axiosInstance.get('/division');
     },
   });
   // console.log(divisions.data);
 
   // useQuery for departments
   const { data: departments, refetch } = useQuery({
-    queryKey: ["options"],
+    queryKey: ['options'],
     queryFn: () => {
       return axiosInstance.get(`/department/${selectedDivision}`);
     },
@@ -73,31 +73,31 @@ const Staff = () => {
 
   // useQuery to fetch staffs
   const { data, isLoading } = useQuery({
-    queryKey: ["staffs"],
+    queryKey: ['staffs'],
     queryFn: () => {
-      return axiosInstance.get("/staff");
+      return axiosInstance.get('/staff');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["staffs"] });
+      queryClient.invalidateQueries({ queryKey: ['staffs'] });
     },
   });
   // console.log(data?.data?.staff);
 
   // useMutation to add staffs
   const { mutate, isPending } = useMutation({
-    mutationKey: "staff",
+    mutationKey: 'staff',
     mutationFn: (values) => {
-      console.log(values);
+      // console.log(values);
       setLoading(true);
-      return axiosInstance.post("/staff", values); //This way or
+      return axiosInstance.post('/staff', values); //This way or
       // addUser(data);  //This way
     },
     onSuccess: () => {
       setLoading(false);
       setOpen(false);
       form.resetFields();
-      message.success("Staff added successfully!");
-      queryClient.invalidateQueries({ mutationKey: "staff" });
+      message.success('Staff added successfully!');
+      queryClient.invalidateQueries({ mutationKey: 'staff' });
     },
     onError: (error) => {
       setLoading(false);
@@ -109,15 +109,15 @@ const Staff = () => {
 
   // useMutation to delete staff
   const { mutate: deleteMutate } = useMutation({
-    mutationKey: "staffDelete",
+    mutationKey: 'staffDelete',
     mutationFn: (staffId) => {
       return axiosInstance.delete(`/staff/${staffId}`);
     },
     onSuccess: () => {
       setOpen(false);
       form.resetFields();
-      queryClient.invalidateQueries({ mutationKey: "staffDelete" });
-      message.success("Staff deleted successfully!");
+      queryClient.invalidateQueries({ mutationKey: 'staffDelete' });
+      message.success('Staff deleted successfully!');
     },
     onError: (error) => {
       console.log(error);
@@ -131,7 +131,7 @@ const Staff = () => {
   // console.log(_data);
 
   const handleSubmit = (values) => {
-    console.log("object");
+    console.log('object');
     mutate(values);
   };
 
@@ -140,7 +140,7 @@ const Staff = () => {
   // return <div className="  flex justify-center pt-[100px] ">LOADING....</div>;
 
   const handleDepartmentChange = (value) => {
-    console.log(`selected: ${value}`);
+    // console.log(`selected: ${value}`);
   };
   const handleDivisionChange = (value) => {
     console.log(`selected Division: ${value}`);
@@ -151,41 +151,41 @@ const Staff = () => {
     deleteMutate(staffId);
   };
   const cancel = (e) => {
-    console.log(e);
+    // console.log(e);
     // message.error("Click on No");
   };
 
   const columns = [
     {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
       render: (text) => <a>{text}</a>,
     },
     {
-      title: "Staff Number",
-      dataIndex: ["staff", "staffNumber"],
-      key: "age",
+      title: 'Staff Number',
+      dataIndex: ['staff', 'staffNumber'],
+      key: 'age',
     },
     {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
     },
 
     {
-      title: "Division",
-      key: "action",
-      dataIndex: ["division", "divisionName"],
+      title: 'Division',
+      key: 'action',
+      dataIndex: ['division', 'divisionName'],
     },
     {
-      title: "Department",
-      key: "action",
-      dataIndex: ["department", "departmentName"],
+      title: 'Department',
+      key: 'action',
+      dataIndex: ['department', 'departmentName'],
     },
     {
-      title: "Actions",
-      dataIndex: ["staff", "StaffId"],
+      title: 'Actions',
+      dataIndex: ['staff', 'StaffId'],
       render: (x, y) => (
         <div className="flex gap-3 text-[17px]">
           <button onClick={() => showPopup(y)}>
@@ -240,7 +240,7 @@ const Staff = () => {
               rules={[
                 {
                   required: true,
-                  message: "Please input your name!",
+                  message: 'Please input your name!',
                 },
               ]}
             >
@@ -252,7 +252,7 @@ const Staff = () => {
               rules={[
                 {
                   required: true,
-                  message: "Please input your staff ID!",
+                  message: 'Please input your staff ID!',
                 },
               ]}
             >
@@ -264,7 +264,7 @@ const Staff = () => {
               rules={[
                 {
                   required: true,
-                  message: "Please input your email!",
+                  message: 'Please input your email!',
                 },
               ]}
             >
@@ -276,7 +276,7 @@ const Staff = () => {
               rules={[
                 {
                   required: true,
-                  message: "Please choose your Division!",
+                  message: 'Please choose your Division!',
                 },
               ]}
             >
@@ -298,7 +298,7 @@ const Staff = () => {
               rules={[
                 {
                   required: true,
-                  message: "Please choose your Department!",
+                  message: 'Please choose your Department!',
                 },
               ]}
             >

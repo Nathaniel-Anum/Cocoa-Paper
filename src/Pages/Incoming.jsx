@@ -8,6 +8,7 @@ import {
   Popover,
   Button,
   Steps,
+  Dropdown,
 } from 'antd';
 import { useTrail } from './CustomHook/useTrail';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -18,7 +19,10 @@ import { RiInboxArchiveFill } from 'react-icons/ri';
 import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
 import { FaRegEye } from 'react-icons/fa';
 
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { GiTrail } from 'react-icons/gi';
+import useStore from '../store/store';
+import { SlOptionsVertical } from 'react-icons/sl';
 
 const Incoming = () => {
   const { trails, isLoading } = useTrail('incoming');
@@ -30,6 +34,8 @@ const Incoming = () => {
   const [open, SetOpen] = useState(false);
 
   const [senderId, setSenderId] = useState('');
+
+  const navigate = useNavigate();
 
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
@@ -53,6 +59,8 @@ const Incoming = () => {
   const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selected, setSelected] = useState('');
+
+  const setChosenRecord = useStore((state) => state.setChosenRecord);
 
   // useQuery for getting all  divisions
   const { data: divisions } = useQuery({
@@ -81,14 +89,13 @@ const Incoming = () => {
     },
     enabled: false,
   });
-  // console.log(users?.data);
 
   // useMutation to forward Document
   const { mutate: forwardDocument } = useMutation({
     mutationKey: 'forwardDocument',
     mutationFn: (values) => {
-      console.log(values);
-      console.log(`Document Id: ${selected}`);
+      // console.log(values);
+      // console.log(`Document Id: ${selected}`);
       return axiosInstance.patch(`/trail/${selected}`, {
         userId: values?.userId,
         status: 'Forwarded',
@@ -132,12 +139,12 @@ const Incoming = () => {
 
   // console.log(trailData?.data);
   const handleDivisionChange = (option) => {
-    console.log(`selected Division: ${option.value}`); // Access the division ID
+    // console.log(`selected Division: ${option.value}`); // Access the division ID
     setSelectedDivision(option.value);
   };
 
   const handleDepartmentChange = (option) => {
-    console.log(`selected Department: ${option.value}`); // Access the department ID
+    // console.log(`selected Department: ${option.value}`); // Access the department ID
     setSelectedDepartment(option.value);
   };
 
@@ -153,7 +160,7 @@ const Incoming = () => {
 
   const handleFormSubmit = (selectedRecord) => {
     setLoading(true);
-    console.log(selectedRecord);
+    // console.log(selectedRecord);
     forwardDocument(selectedRecord);
   };
 
@@ -162,6 +169,34 @@ const Incoming = () => {
     console.log(`Vieweing trail with ${selectedRecord?.docID}`);
     setTrailId(selectedRecord?.docID);
     SetOpen(true);
+  };
+
+  const handleViewDocument = (selectedRecord) => {
+    setChosenRecord(selectedRecord);
+    navigate(`/view-document/${selectedRecord?.docID}`);
+  };
+
+  const getItems = (selectedRecord) => {
+    return [
+      {
+        label: (
+          <span onClick={() => handleViewDocument(selectedRecord)}>View</span>
+        ),
+        key: 0,
+      },
+      {
+        label: <span onClick={() => handleClick(selectedRecord)}>Forward</span>,
+        key: 1,
+      },
+      {
+        label: <span onClick={() => handleFile(selectedRecord)}>Archive</span>,
+        key: 2,
+      },
+      {
+        label: <span onClick={() => handleView(selectedRecord)}>Trail</span>,
+        key: 3,
+      },
+    ];
   };
 
   const columns = [
@@ -231,49 +266,16 @@ const Incoming = () => {
     {
       title: 'Actions',
       key: 'action',
-      render: (selectedRecord) => (
-        <div className="flex gap-4">
-          <Popover
-            content={
-              <div>
-                <p>Forward</p>
-              </div>
-            }
-          >
-            <button
-              className="text-[21px]"
-              onClick={() => handleClick(selectedRecord)}
-            >
-              <LuForward className="text-[22px]" />
-            </button>
-          </Popover>
 
-          <Popover
-            content={
-              <div>
-                <p>Archive</p>
-              </div>
-            }
-          >
-            <button
-              // className="bg-[#582f08] text-white px-2 rounded-lg font-semibold text-[0.9rem]"
-              onClick={() => handleFile(selectedRecord)}
-            >
-              <RiInboxArchiveFill className="text-[22px]" />
-            </button>
-          </Popover>
-          <Popover
-            content={
-              <div>
-                <p>View Trail</p>
-              </div>
-            }
-          >
-            <button onClick={() => handleView(selectedRecord)}>
-              <FaRegEye className="text-[20px] text-blue-500" />
-            </button>
-          </Popover>
-        </div>
+      render: (selectedRecord) => (
+        <Dropdown
+          menu={{ items: getItems(selectedRecord) }}
+          trigger={['click']}
+        >
+          <a onClick={(e) => e.preventDefault()}>
+            <SlOptionsVertical />
+          </a>
+        </Dropdown>
       ),
     },
   ];

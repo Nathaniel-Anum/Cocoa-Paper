@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Modal, Button, Input, Form, Select, message } from "antd";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axiosInstance from "../../axiosInstance";
+import React, { useEffect, useState } from 'react';
+import { Modal, Button, Input, Form, Select, message } from 'antd';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import axiosInstance from '../../axiosInstance';
 
 const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
 
-  const [selectedDivision, setSelectedDivision] = useState("");
+  const [selectedDivision, setSelectedDivision] = useState('');
 
   const handleDivisionChange = (value) => {
-    console.log(`selected Division: ${value}`);
+    // console.log(`selected Division: ${value}`);
     setSelectedDivision(value);
   };
 
@@ -18,14 +18,14 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
     setPopup(false);
   };
   const handleChange = (value) => {
-    console.log(`selected: ${value}`);
+    // console.log(`selected: ${value}`);
   };
 
   // axiosInstance.get("/department").then((res) => console.log(res));
 
   // useQuery to get departments
   const { data: departments, refetch } = useQuery({
-    queryKey: ["options"],
+    queryKey: ['options'],
     queryFn: () => {
       return axiosInstance.get(`/department/${selectedDivision}`);
     },
@@ -52,7 +52,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
 
   // useMutation to edit staff
   const { mutate, isPending } = useMutation({
-    mutationKey: "staff",
+    mutationKey: 'staff',
     mutationFn: (values) => {
       console.log(values);
       return axiosInstance.patch(
@@ -64,8 +64,8 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
     onSuccess: () => {
       setPopup(false);
       form.resetFields();
-      message.success("Staff updated successfully!");
-      queryClient.invalidateQueries({ mutationKey: "staff" });
+      message.success('Staff updated successfully!');
+      queryClient.invalidateQueries({ mutationKey: 'staff' });
     },
     onError: (error) => {
       console.log(error);
@@ -92,7 +92,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
           rules={[
             {
               required: true,
-              message: "Please input your name!",
+              message: 'Please input your name!',
             },
           ]}
         >
@@ -104,7 +104,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
           rules={[
             {
               required: true,
-              message: "Please input your staff ID!",
+              message: 'Please input your staff ID!',
             },
           ]}
         >
@@ -116,7 +116,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
           rules={[
             {
               required: true,
-              message: "Please input your email!",
+              message: 'Please input your email!',
             },
           ]}
         >
@@ -128,7 +128,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
           rules={[
             {
               required: true,
-              message: "Please choose your Division!",
+              message: 'Please choose your Division!',
             },
           ]}
         >
@@ -150,7 +150,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
           rules={[
             {
               required: true,
-              message: "Please choose your Department!",
+              message: 'Please choose your Department!',
             },
           ]}
         >

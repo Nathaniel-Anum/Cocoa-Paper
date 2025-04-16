@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Table,
   Modal,
@@ -9,8 +9,8 @@ import {
   Popconfirm,
   Breadcrumb,
   Popover,
-} from "antd";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+} from 'antd';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   DeleteTwoTone,
   EditTwoTone,
@@ -18,18 +18,18 @@ import {
   FolderFilled,
   UploadOutlined,
   ArrowLeftOutlined,
-} from "@ant-design/icons";
-import { Link, useLocation, useParams } from "react-router-dom";
+} from '@ant-design/icons';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import {
   MdDriveFileMoveOutline,
   MdOutlineCreateNewFolder,
   MdUnarchive,
-} from "react-icons/md";
-import axiosInstance from "../Components/axiosInstance";
-import useArchiveTransform from "./CustomHook/useArchiveTransform";
-import CreateFolder from "../Components/modals/Archive/CreateFolder";
-import UploadFile from "../Components/modals/Archive/UploadFile";
-import { isArray } from "lodash";
+} from 'react-icons/md';
+import axiosInstance from '../Components/axiosInstance';
+import useArchiveTransform from './CustomHook/useArchiveTransform';
+import CreateFolder from '../Components/modals/Archive/CreateFolder';
+import UploadFile from '../Components/modals/Archive/UploadFile';
+import { isArray } from 'lodash';
 
 const Archive = () => {
   const queryClient = useQueryClient();
@@ -61,21 +61,21 @@ const Archive = () => {
   });
 
   const [breadcrumbs, setBreadcrumbs] = useState([
-    { title: "Archive", path: "/archive", id: 0 },
+    { title: 'Archive', path: '/archive', id: 0 },
   ]);
 
   // Queries
   const { data: archiveData } = useQuery({
-    queryKey: ["archive", id],
+    queryKey: ['archive', id],
     queryFn: () => {
       return id
         ? axiosInstance.get(`archive/${id}`)
-        : axiosInstance.get("/archive");
+        : axiosInstance.get('/archive');
     },
   });
   // Replace the existing move folder query with this:
   const { data: moveFolderData, isLoading: isFetchingFolders } = useQuery({
-    queryKey: ["moveFolder", moveModalState.currentFolderId],
+    queryKey: ['moveFolder', moveModalState.currentFolderId],
     queryFn: async () => {
       let response;
       if (moveModalState.currentFolderId) {
@@ -87,7 +87,7 @@ const Archive = () => {
           `/archive/${selectedItem.record.parentFolderId}`
         );
       } else {
-        response = await axiosInstance.get("/archive");
+        response = await axiosInstance.get('/archive');
       }
       return response;
     },
@@ -125,14 +125,14 @@ const Archive = () => {
     delete: useMutation({
       mutationFn: (record) => {
         const endpoint =
-          record.type === "Folder"
+          record.type === 'Folder'
             ? `/archive/${record.folderId}`
             : `/archive/${record.fileId}`;
         return axiosInstance.delete(endpoint);
       },
       onSuccess: () => {
-        message.success("Deleted Successfully");
-        queryClient.invalidateQueries(["archive"]);
+        message.success('Deleted Successfully');
+        queryClient.invalidateQueries(['archive']);
       },
     }),
 
@@ -140,14 +140,14 @@ const Archive = () => {
       mutationFn: (values) => {
         const record = selectedItem.record;
         const endpoint =
-          record.type === "Folder"
+          record.type === 'Folder'
             ? `/archive/${record.folderId}`
             : `/archive/${record.fileId}`;
         return axiosInstance.patch(endpoint, values);
       },
       onSuccess: () => {
-        message.success("Successfully Updated");
-        queryClient.invalidateQueries(["archive"]);
+        message.success('Successfully Updated');
+        queryClient.invalidateQueries(['archive']);
         setModalStates((prev) => ({ ...prev, editModal: false }));
       },
     }),
@@ -156,7 +156,7 @@ const Archive = () => {
       mutationFn: () => {
         const record = selectedItem.record;
         const endpoint =
-          record.type === "Folder"
+          record.type === 'Folder'
             ? `/archive/${record.folderId}`
             : `/archive/${record.fileId}`;
 
@@ -167,10 +167,10 @@ const Archive = () => {
         });
       },
       onSuccess: () => {
-        message.success("Moved Successfully");
+        message.success('Moved Successfully');
         // Invalidate both queries to ensure fresh data
-        queryClient.invalidateQueries(["archive"]);
-        queryClient.invalidateQueries(["moveFolder"]);
+        queryClient.invalidateQueries(['archive']);
+        queryClient.invalidateQueries(['moveFolder']);
 
         // Reset states
         setModalStates((prev) => ({ ...prev, moveModal: false }));
@@ -192,8 +192,8 @@ const Archive = () => {
       mutationFn: (record) =>
         axiosInstance.patch(`/unarchive/${record.fileId}`),
       onSuccess: () => {
-        message.success("File Successfully unarchived");
-        queryClient.invalidateQueries(["archive"]);
+        message.success('File Successfully unarchived');
+        queryClient.invalidateQueries(['archive']);
       },
     }),
   };
@@ -233,19 +233,19 @@ const Archive = () => {
 
   // Event Handlers
   const handleFileClick = async (record) => {
-    if (record.type === "File") {
+    if (record.type === 'File') {
       try {
         const response = await axiosInstance.get(
           `/archive/file/${record.fileId}`,
           {
-            responseType: "blob",
+            responseType: 'blob',
           }
         );
         const fileUrl = URL.createObjectURL(response.data);
         setSelectedItem((prev) => ({ ...prev, file: { ...record, fileUrl } }));
         setModalStates((prev) => ({ ...prev, fileViewer: true }));
       } catch (error) {
-        message.error("Error loading file");
+        message.error('Error loading file');
       }
     }
   };
@@ -272,14 +272,14 @@ const Archive = () => {
   // Table Configuration
   const columns = [
     {
-      title: "Name",
-      dataIndex: "folderName",
+      title: 'Name',
+      dataIndex: 'folderName',
       render: (value, record) => (
         <div
           className="flex gap-2 cursor-pointer"
           onClick={() => handleBreadcrumbUpdate(record)}
         >
-          {record.type === "Folder" ? (
+          {record.type === 'Folder' ? (
             <Link to={`/archive/${record.folderId}`}>
               <div className="flex gap-2">
                 <FolderFilled className="text-[24px] text-[#FFAC28]" />
@@ -296,13 +296,13 @@ const Archive = () => {
       ),
     },
     {
-      title: "Reference",
-      dataIndex: "ref",
-      render: (value) => value || "-",
+      title: 'Reference',
+      dataIndex: 'ref',
+      render: (value) => value || '-',
     },
     {
-      title: "Date Created",
-      dataIndex: "createdAt",
+      title: 'Date Created',
+      dataIndex: 'createdAt',
       render: (date) => {
         const dateObj = new Date(date);
         return (
@@ -314,16 +314,16 @@ const Archive = () => {
       },
     },
     {
-      title: "Type",
-      dataIndex: "type",
+      title: 'Type',
+      dataIndex: 'type',
     },
     {
-      title: "Subject",
-      dataIndex: "subject",
-      render: (value) => value || "-",
+      title: 'Subject',
+      dataIndex: 'subject',
+      render: (value) => value || '-',
     },
     {
-      title: "Action",
+      title: 'Action',
       render: (_, record) => (
         <div className="flex gap-3 text-[17px]">
           <div className="flex item-center">
@@ -376,14 +376,14 @@ const Archive = () => {
 
   // Effects
   useEffect(() => {
-    const storedBreadcrumbs = JSON.parse(localStorage.getItem("breadcrumbs"));
+    const storedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
     if (storedBreadcrumbs?.length) {
       setBreadcrumbs(storedBreadcrumbs);
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("breadcrumbs", JSON.stringify(breadcrumbs));
+    localStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
   }, [breadcrumbs]);
 
   useEffect(() => {
@@ -395,9 +395,9 @@ const Archive = () => {
   // console.log(moveModalState.availableFolders);
 
   const onlyFolders = moveModalState.availableFolders?.filter(
-    (i) => i.type === "Folder"
+    (i) => i.type === 'Folder'
   );
-  console.log(onlyFolders);
+  // console.log(onlyFolders);
   return (
     <div className="">
       <div className="border-b-2 border-black/40 mb-4">
@@ -451,7 +451,7 @@ const Archive = () => {
         itemRender={(route, _, routes) => (
           <Link
             to={
-              route.path === "/archive" ? "/archive" : `/archive${route.path}`
+              route.path === '/archive' ? '/archive' : `/archive${route.path}`
             }
             onClick={() =>
               setBreadcrumbs(routes.slice(0, routes.indexOf(route) + 1))
@@ -503,10 +503,10 @@ const Archive = () => {
         footer={null}
       >
         <Form form={form} onFinish={(values) => mutations.edit.mutate(values)}>
-          {selectedItem.record?.type === "Folder" ? (
+          {selectedItem.record?.type === 'Folder' ? (
             <Form.Item
               name="folderName"
-              rules={[{ required: true, message: "Please input folder name" }]}
+              rules={[{ required: true, message: 'Please input folder name' }]}
             >
               <Input placeholder="Enter folder name" />
             </Form.Item>
@@ -617,7 +617,7 @@ const Archive = () => {
       </Modal>
 
       <Modal
-        title={selectedItem.file?.fileName || "Document Viewer"}
+        title={selectedItem.file?.fileName || 'Document Viewer'}
         open={modalStates.fileViewer}
         onCancel={() => {
           setModalStates((prev) => ({ ...prev, fileViewer: false }));

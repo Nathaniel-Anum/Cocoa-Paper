@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Modal,
   Table,
@@ -8,10 +8,10 @@ import {
   Select,
   message,
   Popconfirm,
-} from "antd";
+} from 'antd';
 // import axiosInstance from "../axiosInstance";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axiosInstance from "../../axiosInstance";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axiosInstance from '../../axiosInstance';
 
 // const showModal = () => {
 //   setPopup(true);
@@ -25,20 +25,20 @@ const EditDepartment = ({ setPopup, popup, departmentDetail }) => {
 
   const [form] = Form.useForm();
   const handleDivisionChange = (value) => {
-    console.log(`selected Division: ${value}`);
+    // console.log(`selected Division: ${value}`);
   };
   // useQuery to fetch divisions
   const { data: divisions } = useQuery({
-    queryKey: ["divisions"],
+    queryKey: ['divisions'],
     queryFn: () => {
-      return axiosInstance.get("/division");
+      return axiosInstance.get('/division');
     },
   });
   // console.log(divisions && divisions?.data);
 
   useEffect(() => {
     if (departmentDetail) {
-      console.log(departmentDetail);
+      // console.log(departmentDetail);
       form.setFieldsValue({
         departmentName: departmentDetail.departmentName,
         divisionId: departmentDetail.divisionId,
@@ -48,9 +48,9 @@ const EditDepartment = ({ setPopup, popup, departmentDetail }) => {
 
   // useMutation to edit Department
   const { mutate } = useMutation({
-    mutationKey: "department",
+    mutationKey: 'department',
     mutationFn: (values) => {
-      console.log(values);
+      // console.log(values);
       return axiosInstance.patch(
         `/department/${departmentDetail?.departmentId}`,
         values
@@ -59,8 +59,8 @@ const EditDepartment = ({ setPopup, popup, departmentDetail }) => {
     onSuccess: () => {
       setPopup(false);
       form.resetFields();
-      message.success("Department updated successfully!");
-      queryClient.invalidateQueries({ mutationKey: "department" });
+      message.success('Department updated successfully!');
+      queryClient.invalidateQueries({ mutationKey: 'department' });
     },
     onError: (error) => {
       console.log(error);
@@ -90,7 +90,7 @@ const EditDepartment = ({ setPopup, popup, departmentDetail }) => {
             rules={[
               {
                 required: true,
-                message: "Please input your Department Name!",
+                message: 'Please input your Department Name!',
               },
             ]}
           >
@@ -103,7 +103,7 @@ const EditDepartment = ({ setPopup, popup, departmentDetail }) => {
             rules={[
               {
                 required: true,
-                message: "Please choose your Division!",
+                message: 'Please choose your Division!',
               },
             ]}
           >
