@@ -133,6 +133,7 @@ const RoleManagement = () => {
       title: ' Role Title',
       dataIndex: 'role',
       key: 'name',
+      width: '25%',
       render: (text) => <a>{text}</a>,
     },
     {
@@ -142,7 +143,7 @@ const RoleManagement = () => {
         // console.log(rolePermissions);
         return rolePermissions.map((permission, index) => (
           <Tag color={getColor(index)} key={permission} className="">
-            {permission.permission.permission}
+            {permission.permission.permission.toLowerCase()}
           </Tag>
           // <div key={index}>{permission.permission.permission}</div>
         ));
@@ -150,6 +151,7 @@ const RoleManagement = () => {
     },
     {
       title: 'Actions',
+      width: '25%',
       render: (x) => (
         <div className="flex gap-3 text-[17px]">
           <button onClick={() => showPopup(x)}>

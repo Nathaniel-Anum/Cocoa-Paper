@@ -27,6 +27,8 @@ import {
 import { useGetAllUsers } from '../queryHooks/user';
 import useStore from '../store/store';
 import { FaHandshake } from 'react-icons/fa';
+import { useParams } from 'react-router-dom';
+import { useViewDocument } from '../queryHooks/document';
 
 const { TextArea } = Input;
 const { Content } = Layout;
@@ -34,8 +36,6 @@ const { Title } = Typography;
 
 function ViewDocument() {
   const chosenRecord = useStore((state) => state.chosenRecord);
-
-  console.log({ chosenRecord });
 
   const [comments, setComments] = useState([
     {
@@ -57,6 +57,12 @@ function ViewDocument() {
   const [newComment, setNewComment] = useState('');
 
   const { data: users } = useGetAllUsers();
+
+  const { id } = useParams();
+
+  const { data } = useViewDocument(id);
+
+  console.log(data && data?.data);
 
   // console.log(users && users?.data?.users);
 
@@ -143,7 +149,7 @@ function ViewDocument() {
                     title="Amount"
                     value={10000}
                     precision={2}
-                    prefix={<LuDollarSign className="w-4 h-4" />}
+                    // prefix={<LuDollarSign className="w-4 h-4" />}
                     valueStyle={{ color: '#582F08', fontWeight: '600' }}
                   />
                 </Col>
@@ -152,7 +158,7 @@ function ViewDocument() {
                     title="Budget"
                     value={10000}
                     precision={2}
-                    prefix={<LuDollarSign className="w-4 h-4" />}
+                    // prefix={<LuCe className="w-4 h-4" />}
                     valueStyle={{ color: '#582F08', fontWeight: '600' }}
                   />
                 </Col>
@@ -244,7 +250,6 @@ function ViewDocument() {
                   value={newComment}
                   autoSize={{ minRows: 2, maxRows: 3 }}
                   onChange={(value) => {
-                    console.log(value);
                     setNewComment(value);
                   }}
                   onSelect={(onSelect) => console.log(onSelect)}

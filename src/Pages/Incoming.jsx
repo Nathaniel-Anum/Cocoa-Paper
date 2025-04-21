@@ -9,11 +9,12 @@ import {
   Button,
   Steps,
   Dropdown,
+  Upload,
 } from 'antd';
 import { useTrail } from './CustomHook/useTrail';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import axiosInstance from '../Components/axiosInstance';
-import { ForwardOutlined } from '@ant-design/icons';
+import { ForwardOutlined, UploadOutlined } from '@ant-design/icons';
 import { LuForward } from 'react-icons/lu';
 import { RiInboxArchiveFill } from 'react-icons/ri';
 import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
@@ -139,12 +140,10 @@ const Incoming = () => {
 
   // console.log(trailData?.data);
   const handleDivisionChange = (option) => {
-    // console.log(`selected Division: ${option.value}`); // Access the division ID
     setSelectedDivision(option.value);
   };
 
   const handleDepartmentChange = (option) => {
-    // console.log(`selected Department: ${option.value}`); // Access the department ID
     setSelectedDepartment(option.value);
   };
 
@@ -154,18 +153,16 @@ const Incoming = () => {
 
   const handleClick = (selectedRecord) => {
     setIsModalOpen(true);
-    // console.log(`selected id: ${selectedRecord?.docID}`);
     setSelected(selectedRecord?.docID);
   };
 
   const handleFormSubmit = (selectedRecord) => {
     setLoading(true);
-    // console.log(selectedRecord);
+
     forwardDocument(selectedRecord);
   };
 
   const handleView = (selectedRecord) => {
-    // console.log(selectedRecord);
     console.log(`Vieweing trail with ${selectedRecord?.docID}`);
     setTrailId(selectedRecord?.docID);
     SetOpen(true);
@@ -285,6 +282,18 @@ const Incoming = () => {
     key: s.docId,
   }));
 
+  const props = {
+    name: 'file',
+    beforeUpload: () => false,
+    onChange(info) {
+      if (info.file.status === 'done') {
+        message.success(`${info.file.name} uploaded successfully`);
+      } else if (info.file.status === 'error') {
+        message.error(`${info.file.name} upload failed.`);
+      }
+    },
+  };
+
   return (
     <div className="">
       <Table columns={columns} dataSource={_data} loading={isLoading} />
@@ -368,11 +377,23 @@ const Incoming = () => {
               onChange={handleUserChange}
             />
           </Form.Item>
-          <Form.Item className=" flex justify-center">
+
+          <Form.Item name="additionalFile" className="flex justify-center">
+            <Upload {...props}>
+              <Button
+                icon={<UploadOutlined />}
+                className="cursor-pointer w-full"
+              >
+                Upload Additional Docs
+              </Button>
+            </Upload>
+          </Form.Item>
+
+          <Form.Item>
             <Button
               type="primary"
               htmlType="submit"
-              className="bg-[#582F08] px-5 py-1 text-white"
+              className="bg-[#582F08] px-5 py-1 text-white w-full"
               loading={loading}
             >
               Forward

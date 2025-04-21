@@ -253,3 +253,9 @@ table th {
 .recharts-legend-item-text {
   color: #582f08 !important;
 }
+
+.custom-inner-table .ant-table-thead > tr > th {
+  background-color: transparent !important;
+  border-bottom: 1px solid #f0f0f0; /* optional */
+  font-weight: 600;
+}

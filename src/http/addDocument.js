@@ -11,3 +11,7 @@ export const uploadFile = (fileData) => {
 export const addDocument = (values) => {
   return axiosInstance.post('/document', values);
 };
+
+export const getDocument = (id) => {
+  return axiosInstance.get(`/document/${id}`);
+};

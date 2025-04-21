@@ -113,7 +113,7 @@ const Locator = () => {
   return (
     <div className="">
       {/* Toggle Button to Switch Views */}
-      <div className="mb-4 flex justify-end fixed top-[10rem] right-[4.5rem]">
+      <div className="mb-4 flex justify-end fixed top-[8rem] right-[4.5rem]">
         <Popover
           content={
             <div>

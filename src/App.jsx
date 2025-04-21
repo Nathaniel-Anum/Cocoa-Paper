@@ -32,6 +32,7 @@ import BudgetIndex from './Pages/Routes/Budget/BudgetIndex';
 import AddBudget from './Pages/Routes/Budget/Add';
 import UpdateBudget from './Pages/Routes/Budget/Update';
 import Analytics from './Pages/Analytics';
+import FinancialYear from './Components/BackOffice/FinancialYear';
 
 function App() {
   // API call for the users.
@@ -344,6 +345,21 @@ function App() {
                   ])}
                 >
                   <Staff />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/backoffice/financialYears"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.CREATE_STAFF,
+                    requiredPermissions.READ_STAFF,
+                    requiredPermissions.DELETE_STAFF,
+                    requiredPermissions.UPDATE_STAFF,
+                  ])}
+                >
+                  <FinancialYear />
                 </ProtectedRoutes>
               }
             />

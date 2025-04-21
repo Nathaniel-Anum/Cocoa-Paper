@@ -1,110 +1,118 @@
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { useMutation } from '@tanstack/react-query';
-import { Button, Form, Input, message, Space, Tooltip } from 'antd';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button, Form, Input, InputNumber, message, Tooltip } from 'antd';
 import React from 'react';
 import { addBudgetItem } from '../../../http/budget';
 
 const AddBudget = () => {
   const [form] = Form.useForm();
 
+  const qClient = useQueryClient();
+
   const { mutate: saveBudgetItem } = useMutation({
     mutationKey: ['budget'],
     mutationFn: (data) => addBudgetItem(data),
-    onSuccess: (data) => {
+    onSuccess: () => {
       message.success('BudgetItem Added Successfully!');
+      qClient.invalidateQueries({ queryKey: ['budgets'] });
+      form.resetFields();
     },
     onError: (err) => {
-      message.error(err?.response?.data?.error);
+      message.error(err?.response?.data?.error || 'Something went wrong');
     },
   });
 
   return (
-    <div className="  bg-white rounded-md px-[3rem] w-[calc(100%-30rem)] mx-auto ">
-      <div className=" bg-white flex flex-col justify-center ">
-        <div className="font-bold text-[29px] text-[#694421] py-2 flex justify-center items-center flex-col ">
+    <div className="bg-white rounded-md px-6 md:px-12 w-full max-w-6xl mx-auto py-8">
+      <div className="flex flex-col justify-center">
+        <div className="font-bold text-[29px] text-[#694421] py-2 flex justify-center items-center flex-col text-center">
           <p>Add Budgetary Item</p>
-          <hr className="  w-[11rem] h-1 bg-[#694421] " />
+          <hr className="w-[11rem] h-1 bg-[#694421] mt-2" />
         </div>
+
         <Form
           form={form}
-          className="mx-auto mt-10 w-[40rem]"
+          className="mt-10 w-full"
           name="Flow Form"
-          onFinish={(values) => {
-            saveBudgetItem(values);
-          }}
-          style={{
-            maxWidth: 900,
-          }}
+          onFinish={saveBudgetItem}
+          layout="vertical"
           autoComplete="off"
           requiredMark={true}
         >
           <Form.Item
             name={'name'}
+            label="Budget Title"
             rules={[{ required: true, message: 'Name of field required' }]}
           >
             <Input placeholder="Enter Budgetary Item...." />
           </Form.Item>
+
           <Form.List name="budgetItems">
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
-                  <Space
+                  <div
                     key={key}
-                    style={{
-                      display: 'flex',
-                      marginBottom: 8,
-                    }}
-                    align="baseline"
+                    className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto] gap-4 items-start mb-4"
                   >
                     <Form.Item
                       {...restField}
-                      name={[name, 'name']}
+                      name={[name, 'item']}
+                      label="Item Name"
                       rules={[
-                        {
-                          required: true,
-                          message: 'Name required',
-                        },
+                        { required: true, message: 'Item name is required' },
                       ]}
+                      className="w-full"
                     >
                       <Input placeholder="Item name" />
                     </Form.Item>
-                    <Form.Item {...restField} name={[name, 'quantity']}>
-                      <Input type="number" placeholder="Enter Quantity" />
+
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'quantity']}
+                      label="Quantity"
+                      className="w-full"
+                    >
+                      <InputNumber className="w-full" placeholder="Quantity" />
                     </Form.Item>
 
                     <Form.Item
                       {...restField}
                       name={[name, 'amount']}
+                      label="Amount"
                       rules={[
-                        {
-                          required: true,
-                          message: 'Amount required',
-                        },
+                        { required: true, message: 'Amount is required' },
                       ]}
+                      className="w-full"
                     >
-                      <Input type="number" placeholder="Enter Amount" />
+                      <InputNumber className="w-full" placeholder="Amount" />
                     </Form.Item>
 
-                    <MinusCircleOutlined onClick={() => remove(name)} />
-                  </Space>
+                    <div className="flex items-center mt-6">
+                      <MinusCircleOutlined
+                        onClick={() => remove(name)}
+                        className="text-red-500 text-xl cursor-pointer"
+                      />
+                    </div>
+                  </div>
                 ))}
+
                 <Form.Item>
-                  <Tooltip title="Add Unit Item">
+                  <Tooltip title="Add Budget Item">
                     <PlusCircleOutlined
                       onClick={() => add()}
-                      className="flex justify-center text-2xl font-light
-                    "
+                      className="text-2xl text-green-600 cursor-pointer flex justify-center"
                     />
                   </Tooltip>
                 </Form.Item>
               </>
             )}
           </Form.List>
+
           <Form.Item>
             <Button
               htmlType="submit"
               className="w-full bg-[#582F08] text-white"
-              //   loading={isLoading}
             >
               Submit
             </Button>

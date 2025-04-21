@@ -114,7 +114,7 @@ function Analytics() {
         <Row gutter={[16, 16]} className="mb-6">
           <Col span={16}>
             <Card
-              title="Budget vs Spending by Department"
+              title="Budget vs Spending by Division"
               className="shadow-sm"
               headStyle={{ color: '#582f08' }}
             >
