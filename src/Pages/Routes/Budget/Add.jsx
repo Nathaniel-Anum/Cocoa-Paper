@@ -1,13 +1,41 @@
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Form, Input, InputNumber, message, Tooltip } from 'antd';
-import React from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Select,
+  Tooltip,
+} from 'antd';
+import React, { useEffect, useState } from 'react';
 import { addBudgetItem } from '../../../http/budget';
+import axiosInstance from '../../../Components/axiosInstance';
 
 const AddBudget = () => {
   const [form] = Form.useForm();
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const handleDivisionChange = (value) => setSelectedDivision(value);
 
   const qClient = useQueryClient();
+
+  const { data: divisions } = useQuery({
+    queryKey: ['divisions'],
+    queryFn: () => axiosInstance.get('/division'),
+  });
+
+  const { data: departments } = useQuery({
+    queryKey: ['departments', selectedDivision],
+    queryFn: () => axiosInstance.get(`/department/${selectedDivision}`),
+    enabled: !!selectedDivision,
+  });
+
+  useEffect(() => {
+    if (selectedDivision) {
+      form.setFieldValue('departmentId', '');
+    }
+  }, [selectedDivision]);
 
   const { mutate: saveBudgetItem } = useMutation({
     mutationKey: ['budget'],
@@ -39,6 +67,37 @@ const AddBudget = () => {
           autoComplete="off"
           requiredMark={true}
         >
+          <Form.Item
+            name="divisionId"
+            label="Division"
+            rules={[{ required: true, message: 'Choose your Division!' }]}
+          >
+            <Select
+              placeholder="Choose your Division"
+              allowClear
+              options={divisions?.data.map((division) => ({
+                label: division?.divisionName,
+                value: division?.divisionId,
+              }))}
+              onChange={handleDivisionChange}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="departmentId"
+            label="Department"
+            rules={[{ required: true, message: 'Choose your Department!' }]}
+          >
+            <Select
+              placeholder="Choose your Department"
+              allowClear
+              options={departments?.data?.data?.map((department) => ({
+                label: department?.departmentName,
+                value: department?.departmentId,
+              }))}
+              // onChange={handleDepartmentChange}
+            />
+          </Form.Item>
           <Form.Item
             name={'name'}
             label="Budget Title"
@@ -78,20 +137,26 @@ const AddBudget = () => {
 
                     <Form.Item
                       {...restField}
-                      name={[name, 'amount']}
+                      name="amount"
                       label="Amount"
                       rules={[
-                        { required: true, message: 'Amount is required' },
+                        { required: true, message: 'Please enter an amount' },
                       ]}
-                      className="w-full"
                     >
-                      <InputNumber className="w-full" placeholder="Amount" />
+                      <InputNumber
+                        placeholder="Enter Amount"
+                        className="w-full"
+                        formatter={(value) =>
+                          `₵ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                        }
+                        parser={(value) => value?.replace(/₵\s?|(,*)/g, '')}
+                      />
                     </Form.Item>
 
-                    <div className="flex items-center mt-6">
+                    <div className="flex items-center mt-9">
                       <MinusCircleOutlined
                         onClick={() => remove(name)}
-                        className="text-red-500 text-xl cursor-pointer"
+                        className="text-red-500 text-xl cursor-pointer flex items-center"
                       />
                     </div>
                   </div>

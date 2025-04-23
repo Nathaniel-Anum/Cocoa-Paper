@@ -15,3 +15,7 @@ export const addDocument = (values) => {
 export const getDocument = (id) => {
   return axiosInstance.get(`/document/${id}`);
 };
+
+export const approveDocument = (id) => {
+  return axiosInstance.patch(`/document/approve/${id}`);
+};

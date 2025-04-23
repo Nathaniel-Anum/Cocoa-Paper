@@ -217,6 +217,8 @@ const RoleManagement = () => {
               <Select
                 placeholder="Please choose your permission"
                 mode="multiple"
+                showSearch
+                optionFilterProp="label"
                 options={permission?.data?.map((permission, index) => {
                   return {
                     label: permission?.permission,

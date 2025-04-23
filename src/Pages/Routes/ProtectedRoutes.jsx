@@ -3,6 +3,7 @@ import { useUser } from '../CustomHook/useUser';
 import { useEffect } from 'react';
 import { Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
+import Loader from '../../Components/Loader/Loader';
 
 function ProtectedRoutes({ isAllowed, children }) {
   const { user, isLoading } = useUser();
@@ -16,15 +17,7 @@ function ProtectedRoutes({ isAllowed, children }) {
     }
   }, [isLoading, user, location]);
 
-  if (isLoading)
-    return (
-      <div className=" flex justify-center items-center h-screen">
-        <Spin
-          indicator={<LoadingOutlined style={{ fontSize: 54 }} spin />}
-          className="text-[#582F08] "
-        />
-      </div>
-    );
+  if (isLoading) return <Loader />;
 
   if (user) {
     if (!isAllowed) {

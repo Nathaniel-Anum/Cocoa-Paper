@@ -31,15 +31,29 @@ const BudgetIndex = () => {
       title: 'Budgetary Item',
       dataIndex: 'name',
       key: 'name',
-      width: '50%',
+      // width: '50%',
       render: (value) => <span className={'font-bold'}>{value}</span>,
     },
     {
+      title: 'Department',
+      key: 'department',
+      dataIndex: ['department', 'departmentName'],
+    },
+    {
+      title: 'Division',
+      key: 'division',
+      dataIndex: ['department', 'division', 'divisionName'],
+    },
+    {
       title: 'Year',
-      dataIndex: 'year',
-      key: 'year',
+      dataIndex: 'financialYear',
+      key: 'financialYear',
       //   width: '50%',
-      render: (value) => <span className={'font-bold'}>{value}</span>,
+      render: (value, record) => (
+        <span className={'font-bold'}>{`${new Date(
+          value.startDate
+        ).getFullYear()} - ${new Date(value.endDate).getFullYear()}`}</span>
+      ),
     },
     {
       title: 'Action',

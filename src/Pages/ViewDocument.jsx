@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Button,
   Form,
@@ -12,82 +12,201 @@ import {
   Row,
   Col,
   Mentions,
+  message,
+  Table,
+  Tooltip,
+  Modal,
+  InputNumber,
 } from 'antd';
 
 import pdf from '../assets/pdf.svg';
 
-import {
-  LuArchive,
-  LuDollarSign,
-  LuFileText,
-  LuMessageSquare,
-  LuSend,
-  LuUser,
-} from 'react-icons/lu';
-import { useGetAllUsers } from '../queryHooks/user';
-import useStore from '../store/store';
-import { FaHandshake } from 'react-icons/fa';
-import { useParams } from 'react-router-dom';
-import { useViewDocument } from '../queryHooks/document';
+import { LuArchive, LuMessageSquare, LuSend, LuUser } from 'react-icons/lu';
 
-const { TextArea } = Input;
+import { FaHandshake } from 'react-icons/fa';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useViewDocument } from '../queryHooks/document';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import axiosInstance from '../Components/axiosInstance';
+import { useUser } from './CustomHook/useUser';
+import dayjs from 'dayjs';
+import { capitalize, formatMoney } from '../../utils/typography';
+import useStore from '../store/store';
+import { PDFViewer } from '../Components/PDFViewer/PdfViewer';
+import { BiEdit } from 'react-icons/bi';
+import { EditOutlined } from '@ant-design/icons';
+import { approveDocument } from '../http/addDocument';
+
 const { Content } = Layout;
 const { Title } = Typography;
 
 function ViewDocument() {
-  const chosenRecord = useStore((state) => state.chosenRecord);
+  const { user: authUser } = useUser();
 
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: 'John Doe',
-      text: 'This is a received comment.',
-      timestamp: '2025-04-14 10:00 AM',
-      type: 'received',
-    },
-    {
-      id: 2,
-      author: 'You',
-      text: 'This is a sent comment.',
-      timestamp: '2025-04-14 10:05 AM',
-      type: 'sent',
-    },
-  ]);
+  const openFileViewer = useStore((state) => state.openFileViewer);
+  const setOpenFileViewer = useStore((state) => state.setOpenFileViewer);
+
+  console.log({ openFileViewer });
+
+  console.log({ setOpenFileViewer });
 
   const [newComment, setNewComment] = useState('');
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [docUrl, setDocUrl] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const { user } = useUser();
 
-  const { data: users } = useGetAllUsers();
+  const { id: docId } = useParams();
 
-  const { id } = useParams();
+  const { data: document } = useViewDocument(docId);
 
-  const { data } = useViewDocument(id);
+  console.log(document && document?.data);
 
-  console.log(data && data?.data);
+  const [form] = Form.useForm();
 
-  // console.log(users && users?.data?.users);
+  const navigate = useNavigate();
 
-  const handleSubmit = () => {
-    if (newComment.trim()) {
-      const newCommentObj = {
-        id: comments.length + 1,
-        author: 'You',
-        text: newComment,
-        timestamp: new Date().toLocaleString(),
-        type: 'sent',
-      };
-      setComments([...comments, newCommentObj]);
-      setNewComment('');
-    }
+  const queryClient = useQueryClient();
+
+  const { mutate: forwardDocument, isPending: submitLoading } = useMutation({
+    mutationKey: 'forwardDocument',
+    mutationFn: (values) => {
+      return axiosInstance.patch(`/trail/${docId}`, {
+        ...values,
+        userId: values?.userId,
+        status: 'Forwarded',
+      });
+    },
+    onSuccess: () => {
+      message.success('Document has been successfully forwarded!');
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['trail'] });
+
+      return navigate('/incoming');
+    },
+    onError: (err) => message.error(err.message),
+  });
+
+  const { data: divisions } = useQuery({
+    queryKey: ['divisions'],
+    queryFn: () => axiosInstance.get('/division'),
+  });
+
+  const { data: departments } = useQuery({
+    queryKey: ['departments', selectedDivision],
+    queryFn: () => axiosInstance.get(`/department/${selectedDivision}`),
+    enabled: !!selectedDivision,
+  });
+
+  const { data: users } = useQuery({
+    queryKey: ['users', selectedDepartment],
+    queryFn: () => axiosInstance.get(`/all-users/${selectedDepartment}`),
+    enabled: !!selectedDepartment,
+  });
+
+  const handleDivisionChange = (value) => setSelectedDivision(value);
+  const handleDepartmentChange = (value) => setSelectedDepartment(value);
+
+  const handleSubmit = (values) => {
+    forwardDocument(values);
   };
 
+  const budgetColums = [
+    {
+      title: 'Item',
+      key: 'item',
+      dataIndex: ['budgetItem', 'item'],
+    },
+    {
+      title: 'Amount',
+      key: 'amount',
+      dataIndex: 'amount',
+      render: (value) => <span>{value && `¢${formatMoney(value)}`}</span>,
+    },
+    {
+      title: 'Allocation',
+      key: 'amount',
+      dataIndex: ['budgetItem', 'amount'],
+      render: (value) => <span>{`¢${formatMoney(value)}`}</span>,
+    },
+
+    {
+      title: 'Balance',
+      dataIndex: 'balance',
+      key: 'balance',
+      render: (value, record) => (
+        <span>
+          {(value && `¢${formatMoney(value)}`) ||
+            `¢${formatMoney(record?.amount)}`}
+        </span>
+      ),
+    },
+    {
+      title: 'Action',
+      dataIndex: 'id',
+      key: 'id',
+      render: (value) => {
+        return (
+          <Tooltip title="Edit Amount">
+            <EditOutlined
+              className="cursor-pointer"
+              onClick={() => setShowModal(true)}
+            />
+          </Tooltip>
+        );
+      },
+    },
+  ];
+
+  const _data = document?.data?.document.budgetAllocations.map((item) => ({
+    ...item,
+    key: item.id,
+  }));
+
+  const { mutate: approveDoc, isPending: approvalLoading } = useMutation({
+    mutationKey: 'approveDoc',
+    mutationFn: () => {
+      return approveDocument(docId);
+    },
+    onSuccess: () => {
+      message.success('Request approved successfully');
+    },
+    onError: (err) => {
+      message.error(err?.response?.data?.error);
+    },
+  });
+
   return (
-    <div className="">
+    <div className="h-full">
+      <Modal
+        open={showModal}
+        onCancel={() => setShowModal(false)}
+        centered
+        footer={false}
+      >
+        <div className="mt-3">
+          <Form layout="vertical">
+            <Form.Item name="amount" label="Amount">
+              <InputNumber className="w-full" placeholder="Enter Amount...." />
+            </Form.Item>
+            <Button
+              className="w-full bg-[#582F08]"
+              htmlType="submit"
+              type="primary"
+            >
+              Submit
+            </Button>
+          </Form>
+        </div>
+      </Modal>
+
       <Content className="p-4 h-full">
         <div className="h-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Document Preview Section */}
           <Card
             bordered={false}
-            className="flex flex-col h-full"
+            className="h-full"
             bodyStyle={{
               height: '100%',
               display: 'flex',
@@ -95,19 +214,18 @@ function ViewDocument() {
               padding: '16px',
             }}
           >
-            <h1 level={4} className="font-semibold text-xl mb-4 flex-shrink-0">
-              Document Preview
+            <h1 className="font-semibold  text-xl mb-4 flex-shrink-0">
+              {document && document?.data?.document?.subject}
             </h1>
             <div className="flex-1 overflow-hidden rounded-lg mb-4 bg-white flex items-center justify-center">
-              <div className="text-center">
-                {/* <LuFileText className="w-48 h-48 text-[#582F08] mx-auto cursor-zoom-in" /> */}
+              <div className="text-center" onClick={() => setOpenFileViewer()}>
                 <img
                   src={pdf}
                   alt="PDF placeholder"
                   className="w-48 h-48 mx-auto cursor-zoom-in"
                 />
                 <p className="mt-4 text-gray-600 font-medium">
-                  document-preview.pdf
+                  {document && document?.data?.document.file?.fileName}
                 </p>
               </div>
             </div>
@@ -116,58 +234,22 @@ function ViewDocument() {
               className="bg-[#582F08]/5 flex-shrink-0"
               bodyStyle={{ padding: '16px' }}
             >
-              <Row gutter={16} className="mb-4">
-                <Col span={12}>
-                  <Statistic
-                    title="Reference"
-                    value={chosenRecord ? chosenRecord?.document?.ref : ''}
-                    precision={2}
-                    valueStyle={{
-                      color: '#582F08',
-                      fontWeight: '600',
-                      fontSize: '12px',
-                    }}
+              {document &&
+                document?.data?.document?.documentType === 'BudgetRelease' && (
+                  <Table
+                    dataSource={_data}
+                    columns={budgetColums}
+                    pagination={false}
                   />
-                </Col>
-                <Col span={12}>
-                  <Statistic
-                    title="Subject"
-                    value={chosenRecord ? chosenRecord?.document?.subject : ''}
-                    precision={2}
-                    valueStyle={{
-                      color: '#582F08',
-                      fontWeight: '600',
-                      fontSize: '12px',
-                    }}
-                  />
-                </Col>
-              </Row>
+                )}
 
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Statistic
-                    title="Amount"
-                    value={10000}
-                    precision={2}
-                    // prefix={<LuDollarSign className="w-4 h-4" />}
-                    valueStyle={{ color: '#582F08', fontWeight: '600' }}
-                  />
-                </Col>
-                <Col span={12}>
-                  <Statistic
-                    title="Budget"
-                    value={10000}
-                    precision={2}
-                    // prefix={<LuCe className="w-4 h-4" />}
-                    valueStyle={{ color: '#582F08', fontWeight: '600' }}
-                  />
-                </Col>
-              </Row>
               <Button
                 type="primary"
                 htmlType="submit"
+                loading={approvalLoading}
                 icon={<FaHandshake className="w-4 h-4" />}
                 className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-6"
+                onClick={() => approveDoc()}
               >
                 Approve
               </Button>
@@ -177,7 +259,7 @@ function ViewDocument() {
           {/* Comments Section */}
           <Card
             bordered={false}
-            className="flex flex-col h-[calc(100vh-10rem)] no-scrollbar"
+            className="h-full"
             bodyStyle={{
               height: '100%',
               display: 'flex',
@@ -185,66 +267,115 @@ function ViewDocument() {
               padding: '16px',
             }}
           >
-            <Title
-              level={4}
-              className="flex items-center gap-2 mb-4 flex-shrink-0"
-            >
+            <div className="flex items-center gap-2 mb-4 flex-shrink-0">
               <LuMessageSquare className="w-6 h-6" />
-              Comments
-            </Title>
+              <Title level={4} style={{ margin: 0 }}>
+                Comments
+              </Title>
+            </div>
 
-            <div className="flex-1 bg-[#e4c8ad] rounded-lg p-4 overflow-y-auto mb-4">
-              {comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className={`flex ${
-                    comment.type === 'sent' ? 'justify-end' : 'justify-start'
-                  } mb-4`}
-                >
+            <div
+              className="flex-1 bg-[#e4c8ad] rounded-lg p-4 overflow-y-auto mb-4"
+              style={{
+                height: 'calc(100vh - 20rem)',
+                minHeight: '200px',
+                maxHeight: 'calc(100vh - 20rem)',
+              }}
+            >
+              {document &&
+                document?.data.document.comments.map((comment) => (
                   <div
-                    className={`flex gap-3 max-w-[80%] ${
-                      comment.type === 'sent' ? 'flex-row-reverse' : 'flex-row'
-                    }`}
+                    key={comment.id}
+                    className={`flex ${
+                      comment.userId === user?.userId
+                        ? 'justify-end'
+                        : 'justify-start'
+                    } mb-4`}
                   >
-                    <Avatar icon={<LuUser className="w-5 h-5" />} />
                     <div
-                      className={`rounded-lg p-4 ${
-                        comment.type === 'sent'
-                          ? 'bg-[#582F08] text-white'
-                          : 'bg-[#9d4d01] text-white'
+                      className={`flex gap-3 max-w-[80%] ${
+                        comment.userId === user?.userId
+                          ? 'flex-row-reverse'
+                          : 'flex-row'
                       }`}
                     >
-                      <p className="font-medium text-sm">{comment.author}</p>
-                      <p className="mt-1">{comment.text}</p>
-                      <p className="text-xs mt-2 opacity-75">
-                        {comment.timestamp}
-                      </p>
+                      <Avatar icon={<LuUser className="w-5 h-5" />} />
+                      <div
+                        className={`rounded-lg p-4 ${
+                          comment.userId === user?.userId
+                            ? 'bg-[#582F08] text-white'
+                            : 'bg-[#9d4d01] text-white'
+                        }`}
+                      >
+                        <p className="font-medium text-sm">
+                          {comment.user?.name}
+                        </p>
+                        <p className="mt-1">{comment.body}</p>
+                        <p className="text-xs mt-2 opacity-75">
+                          {dayjs(comment.createdAt).format('YYYY-MM-DD HH:mm')}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
 
             <Form
               onFinish={handleSubmit}
               layout="vertical"
               className="flex-shrink-0"
+              form={form}
             >
-              <Form.Item label="Forward To" name="recipient" className="mb-2">
-                <Select placeholder="Select recipient...">
-                  <Select.Option value="john">John Doe</Select.Option>
-                  <Select.Option value="jane">Jane Smith</Select.Option>
-                </Select>
+              <Form.Item
+                name="divisionId"
+                label="Division"
+                rules={[{ required: true, message: 'Choose your Division!' }]}
+              >
+                <Select
+                  placeholder="Choose your Division"
+                  allowClear
+                  options={divisions?.data?.map((division) => ({
+                    label: division?.divisionName,
+                    value: division?.divisionId,
+                  }))}
+                  onChange={handleDivisionChange}
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="departmentId"
+                label="Department"
+                rules={[{ required: true, message: 'Choose your Department!' }]}
+              >
+                <Select
+                  placeholder="Choose your Department"
+                  allowClear
+                  options={departments?.data?.data?.map((department) => ({
+                    label: department?.departmentName,
+                    value: department?.departmentId,
+                  }))}
+                  onChange={handleDepartmentChange}
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="userId"
+                label="Recipient"
+                rules={[{ required: true, message: 'Select a User!' }]}
+              >
+                <Select
+                  placeholder="Select a User"
+                  allowClear
+                  options={users?.data
+                    ?.filter((emp) => emp.userId !== user?.userId)
+                    .map((user) => ({
+                      label: user?.name,
+                      value: user?.userId,
+                    }))}
+                />
               </Form.Item>
 
               <Form.Item label="Comment" name="comment" className="mb-2">
-                {/* <TextArea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Write your comment..."
-                  autoSize={{ minRows: 2, maxRows: 3 }}
-                /> */}
-
                 <Mentions
                   style={{ width: '100%' }}
                   value={newComment}
@@ -253,10 +384,9 @@ function ViewDocument() {
                     setNewComment(value);
                   }}
                   onSelect={(onSelect) => console.log(onSelect)}
-                  // defaultValue="@afc163"
                   options={
                     users &&
-                    users?.data?.users?.map((user) => ({
+                    users?.data?.map((user) => ({
                       label: user.name,
                       value: user.name,
                     }))
@@ -271,6 +401,7 @@ function ViewDocument() {
                     htmlType="submit"
                     icon={<LuSend className="w-4 h-4" />}
                     className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80"
+                    loading={submitLoading}
                   >
                     Send
                   </Button>
@@ -286,6 +417,7 @@ function ViewDocument() {
           </Card>
         </div>
       </Content>
+      {openFileViewer && <PDFViewer document={document} />}
     </div>
   );
 }

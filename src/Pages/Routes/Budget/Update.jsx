@@ -1,15 +1,44 @@
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Form, Input, InputNumber, message, Tooltip } from 'antd';
-import React, { useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Select,
+  Tooltip,
+} from 'antd';
+import React, { useEffect, useState } from 'react';
 import { updateBudget } from '../../../http/budget';
 import useStore from '../../../store/store';
 import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../../../Components/axiosInstance';
 
 const UpdateBudget = () => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const chosenRecord = useStore((state) => state.chosenRecord);
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const handleDivisionChange = (value) => setSelectedDivision(value);
+
+  const { data: divisions } = useQuery({
+    queryKey: ['divisions'],
+    queryFn: () => axiosInstance.get('/division'),
+  });
+
+  const { data: departments } = useQuery({
+    queryKey: ['departments', selectedDivision],
+    queryFn: () =>
+      axiosInstance.get(`/department/${chosenRecord?.department?.divisionId}`),
+    enabled: !!chosenRecord?.department?.divisionId,
+  });
+
+  useEffect(() => {
+    if (selectedDivision) {
+      form.setFieldValue('departmentId', '');
+    }
+  }, [selectedDivision]);
 
   const navigate = useNavigate();
 
@@ -30,10 +59,14 @@ const UpdateBudget = () => {
     },
   });
 
+  console.log({ chosenRecord });
+
   useEffect(() => {
     if (chosenRecord) {
       form.setFieldsValue({
         name: chosenRecord.name,
+        divisionId: chosenRecord?.department?.divisionId,
+        departmentId: chosenRecord.departmentId,
         budgetItems: chosenRecord?.budgetItems?.map((item) => ({
           item: item?.item,
           amount: item?.amount,
@@ -60,6 +93,37 @@ const UpdateBudget = () => {
           autoComplete="off"
           requiredMark={true}
         >
+          <Form.Item
+            name="divisionId"
+            label="Division"
+            rules={[{ required: true, message: 'Choose your Division!' }]}
+          >
+            <Select
+              placeholder="Choose your Division"
+              allowClear
+              options={divisions?.data.map((division) => ({
+                label: division?.divisionName,
+                value: division?.divisionId,
+              }))}
+              onChange={handleDivisionChange}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="departmentId"
+            label="Department"
+            rules={[{ required: true, message: 'Choose your Department!' }]}
+          >
+            <Select
+              placeholder="Choose your Department"
+              allowClear
+              options={departments?.data?.data?.map((department) => ({
+                label: department?.departmentName,
+                value: department?.departmentId,
+              }))}
+              // onChange={handleDepartmentChange}
+            />
+          </Form.Item>
           <Form.Item
             name="name"
             label="Budget Title"
@@ -112,8 +176,12 @@ const UpdateBudget = () => {
                     >
                       <InputNumber
                         min={0}
+                        placeholder="Enter Amount"
                         className="w-full"
-                        placeholder="Amount"
+                        formatter={(value) =>
+                          `₵ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                        }
+                        parser={(value) => value?.replace(/₵\s?|(,*)/g, '')}
                       />
                     </Form.Item>
 

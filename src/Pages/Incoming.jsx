@@ -368,12 +368,15 @@ const Incoming = () => {
             <Select
               placeholder="Please select a User"
               allowClear
-              options={users?.data.map((user, index) => {
-                return {
-                  label: user?.name,
-                  value: user?.userId,
-                };
-              })}
+              options={
+                users &&
+                users?.data.map((user, index) => {
+                  return {
+                    label: user?.name,
+                    value: user?.userId,
+                  };
+                })
+              }
               onChange={handleUserChange}
             />
           </Form.Item>

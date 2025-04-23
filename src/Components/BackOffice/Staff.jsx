@@ -9,6 +9,7 @@ import {
   Select,
   Popconfirm,
   Spin,
+  Tag,
 } from 'antd';
 import axiosInstance from '../axiosInstance';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,6 +19,8 @@ import { getStaff } from '../../http/staff';
 import { getDepartments } from '../../http/department';
 import { EditTwoTone, DeleteTwoTone, LoadingOutlined } from '@ant-design/icons';
 import Edit from '../modals/Staff/Edit';
+import { capitalize } from '../../../utils/typography';
+import { useGetRoles } from '../../queryHooks/user';
 
 const Staff = () => {
   const queryClient = useQueryClient();
@@ -52,7 +55,10 @@ const Staff = () => {
       return axiosInstance.get('/division');
     },
   });
+
+  const { data: roles } = useGetRoles();
   // console.log(divisions.data);
+  console.log(roles && roles);
 
   // useQuery for departments
   const { data: departments, refetch } = useQuery({
@@ -177,12 +183,25 @@ const Staff = () => {
       title: 'Division',
       key: 'action',
       dataIndex: ['division', 'divisionName'],
+      render: (value) => <span>{capitalize(value)}</span>,
     },
     {
       title: 'Department',
       key: 'action',
       dataIndex: ['department', 'departmentName'],
+      render: (value) => <span>{capitalize(value)}</span>,
     },
+    {
+      title: 'Role',
+      key: 'role',
+      dataIndex: 'role',
+      render: (value) => {
+        return value?.map((role, idx) => {
+          return <Tag key={idx}>{capitalize(role.role)}</Tag>;
+        });
+      },
+    },
+
     {
       title: 'Actions',
       dataIndex: ['staff', 'StaffId'],
@@ -233,6 +252,7 @@ const Staff = () => {
             name="addStaff"
             onFinish={(values) => handleSubmit(values)}
             form={form}
+            layout="vertical"
           >
             <Form.Item
               name="name"
@@ -314,6 +334,17 @@ const Staff = () => {
                 onChange={handleDepartmentChange}
               />
             </Form.Item>
+            <Form.Item name="roleId">
+              <Select
+                placeholder="Choose Role"
+                options={
+                  roles.data.data.map((role) => ({
+                    label: role.role,
+                    value: role.roleId,
+                  })) || []
+                }
+              />
+            </Form.Item>
             <Form.Item>
               <Button
                 className="w-full bg-[#9D4D01]"
@@ -332,6 +363,7 @@ const Staff = () => {
         popup={popup}
         staffDetail={staffDetail}
         divisions={divisions}
+        roles={roles}
         setPopup={setPopup}
       />
     </div>

@@ -13,6 +13,7 @@ import {
   Cell,
 } from 'recharts';
 import { FaDollarSign, FaChartBar, FaBalanceScale } from 'react-icons/fa';
+import { GiCash } from 'react-icons/gi';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -51,7 +52,7 @@ function Analytics() {
       title: 'Amount Spent',
       dataIndex: 'amount',
       key: 'amount',
-      render: (amount) => `$${amount.toLocaleString()}`,
+      render: (amount) => `¢${amount.toLocaleString()}`,
     },
     {
       title: 'Percentage of Total',
@@ -72,7 +73,7 @@ function Analytics() {
           <Col span={8}>
             <Card className="shadow-sm">
               <div className="flex items-center">
-                <FaDollarSign className="text-2xl text-[#ce6d11] mr-2" />
+                <GiCash className="text-2xl text-[#ce6d11] mr-2" />
                 <div>
                   <p className="text-[#582f08]">Approved Budget</p>
                   <Title level={3} className="text-[#582f08]">

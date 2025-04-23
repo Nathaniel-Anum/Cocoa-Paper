@@ -3,7 +3,7 @@ import { Modal, Button, Input, Form, Select, message } from 'antd';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '../../axiosInstance';
 
-const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
+const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
 
@@ -39,13 +39,13 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
 
   useEffect(() => {
     if (staffDetail) {
-      // console.log(staffDetail);
       form.setFieldsValue({
         name: staffDetail.name,
         staffNumber: staffDetail.staff?.staffNumber,
         email: staffDetail.email,
         divisionId: staffDetail?.division?.divisionId,
         departmentId: staffDetail?.department?.departmentId,
+        roleId: staffDetail?.role?.map((role) => role.roleId),
       });
     }
   }, [staffDetail]);
@@ -85,6 +85,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
         name="EditStaff"
         form={form}
         onFinish={(values) => handleUpdate(values)}
+        layout="vertical"
       >
         <Form.Item
           name="name"
@@ -164,6 +165,18 @@ const Edit = ({ popup, staffDetail, divisions, setPopup }) => {
               };
             })}
             onChange={handleChange}
+          />
+        </Form.Item>
+        <Form.Item name={'roleId'}>
+          <Select
+            mode="multiple"
+            placeholder="Select Role"
+            options={
+              roles.data.data.map((role) => ({
+                label: role.role,
+                value: role.roleId,
+              })) || []
+            }
           />
         </Form.Item>
         <Form.Item>
