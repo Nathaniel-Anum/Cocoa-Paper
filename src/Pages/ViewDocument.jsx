@@ -59,7 +59,7 @@ function ViewDocument() {
 
   const { id: docId } = useParams();
 
-  const { data: document } = useViewDocument(docId);
+  const { data: document, refetch } = useViewDocument(docId);
 
   console.log(document && document?.data);
 
@@ -171,6 +171,7 @@ function ViewDocument() {
     },
     onSuccess: () => {
       message.success('Request approved successfully');
+      refetch();
     },
     onError: (err) => {
       message.error(err?.response?.data?.error);
@@ -243,16 +244,18 @@ function ViewDocument() {
                   />
                 )}
 
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={approvalLoading}
-                icon={<FaHandshake className="w-4 h-4" />}
-                className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-6"
-                onClick={() => approveDoc()}
-              >
-                Approve
-              </Button>
+              {!document?.data?.document?.isApproved && (
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={approvalLoading}
+                  icon={<FaHandshake className="w-4 h-4" />}
+                  className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-6"
+                  onClick={() => approveDoc()}
+                >
+                  Approve
+                </Button>
+              )}
             </Card>
           </Card>
 
