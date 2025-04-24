@@ -1792,24 +1792,8 @@ const AddDocument = () => {
       formData.append('ref', values.ref);
       formData.append('subject', values.subject);
 
-      // Directly show a notification that we're processing
-      // notification.info({
-      //   message: 'Processing Document',
-      //   description: 'Uploading file and creating document...',
-      //   duration: 0, // Don't auto-dismiss
-      //   key: 'document-processing',
-      // });
-
       uploadDoc(formData);
     } else {
-      // Direct document creation (no file)
-      // notification.info({
-      //   message: 'Processing Document',
-      //   description: 'Creating document...',
-      //   duration: 0, // Don't auto-dismiss
-      //   key: 'document-processing',
-      // });
-
       startDocument(submissionData);
     }
   };

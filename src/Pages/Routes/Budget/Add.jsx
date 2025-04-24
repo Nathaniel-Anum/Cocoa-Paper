@@ -137,7 +137,7 @@ const AddBudget = () => {
 
                     <Form.Item
                       {...restField}
-                      name="amount"
+                      name={[name, 'amount']}
                       label="Amount"
                       rules={[
                         { required: true, message: 'Please enter an amount' },
