@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Table, Popover, Steps, Modal } from 'antd';
+import { Table, Popover, Steps, Modal, Popconfirm, message } from 'antd';
 import { useTrail } from './CustomHook/useTrail';
 import { FaRegEye } from 'react-icons/fa';
 import axiosInstance from '../Components/axiosInstance';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import Trail from '../Components/Trail/Trail';
+import { GiRecycle } from 'react-icons/gi';
+import { recallDocument } from '../http/addDocument';
 
 const Outgoing = () => {
   const { trails, isLoading } = useTrail('outgoing');
@@ -92,8 +94,9 @@ const Outgoing = () => {
     {
       title: 'Action',
       key: 'action',
+
       render: (selectedRecord) => (
-        <div className="flex gap-2">
+        <div className="flex gap-x-5">
           <Popover
             content={
               <div>
@@ -105,6 +108,12 @@ const Outgoing = () => {
               <FaRegEye className="text-[20px] text-blue-500" />
             </button>
           </Popover>
+          <Popconfirm
+            title="Are you sure you want to recall this item?"
+            onConfirm={() => callBackDoc(selectedRecord.docID)}
+          >
+            <GiRecycle className="text-[20px] text-green-500 cursor-pointer" />
+          </Popconfirm>
         </div>
       ),
     },
@@ -114,6 +123,21 @@ const Outgoing = () => {
     key: index,
   }));
   // console.log(_data);
+
+  const { mutate: callBackDoc } = useMutation({
+    mutationKey: 'recallDocument',
+    mutationFn: (docId) => {
+      return recallDocument(docId);
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries(['trails']);
+      message.success('Document has been successfully recalled!');
+    },
+    onError: (error) => {
+      message.error(error.message || 'Failed to recall document');
+    },
+  });
 
   return (
     <div className="">
