@@ -19,3 +19,7 @@ export const getDocument = (id) => {
 export const approveDocument = (id) => {
   return axiosInstance.patch(`/document/approve/${id}`);
 };
+
+export const recallDocument = (id) => {
+  return axiosInstance.patch(`/document/recall/${id}`);
+};
