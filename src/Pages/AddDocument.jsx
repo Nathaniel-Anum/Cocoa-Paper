@@ -1681,7 +1681,7 @@ const AddDocument = () => {
         );
         form.resetFields();
         queryClient.invalidateQueries({ queryKey: ['trail'] });
-        isPhysical ? navigate('/physicalDocs') : navigate('/outgoing');
+        isPhysical ? navigate('/') : navigate('/outgoing');
       },
       onError: (error) => {
         setLoading(false);
@@ -1820,13 +1820,13 @@ const AddDocument = () => {
     }
   }, [isSubmitting]);
 
-  if (isPageLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Spin size="large" tip="Loading form..." />
-      </div>
-    );
-  }
+  // if (isPageLoading) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       <Spin size="large" tip="Loading form..." />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="py-6 px-4">
@@ -1875,7 +1875,7 @@ const AddDocument = () => {
                 />
               </Form.Item>
 
-              {/* Reference */}
+              {/* Reference
               <Form.Item
                 label="Reference"
                 name="ref"
@@ -1884,7 +1884,7 @@ const AddDocument = () => {
                 ]}
               >
                 <Input placeholder="Input a Reference Number" />
-              </Form.Item>
+              </Form.Item> */}
 
               {/* Subject */}
               <Form.Item
@@ -1900,9 +1900,11 @@ const AddDocument = () => {
                 <Form.Item
                   name="amount"
                   label="Amount"
-                  rules={[
-                    { required: true, message: 'Please enter an amount' },
-                  ]}
+                  rules={
+                    [
+                      // { required: true, message: 'Please enter an amount' },
+                    ]
+                  }
                 >
                   <InputNumber
                     placeholder="Enter Amount"
@@ -1978,9 +1980,11 @@ const AddDocument = () => {
                                 {...field}
                                 name={[field.name, 'amount']}
                                 label="Amount"
-                                rules={[
-                                  { required: true, message: 'Required' },
-                                ]}
+                                rules={
+                                  [
+                                    // { required: true, message: 'Required' },
+                                  ]
+                                }
                               >
                                 <InputNumber
                                   placeholder="Amount"

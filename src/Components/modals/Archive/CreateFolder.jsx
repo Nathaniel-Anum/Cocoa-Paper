@@ -11,7 +11,11 @@ const CreateFolder = ({ setOpen, open, id }) => {
     mutationKey: 'folder',
     mutationFn: (values) => {
       // console.log(values);
-      return axiosInstance.post('/archive', { ...values, folderId: id });
+      return axiosInstance.post('/archive', {
+        ...values,
+        folderId: id,
+        isArchive: true,
+      });
     },
     onSuccess: () => {
       setOpen(false);

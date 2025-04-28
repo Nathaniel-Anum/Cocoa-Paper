@@ -11,21 +11,30 @@ import {
   Tooltip,
 } from 'antd';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { formatMoney } from '../../../../utils/typography';
 import { EditOutlined } from '@ant-design/icons';
 import { BiTrash } from 'react-icons/bi';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../../../store/store';
 import { LuFilter, LuFuel } from 'react-icons/lu';
-import { useGetAllBudgets } from '../../../queryHooks/budget';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useGetAllBudgets,
+  useGetFinancialYear,
+} from '../../../queryHooks/budget';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { deleteBudget } from '../../../http/budget';
+import { hasPermission, requiredPermissions } from '../../../../utils/Roles';
+import { useUser } from '../../CustomHook/useUser';
+import axiosInstance from '../../../Components/axiosInstance';
 
 const BudgetIndex = () => {
   const navigate = useNavigate();
   const setChosenRecord = useStore((state) => state.setChosenRecord);
   const [showModal, setShowModal] = useState(false);
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [reportFilters, setReportFilters] = useState({});
   const budgetColumns = [
     {
       title: 'Budgetary Item',
@@ -105,7 +114,11 @@ const BudgetIndex = () => {
     },
   ];
 
-  const { data: budgets, isLoading } = useGetAllBudgets();
+  const { data: budgets, isLoading, refetch } = useGetAllBudgets(reportFilters);
+  const { data: financialYear, isLoading: FinancialYearLoading } =
+    useGetFinancialYear({
+      enabled: showModal,
+    });
 
   const data = budgets?.data?.data?.map((s) => ({
     ...s,
@@ -113,6 +126,8 @@ const BudgetIndex = () => {
   }));
 
   const qClient = useQueryClient();
+
+  const { user } = useUser();
 
   const { mutate: removeBudget } = useMutation({
     mutationKey: ['deleteBudget'],
@@ -124,6 +139,56 @@ const BudgetIndex = () => {
     onError: (err) => message.error(err?.response?.data?.error),
   });
 
+  const [form] = Form.useForm();
+
+  const handleDivisionChange = (value) => {
+    setSelectedDivision(value);
+    setSelectedDepartment('');
+    form.setFieldsValue({
+      departmentId: undefined,
+      userId: undefined,
+    });
+  };
+
+  const handleDepartmentChange = (value) => {
+    setSelectedDepartment(value);
+    form.setFieldsValue({
+      userId: undefined,
+    });
+  };
+
+  const { data: divisions, isLoading: divisionsLoading } = useQuery({
+    queryKey: ['divisions'],
+    queryFn: async () => {
+      try {
+        return await axiosInstance.get('/division');
+      } catch (error) {
+        message.error('Failed to Load Divisions', error);
+        return { data: [] };
+      }
+    },
+  });
+
+  // Fetch departments based on selected division
+  const { data: departments, isLoading: departmentsLoading } = useQuery({
+    queryKey: ['departments', selectedDivision],
+    queryFn: async () => {
+      try {
+        return await axiosInstance.get(`/department/${selectedDivision}`);
+      } catch (error) {
+        message.error('Failed to Load Departments', error);
+        return { data: { data: [] } };
+      }
+    },
+    enabled: !!selectedDivision,
+  });
+
+  useEffect(() => {
+    if (reportFilters) {
+      refetch();
+    }
+  }, [reportFilters]);
+
   return (
     <div>
       <Modal
@@ -133,18 +198,71 @@ const BudgetIndex = () => {
         title="FILTER BUDGET"
       >
         <div className="mt-10">
-          <Form name="budget-filter" layout="vertical">
+          <Form
+            name="budget-filter"
+            layout="vertical"
+            onFinish={(values) => {
+              setReportFilters(values);
+              setShowModal(false);
+            }}
+          >
+            <Form.Item name="divisionId" label="Division">
+              <Select
+                placeholder="Select Division"
+                onChange={handleDivisionChange}
+                options={
+                  divisions?.data?.map((division) => ({
+                    label: division?.divisionName,
+                    value: division?.divisionId,
+                  })) || []
+                }
+                showSearch
+                optionFilterProp="label"
+              />
+            </Form.Item>
+
+            {/* Department */}
+            <Form.Item
+              name="departmentId"
+              label="Department"
+              // rules={[
+              //   { required: true, message: 'Please select a Department' },
+              // ]}
+            >
+              <Select
+                placeholder="Select Department"
+                onChange={handleDepartmentChange}
+                options={
+                  departments?.data?.data?.map((department) => ({
+                    label: department?.departmentName,
+                    value: department?.departmentId,
+                  })) || []
+                }
+                disabled={!selectedDivision}
+                showSearch
+                optionFilterProp="label"
+              />
+            </Form.Item>
+
             <Form.Item name="budgetItem" label="Budget Item">
               <Select
                 placeholder="Select Budget Item"
                 className="w-full"
-                options={[{ label: 'Some Label', value: 'Some Value' }]}
+                options={budgets?.data?.data?.map((budget) => ({
+                  label: budget?.name,
+                  value: budget?.id,
+                }))}
               />
             </Form.Item>
             <Form.Item name="year" label="Year">
               <Select
                 className="w-full"
-                options={[{ label: 'Some Label', value: 'Some Value' }]}
+                options={financialYear?.data?.data?.map((year) => ({
+                  label: `${new Date(
+                    year.startDate
+                  ).getFullYear()} - ${new Date(year.endDate).getFullYear()}`,
+                  value: year.id,
+                }))}
                 placeholder="Select Year"
               />
             </Form.Item>
@@ -161,12 +279,16 @@ const BudgetIndex = () => {
 
       <div className="flex justify-end gap-2 items-center">
         <Input.Search placeholder="Search...." className="w-[20rem]" />
-        <Button
-          className=" bg-[#9D4D01] text-white"
-          onClick={() => navigate('/add-budget-item')}
-        >
-          Add Budgetary Item
-        </Button>
+        {hasPermission(user?.role[0].rolePermissions, [
+          requiredPermissions.CREATE_BUDGET,
+        ]) && (
+          <Button
+            className=" bg-[#9D4D01] text-white"
+            onClick={() => navigate('/add-budget-item')}
+          >
+            Add Budgetary Item
+          </Button>
+        )}
         <Tooltip text="Filter">
           <LuFilter
             className="text-2xl text-[#9D4D01] cursor-pointer"

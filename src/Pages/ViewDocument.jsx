@@ -36,6 +36,8 @@ import { PDFViewer } from '../Components/PDFViewer/PdfViewer';
 import { BiEdit } from 'react-icons/bi';
 import { EditOutlined } from '@ant-design/icons';
 import { approveDocument } from '../http/addDocument';
+import { hasPermission, requiredPermissions } from '../../utils/Roles';
+import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -46,14 +48,10 @@ function ViewDocument() {
   const openFileViewer = useStore((state) => state.openFileViewer);
   const setOpenFileViewer = useStore((state) => state.setOpenFileViewer);
 
-  console.log({ openFileViewer });
-
-  console.log({ setOpenFileViewer });
-
   const [newComment, setNewComment] = useState('');
   const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [docUrl, setDocUrl] = useState('');
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const { user } = useUser();
 
@@ -220,14 +218,18 @@ function ViewDocument() {
             </h1>
             <div className="flex-1 overflow-hidden rounded-lg mb-4 bg-white flex items-center justify-center">
               <div className="text-center" onClick={() => setOpenFileViewer()}>
-                <img
-                  src={pdf}
-                  alt="PDF placeholder"
-                  className="w-48 h-48 mx-auto cursor-zoom-in"
-                />
-                <p className="mt-4 text-gray-600 font-medium">
-                  {document && document?.data?.document.file?.fileName}
-                </p>
+                {document && document?.data?.document.file && (
+                  <>
+                    <img
+                      src={pdf}
+                      alt="PDF placeholder"
+                      className="w-48 h-48 mx-auto cursor-zoom-in"
+                    />
+                    <p className="mt-4 text-gray-600 font-medium">
+                      {document && document?.data?.document.file?.fileName}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
             <Card
@@ -235,7 +237,9 @@ function ViewDocument() {
               className="bg-[#582F08]/5 flex-shrink-0"
               bodyStyle={{ padding: '16px' }}
             >
-              {document &&
+              {hasPermission(user?.role[0].rolePermissions, [
+                requiredPermissions.APPROVE_DOCUMENT,
+              ]) &&
                 document?.data?.document?.documentType === 'BudgetRelease' && (
                   <Table
                     dataSource={_data}
@@ -244,18 +248,21 @@ function ViewDocument() {
                   />
                 )}
 
-              {!document?.data?.document?.isApproved && (
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={approvalLoading}
-                  icon={<FaHandshake className="w-4 h-4" />}
-                  className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-6"
-                  onClick={() => approveDoc()}
-                >
-                  Approve
-                </Button>
-              )}
+              {hasPermission(user?.role[0].rolePermissions, [
+                requiredPermissions.APPROVE_DOCUMENT,
+              ]) &&
+                !document?.data?.document?.isApproved && (
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={approvalLoading}
+                    icon={<FaHandshake className="w-4 h-4" />}
+                    className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-6"
+                    onClick={() => approveDoc()}
+                  >
+                    Approve
+                  </Button>
+                )}
             </Card>
           </Card>
 
@@ -411,6 +418,9 @@ function ViewDocument() {
                   <Button
                     icon={<LuArchive className="w-4 h-4" />}
                     className="flex-1 bg-[#9d4d01] hover:bg-[#9d4d01]/80 text-white"
+                    onClick={() => {
+                      setShowArchiveModal(true);
+                    }}
                   >
                     Archive
                   </Button>
@@ -421,6 +431,13 @@ function ViewDocument() {
         </div>
       </Content>
       {openFileViewer && <PDFViewer document={document} />}
+      {showArchiveModal && (
+        <ArchiveFiles
+          show={showArchiveModal}
+          record={document?.data.document}
+          setShow={setShowArchiveModal}
+        />
+      )}
     </div>
   );
 }

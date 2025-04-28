@@ -1,27 +1,26 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
-import axiosInstance from "../../axiosInstance";
-import { Button, Form, Input, Modal, Upload, message } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import axiosInstance from '../../axiosInstance';
+import { Button, Form, Input, Modal, Upload, message } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 
 const UploadFile = ({ setShow, show, id }) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
-  const [selectedFile, setSelectedFile] = useState("");
+  const [selectedFile, setSelectedFile] = useState('');
 
   const { mutate: uploadFile } = useMutation({
-    mutationKey: "fileUpload",
+    mutationKey: 'fileUpload',
     mutationFn: (values) => {
       // console.log(values);
-      return axiosInstance.post("/upload", values);
+      return axiosInstance.post('/upload', values);
     },
     onSuccess: () => {
       setShow(false);
       form.resetFields();
-      message.success("file uploaded successfully!");
-      queryClient.invalidateQueries({ mutationKey: "folder" });
-      
+      message.success('file uploaded successfully!');
+      queryClient.invalidateQueries({ mutationKey: 'folder' });
     },
     onError: (error) => {
       setOpen(false);
@@ -37,10 +36,11 @@ const UploadFile = ({ setShow, show, id }) => {
     // console.log(values);
     if (selectedFile) {
       const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("ref", values.ref);
-      formData.append("subject", values.subject);
-      formData.append("folderId", id);
+      formData.append('file', selectedFile);
+      formData.append('ref', values.ref);
+      formData.append('subject', values.subject);
+      formData.append('folderId', id);
+      formData.append('isArchive', true);
       uploadFile(formData);
     }
   };
@@ -58,7 +58,7 @@ const UploadFile = ({ setShow, show, id }) => {
           rules={[
             {
               required: true,
-              message: "Please input a subject for your file!",
+              message: 'Please input a subject for your file!',
             },
           ]}
         >
@@ -70,7 +70,7 @@ const UploadFile = ({ setShow, show, id }) => {
           rules={[
             {
               required: true,
-              message: "Please enter a reference for your file!",
+              message: 'Please enter a reference for your file!',
             },
           ]}
         >

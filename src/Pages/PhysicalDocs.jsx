@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, message, Popover, Form, Input, Select } from 'antd';
+import { Table, message, Popover, Form, Input, Select, Tooltip } from 'antd';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTrail } from './CustomHook/useTrail';
 import axiosInstance from '../Components/axiosInstance';
@@ -27,7 +27,7 @@ const PhysicalDocs = () => {
       message.success('Document Received Successfully!');
       queryClient.invalidateQueries({ queryKey: ['trail'] });
       if (_data.length < 1) {
-        navigate('//dashboard/incoming');
+        navigate('/dashboard/incoming');
       }
     },
     onError: (error) => {
@@ -115,13 +115,7 @@ const PhysicalDocs = () => {
       render: (selectedRecord) => (
         <div>
           <div className="flex gap-2">
-            <Popover
-              content={
-                <div>
-                  <p>Receive</p>
-                </div>
-              }
-            >
+            <Tooltip title={'Receive Document'}>
               <button
                 // className="bg-[#582f08] text-white px-2 rounded-lg font-semibold text-[0.9rem]"
 
@@ -129,7 +123,7 @@ const PhysicalDocs = () => {
               >
                 <CheckOutlined />
               </button>
-            </Popover>
+            </Tooltip>
           </div>
         </div>
       ),

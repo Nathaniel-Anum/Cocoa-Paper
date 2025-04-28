@@ -13,7 +13,8 @@ import {
   Cell,
 } from 'recharts';
 import { FaDollarSign, FaChartBar, FaBalanceScale } from 'react-icons/fa';
-import { GiCash } from 'react-icons/gi';
+import { GiCash, GiMoneyStack } from 'react-icons/gi';
+import { useGetAnalytics } from '../queryHooks/analytics';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -42,17 +43,21 @@ const topSpenders = [
 const COLORS = ['#e4c8ad', '#ce6d11', '#582f08', '#ce6d11'];
 
 function Analytics() {
+  const { data: analytics } = useGetAnalytics();
+
+  console.log(analytics && { analytics });
+
   const columns = [
     {
       title: 'Department',
-      dataIndex: 'department',
+      dataIndex: 'name',
       key: 'department',
     },
     {
       title: 'Amount Spent',
-      dataIndex: 'amount',
+      dataIndex: 'spending',
       key: 'amount',
-      render: (amount) => `¢${amount.toLocaleString()}`,
+      render: (spending) => `¢${spending.toLocaleString()}`,
     },
     {
       title: 'Percentage of Total',
@@ -73,11 +78,13 @@ function Analytics() {
           <Col span={8}>
             <Card className="shadow-sm">
               <div className="flex items-center">
-                <GiCash className="text-2xl text-[#ce6d11] mr-2" />
+                <GiMoneyStack className="text-2xl text-[#ce6d11] mr-2" />
                 <div>
                   <p className="text-[#582f08]">Approved Budget</p>
                   <Title level={3} className="text-[#582f08]">
-                    ¢{budgetData.approved.toLocaleString()}
+                    ¢
+                    {analytics &&
+                      analytics?.data?.data?.approvedBudget.toLocaleString()}
                   </Title>
                 </div>
               </div>
@@ -90,7 +97,9 @@ function Analytics() {
                 <div>
                   <p className="text-[#582f08]">Total Spent</p>
                   <Title level={3} className="text-[#582f08]">
-                    ¢{budgetData.spent.toLocaleString()}
+                    ¢
+                    {analytics &&
+                      analytics?.data?.data?.totalMoneySpent.toLocaleString()}
                   </Title>
                 </div>
               </div>
@@ -103,7 +112,9 @@ function Analytics() {
                 <div>
                   <p className="text-[#582f08]">Balance</p>
                   <Title level={3} className="text-[#582f08]">
-                    ¢{budgetData.balance.toLocaleString()}
+                    ¢
+                    {analytics &&
+                      analytics?.data?.data?.balance.toLocaleString()}
                   </Title>
                 </div>
               </div>
@@ -122,7 +133,9 @@ function Analytics() {
               <BarChart
                 width={700}
                 height={300}
-                data={departmentSpending}
+                data={
+                  analytics && analytics?.data?.data?.divisionSpendingPerBudgets
+                }
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e4c8ad" />
@@ -131,7 +144,7 @@ function Analytics() {
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="budget" fill="#582f08" name="Budget" />
-                <Bar dataKey="spent" fill="#ce6d11" name="Spent" />
+                <Bar dataKey="spending" fill="#ce6d11" name="Spent" />
               </BarChart>
             </Card>
           </Col>
@@ -143,20 +156,23 @@ function Analytics() {
             >
               <PieChart width={300} height={300}>
                 <Pie
-                  data={topSpenders}
+                  data={analytics && analytics?.data?.data?.divisionSpending}
                   cx={150}
                   cy={150}
                   labelLine={false}
                   outerRadius={100}
                   fill="#8884d8"
-                  dataKey="amount"
+                  dataKey="spending"
                 >
-                  {topSpenders.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
+                  {analytics &&
+                    analytics?.data?.data?.divisionSpending.map(
+                      (entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      )
+                    )}
                 </Pie>
                 <Tooltip />
                 <Legend />
@@ -173,7 +189,7 @@ function Analytics() {
         >
           <Table
             columns={columns}
-            dataSource={topSpenders}
+            dataSource={analytics && analytics?.data?.data?.topSpenders}
             pagination={false}
           />
         </Card>

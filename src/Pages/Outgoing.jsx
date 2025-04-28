@@ -135,12 +135,12 @@ const Outgoing = () => {
       message.success('Document has been successfully recalled!');
     },
     onError: (error) => {
-      message.error(error.message || 'Failed to recall document');
+      message.error(error.response.data.error || 'Failed to recall document');
     },
   });
 
   return (
-    <div className="">
+    <div className="mt-8">
       <Trail
         open={open}
         handleCancel={handleClose}

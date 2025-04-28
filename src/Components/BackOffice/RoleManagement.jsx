@@ -142,7 +142,7 @@ const RoleManagement = () => {
       render: (rolePermissions) => {
         // console.log(rolePermissions);
         return rolePermissions.map((permission, index) => (
-          <Tag color={getColor(index)} key={permission} className="">
+          <Tag color={getColor(index)} key={index} className="">
             {permission.permission.permission.toLowerCase()}
           </Tag>
           // <div key={index}>{permission.permission.permission}</div>

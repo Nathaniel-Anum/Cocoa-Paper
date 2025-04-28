@@ -37,6 +37,7 @@ const Staff = () => {
   const [popup, setPopup] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState('');
   const [loading, setLoading] = useState(false); // Loading state for button
+  const [searchText, setSearchText] = useState('');
 
   const [staffDetail, setStaffDetail] = useState({});
 
@@ -90,7 +91,7 @@ const Staff = () => {
   // console.log(data?.data?.staff);
 
   // useMutation to add staffs
-  const { mutate, isPending } = useMutation({
+  const { mutate, isPending: addUserLoading } = useMutation({
     mutationKey: 'staff',
     mutationFn: (values) => {
       // console.log(values);
@@ -141,8 +142,8 @@ const Staff = () => {
     mutate(values);
   };
 
-  if (isLoading || isPending)
-    return <Spin className=" flex justify-center pt-[100px]" />;
+  // if (isLoading || isPending)
+  //   return <Spin className=" flex justify-center pt-[100px]" />;
   // return <div className="  flex justify-center pt-[100px] ">LOADING....</div>;
 
   const handleDepartmentChange = (value) => {
@@ -166,7 +167,16 @@ const Staff = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: (text) => <a>{text}</a>,
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        return (
+          record.name.toLowerCase().includes(searchText.toLowerCase()) ||
+          record.email.toLowerCase().includes(searchText.toLowerCase()) ||
+          record.staff.staffNumber
+            .toLowerCase()
+            .includes(searchText.toLowerCase())
+        );
+      },
     },
     {
       title: 'Staff Number',
@@ -231,17 +241,6 @@ const Staff = () => {
   return (
     <div>
       <div className=" px-[240px] pt-[50px] ">
-        <div className=" flex justify-end py-[10px]">
-          <Button
-            type="primary"
-            onClick={showModal}
-            className="bg-[#582F08] text-[#edd3bb] font-semibold "
-            loading={loading}
-          >
-            Add Staff
-          </Button>
-        </div>
-
         <Modal
           open={open}
           title="Add Staff"
@@ -338,7 +337,7 @@ const Staff = () => {
               <Select
                 placeholder="Choose Role"
                 options={
-                  roles.data.data.map((role) => ({
+                  roles?.data?.data.map((role) => ({
                     label: role.role,
                     value: role.roleId,
                   })) || []
@@ -350,12 +349,28 @@ const Staff = () => {
                 className="w-full bg-[#9D4D01]"
                 type="primary"
                 htmlType="submit"
+                loading={addUserLoading}
               >
                 Submit
               </Button>
             </Form.Item>
           </Form>
         </Modal>
+        <div className=" flex justify-end gap-4 py-[10px]">
+          <Input.Search
+            className="w-[30rem]"
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          <Button
+            type="primary"
+            onClick={showModal}
+            className="bg-[#582F08] text-[#edd3bb] font-semibold "
+            loading={loading}
+          >
+            Add Staff
+          </Button>
+        </div>
+
         <Table columns={columns} dataSource={_data} />
         {/* <Spin /> */}
       </div>

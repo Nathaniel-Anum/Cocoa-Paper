@@ -30,6 +30,10 @@ export const requiredPermissions = {
   UPDATE_ARCHIVE: 'UPDATE_ARCHIVE',
   CREATE_ARCHIVE: 'CREATE_ARCHIVE',
   DELETE_ARCHIVE: 'DELETE_ARCHIVE',
+  READ_ANALYTICS: 'READ_ANALYTICS',
+  CREATE_BUDGET: 'CREATE_BUDGET',
+  READ_BUDGET: 'READ_BUDGET',
+  APPROVE_DOCUMENT: 'APPROVE_DOCUMENT',
 };
 
 export function hasPermission(userPermissions, requiredPermissions) {

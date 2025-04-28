@@ -1,10 +1,10 @@
-import React from "react";
-import { Popover, Table, Tooltip } from "antd";
-import { useQuery } from "@tanstack/react-query";
-import axiosInstance from "../Components/axiosInstance";
-import Trail from "../Components/Trail/Trail";
-import { FaRegEye } from "react-icons/fa";
-import { isArray } from "lodash";
+import React from 'react';
+import { Popover, Table, Tooltip } from 'antd';
+import { useQuery } from '@tanstack/react-query';
+import axiosInstance from '../Components/axiosInstance';
+import Trail from '../Components/Trail/Trail';
+import { FaRegEye } from 'react-icons/fa';
+import { isArray } from 'lodash';
 const WorkHistory = () => {
   const [showModal, setShowModal] = React.useState(false);
   const [trails, setTrails] = React.useState([]);
@@ -15,32 +15,32 @@ const WorkHistory = () => {
     isLoading,
     isFetching,
   } = useQuery({
-    queryKey: ["workHistory"],
+    queryKey: ['workHistory'],
     queryFn: () => {
-      return axiosInstance.get("/archived-trails");
+      return axiosInstance.get('/archived-trails');
     },
   }); // Fetch work history data
 
   const columns = [
     {
-      title: "Subject",
-      dataIndex: "subject",
-      key: "subject",
+      title: 'Subject',
+      dataIndex: 'subject',
+      key: 'subject',
     },
     {
-      title: "File Name",
-      dataIndex: ["file", "fileName"],
-      key: "FileName",
+      title: 'File Name',
+      dataIndex: ['file', 'fileName'],
+      key: 'FileName',
     },
     {
-      title: "Reference",
-      dataIndex: "ref",
-      key: "ref",
+      title: 'Reference',
+      dataIndex: 'ref',
+      key: 'ref',
     },
     {
-      title: "Action",
-      dataIndex: "trail",
-      key: "trail",
+      title: 'Action',
+      dataIndex: 'trail',
+      key: 'trail',
       render: (value) => {
         return (
           <Popover
@@ -63,9 +63,7 @@ const WorkHistory = () => {
     },
   ];
 
- //useQuery to fetch recovery 
-
- 
+  //useQuery to fetch recovery
 
   const _data =
     workHistory &&
@@ -90,6 +88,7 @@ const WorkHistory = () => {
           trails={trails}
         />
         <Table
+          className="mt-8"
           // loading={isLoading || isFetching}
           dataSource={isArray(workHistory?.data) ? _data : []}
           // dataSource={_data}

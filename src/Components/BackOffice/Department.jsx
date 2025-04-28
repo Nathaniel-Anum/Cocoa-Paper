@@ -19,6 +19,7 @@ const Department = () => {
   const [open, setOpen] = useState(false);
   const [popup, setPopup] = useState(false);
   const [departmentDetail, setDepartmentDetail] = useState({});
+  const [searchText, setSearchText] = useState('');
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -89,7 +90,12 @@ const Department = () => {
       title: ' Department Name',
       dataIndex: 'departmentName',
       key: 'name',
-      render: (text) => <a>{text}</a>,
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        return record.departmentName
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
+      },
     },
     {
       title: 'Division',
@@ -124,13 +130,18 @@ const Department = () => {
   return (
     <div>
       <div className=" px-[240px] pt-[50px] ">
-        <div className=" flex justify-end py-[10px]">
+        <div className=" flex justify-end gap-4 py-[10px]">
+          <Input.Search
+            className="w-[30rem]"
+            onChange={(e) => setSearchText(e.target.value)}
+          />
           <Button
             type="primary"
             onClick={showModal}
             className="bg-[#582F08] text-[#edd3bb] font-semibold "
+            // loading={loading}
           >
-            Add Department
+            Add Staff
           </Button>
         </div>
         <Table columns={columns} dataSource={_data} />

@@ -144,10 +144,7 @@ function App() {
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(user?.role[0].rolePermissions, [
-                    requiredPermissions.UPDATE_DOCUMENT,
-                    requiredPermissions.DELETE_DOCUMENT,
-                    requiredPermissions.READ_DOCUMENT,
-                    requiredPermissions.CREATE_DOCUMENT,
+                    requiredPermissions.READ_ANALYTICS,
                   ])}
                 >
                   <Analytics />
@@ -190,10 +187,7 @@ function App() {
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(user?.role[0].rolePermissions, [
-                    requiredPermissions.CREATE_TRAIL,
-                    requiredPermissions.DELETE_TRAIL,
-                    requiredPermissions.READ_TRAIL,
-                    requiredPermissions.UPDATE_TRAIL,
+                    requiredPermissions.READ_BUDGET,
                   ])}
                 >
                   <BudgetIndex />

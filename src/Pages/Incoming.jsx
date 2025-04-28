@@ -10,6 +10,7 @@ import {
   Steps,
   Dropdown,
   Upload,
+  notification,
 } from 'antd';
 import { useTrail } from './CustomHook/useTrail';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -24,6 +25,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { GiTrail } from 'react-icons/gi';
 import useStore from '../store/store';
 import { SlOptionsVertical } from 'react-icons/sl';
+import TextArea from 'antd/es/input/TextArea';
+import { useUser } from './CustomHook/useUser';
+import { uploadFile } from '../http/addDocument';
 
 const Incoming = () => {
   const { trails, isLoading } = useTrail('incoming');
@@ -36,6 +40,7 @@ const Incoming = () => {
 
   const [senderId, setSenderId] = useState('');
 
+  const { user } = useUser();
   const navigate = useNavigate();
 
   const queryClient = useQueryClient();
@@ -50,6 +55,7 @@ const Incoming = () => {
   // console.log(trails);
 
   const handleCancel = () => {
+    form.resetFields();
     setIsModalOpen(false);
   };
 
@@ -95,8 +101,6 @@ const Incoming = () => {
   const { mutate: forwardDocument } = useMutation({
     mutationKey: 'forwardDocument',
     mutationFn: (values) => {
-      // console.log(values);
-      // console.log(`Document Id: ${selected}`);
       return axiosInstance.patch(`/trail/${selected}`, {
         userId: values?.userId,
         status: 'Forwarded',
@@ -129,6 +133,44 @@ const Incoming = () => {
     }
   }, [selectedDepartment]);
 
+  const showErrorNotification = (title, error) => {
+    let description = 'An unexpected error occurred.';
+
+    // Try to extract error message from different formats
+    if (typeof error === 'string') {
+      description = error;
+    } else if (error?.message) {
+      description = error.message;
+    } else if (error?.response?.data?.error) {
+      if (Array.isArray(error.response.data.error)) {
+        description = error.response.data.error
+          .map((e) => e.msg || e)
+          .join(', ');
+      } else {
+        description = error.response.data.error;
+      }
+    } else if (error?.response?.data?.msg) {
+      description = error.response.data.msg;
+    }
+
+    // Log the error for debugging
+    console.error(`${title}:`, error);
+
+    // Show notification
+    notification.error({
+      message: title,
+      description,
+    });
+  };
+
+  // Helper function to show success notification
+  const showSuccessNotification = (title, description) => {
+    notification.success({
+      message: title,
+      description,
+    });
+  };
+
   //useQUery to fetch trail associated to doc ID
   const { data: trailData } = useQuery({
     queryKey: ['trailData', trailId],
@@ -136,6 +178,34 @@ const Incoming = () => {
       return axiosInstance.get(`/trail/${trailId}`);
     },
     enabled: !!trailId, // Only fetch if trailId is set
+  });
+
+  const { mutate: uploadDoc, isPending: isUploading } = useMutation({
+    mutationKey: ['upload'],
+    mutationFn: async (formData) => {
+      console.log('Uploading file...');
+      try {
+        const response = await uploadFile(formData);
+
+        if (!response?.data?.newFile?.fileId) {
+          throw new Error('File upload successful but no file ID was returned');
+        }
+
+        return response.data.newFile.fileId;
+      } catch (error) {
+        // Re-throw for onError handler
+        throw error;
+      }
+    },
+    onSuccess: (fileId) => {
+      console.log('File uploaded successfully with ID:', fileId);
+      const values = form.getFieldsValue();
+      forwardDocument({ ...values, fileId });
+    },
+    onError: (error) => {
+      setLoading(false);
+      showErrorNotification('File Upload Failed', error.response.data.error);
+    },
   });
 
   // console.log(trailData?.data);
@@ -156,10 +226,17 @@ const Incoming = () => {
     setSelected(selectedRecord?.docID);
   };
 
-  const handleFormSubmit = (selectedRecord) => {
+  const handleFormSubmit = (values) => {
     setLoading(true);
 
-    forwardDocument(selectedRecord);
+    if (values.additionalFile && values.additionalFile.file) {
+      const formData = new FormData();
+      formData.append('file', values.additionalFile.file);
+
+      uploadDoc(formData);
+    } else {
+      forwardDocument(values);
+    }
   };
 
   const handleView = (selectedRecord) => {
@@ -295,7 +372,7 @@ const Incoming = () => {
   };
 
   return (
-    <div className="">
+    <div className="mt-8">
       <Table columns={columns} dataSource={_data} loading={isLoading} />
       <Modal
         name="Forward Document"
@@ -368,20 +445,21 @@ const Incoming = () => {
             <Select
               placeholder="Please select a User"
               allowClear
-              options={
-                users &&
-                users?.data.map((user, index) => {
-                  return {
-                    label: user?.name,
-                    value: user?.userId,
-                  };
-                })
-              }
-              onChange={handleUserChange}
+              options={(users?.data || [])
+                .filter((emp) => emp.userId !== user?.userId)
+                .map((user) => ({
+                  label: user?.name,
+                  value: user?.userId,
+                }))}
+              // onChange={handleUserChange}
             />
           </Form.Item>
 
-          <Form.Item name="additionalFile" className="flex justify-center">
+          <Form.Item label="Comment" name="comment">
+            <TextArea rows={4} placeholder="Enter Comment...." />
+          </Form.Item>
+
+          <Form.Item name="additionalFile" className="flex justify-start">
             <Upload {...props}>
               <Button
                 icon={<UploadOutlined />}
@@ -396,7 +474,7 @@ const Incoming = () => {
             <Button
               type="primary"
               htmlType="submit"
-              className="bg-[#582F08] px-5 py-1 text-white w-full"
+              className="bg-[#582F08] px-5 py-1 text-white w-full flex"
               loading={loading}
             >
               Forward

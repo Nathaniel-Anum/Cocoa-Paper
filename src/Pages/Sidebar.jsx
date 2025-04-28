@@ -16,16 +16,20 @@ const Sidebar = () => {
             <img src="/asset/logo.9a18109e1c16584832d5.png" alt="" />
           </div>
           <ul className="list-none  px-[15px] py-[25px]  flex flex-col gap-[35px]  my-[20px] cursor-pointer ">
-            <Link to="/analytics">
-              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-                <HiMiniPresentationChartLine
-                  className="w-[6rem] text-[#E3BC97]"
-                  size={50}
-                />
+            {hasPermission(user?.role[0].rolePermissions, [
+              requiredPermissions.READ_ANALYTICS,
+            ]) && (
+              <Link to="/analytics">
+                <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+                  <HiMiniPresentationChartLine
+                    className="w-[6rem] text-[#E3BC97]"
+                    size={50}
+                  />
 
-                <p>Analytics</p>
-              </li>
-            </Link>
+                  <p>Analytics</p>
+                </li>
+              </Link>
+            )}
             <Link to="/">
               <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
                 <img
@@ -79,13 +83,20 @@ const Sidebar = () => {
               </Link>
             )}
 
-            <Link to="/budget">
-              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-                <GiTakeMyMoney className="w-[6rem] text-[#E3BC97]" size={60} />
+            {hasPermission(user?.role[0].rolePermissions, [
+              requiredPermissions.READ_BUDGET,
+            ]) && (
+              <Link to="/budget">
+                <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+                  <GiTakeMyMoney
+                    className="w-[6rem] text-[#E3BC97]"
+                    size={60}
+                  />
 
-                <p>Budget</p>
-              </li>
-            </Link>
+                  <p>Budget</p>
+                </li>
+              </Link>
+            )}
             <Link to="/trash">
               <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
                 <img

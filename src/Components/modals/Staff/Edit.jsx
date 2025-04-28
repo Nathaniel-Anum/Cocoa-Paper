@@ -172,10 +172,12 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
             mode="multiple"
             placeholder="Select Role"
             options={
-              roles.data.data.map((role) => ({
-                label: role.role,
-                value: role.roleId,
-              })) || []
+              (roles &&
+                roles?.data?.data.map((role) => ({
+                  label: role.role,
+                  value: role.roleId,
+                }))) ||
+              []
             }
           />
         </Form.Item>

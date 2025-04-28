@@ -21,5 +21,5 @@ export const approveDocument = (id) => {
 };
 
 export const recallDocument = (id) => {
-  return axiosInstance.patch(`/document/recall/${id}`);
+  return axiosInstance.patch(`/trail/${id}/recall`);
 };

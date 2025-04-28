@@ -132,7 +132,11 @@ const Archive = () => {
       },
       onSuccess: () => {
         message.success('Deleted Successfully');
-        queryClient.invalidateQueries(['archive']);
+        queryClient.invalidateQueries({
+          queryKey: ['archive'],
+          exact: false,
+          refetchType: 'all',
+        });
       },
     }),
 
@@ -147,7 +151,11 @@ const Archive = () => {
       },
       onSuccess: () => {
         message.success('Successfully Updated');
-        queryClient.invalidateQueries(['archive']);
+        queryClient.invalidateQueries({
+          queryKey: ['archive'],
+          exact: false,
+          refetchType: 'all',
+        });
         setModalStates((prev) => ({ ...prev, editModal: false }));
       },
     }),
@@ -169,8 +177,16 @@ const Archive = () => {
       onSuccess: () => {
         message.success('Moved Successfully');
         // Invalidate both queries to ensure fresh data
-        queryClient.invalidateQueries(['archive']);
-        queryClient.invalidateQueries(['moveFolder']);
+        queryClient.invalidateQueries({
+          queryKey: ['archive'],
+          exact: false,
+          refetchType: 'all',
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['moveFolder'],
+          exact: false,
+          refetchType: 'all',
+        });
 
         // Reset states
         setModalStates((prev) => ({ ...prev, moveModal: false }));
@@ -193,7 +209,11 @@ const Archive = () => {
         axiosInstance.patch(`/unarchive/${record.fileId}`),
       onSuccess: () => {
         message.success('File Successfully unarchived');
-        queryClient.invalidateQueries(['archive']);
+        queryClient.invalidateQueries({
+          queryKey: ['archive'],
+          exact: false,
+          refetchType: 'all',
+        });
       },
     }),
   };
@@ -400,7 +420,7 @@ const Archive = () => {
   // console.log(onlyFolders);
   return (
     <div className="">
-      <div className="border-b-2 border-black/40 mb-4">
+      <div className="border-b-2 border-black/40 mb-4 mt-4">
         <div className="flex gap-6 pl-6 pb-2   ">
           <div className="duration-500 hover:rounded-lg hover:scale-110 ">
             <button
