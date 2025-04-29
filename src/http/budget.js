@@ -27,3 +27,7 @@ export const getAllBudgets = (qParams) => {
 export const deleteBudget = (id) => {
   return axiosInstance.delete(`/budget/${id}`);
 };
+
+export const updateBudgetAmount = (id) => {
+  return axiosInstance.patch(`/document/budget-allocation/${id}`);
+};

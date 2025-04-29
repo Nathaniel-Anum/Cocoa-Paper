@@ -1,5 +1,5 @@
-import React from 'react';
-import { Layout, Card, Row, Col, Typography, Table } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Layout, Card, Row, Col, Typography, Table, Select, Form } from 'antd';
 import {
   BarChart,
   Bar,
@@ -16,36 +16,28 @@ import { FaDollarSign, FaChartBar, FaBalanceScale } from 'react-icons/fa';
 import { GiCash, GiMoneyStack } from 'react-icons/gi';
 import { useGetAnalytics } from '../queryHooks/analytics';
 
+import { useGetDivisions } from '../queryHooks/user';
+
 const { Header, Content } = Layout;
 const { Title } = Typography;
-
-// Mock data - replace with real data
-const budgetData = {
-  approved: 1000000,
-  spent: 750000,
-  balance: 250000,
-};
-
-const departmentSpending = [
-  { name: 'BOD', spent: 200000, budget: 250000 },
-  { name: 'CHED', spent: 180000, budget: 200000 },
-  { name: 'SPD', spent: 220000, budget: 300000 },
-  { name: 'CRIG', spent: 150000, budget: 250000 },
-];
-
-const topSpenders = [
-  { department: 'Finance', amount: 200000, percentage: 26.67 },
-  { department: 'IT', amount: 180000, percentage: 24 },
-  { department: 'Research', amount: 220000, percentage: 29.33 },
-  { department: 'Public Affairs', amount: 150000, percentage: 20 },
-];
 
 const COLORS = ['#e4c8ad', '#ce6d11', '#582f08', '#ce6d11'];
 
 function Analytics() {
-  const { data: analytics } = useGetAnalytics();
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const { data: analytics, refetch } = useGetAnalytics({
+    divisionId: selectedDivision,
+  });
 
-  console.log(analytics && { analytics });
+  const { data: divisions } = useGetDivisions();
+
+  // const [topSpendersFilter, setTopSpendersFilter] = useState('');
+
+  useEffect(() => {
+    if (selectedDivision) {
+      refetch();
+    }
+  }, [refetch, selectedDivision]);
 
   const columns = [
     {
@@ -69,11 +61,21 @@ function Analytics() {
 
   return (
     <Layout className="min-h-screen bg-[#e4c8ad]/10">
-      {/* <Header className="bg-[#582f08] shadow-md">
-        <Title level={2} className="text-center py-4 text-white">Budget Analytics Dashboard</Title>
-      </Header> */}
       <Content className="p-6">
         {/* Summary Cards */}
+        <div className="flex justify-end mb-2">
+          <Select
+            placeholder="Filter by division"
+            allowClear
+            style={{ width: 200 }}
+            options={divisions?.data.map((division) => ({
+              label: division.divisionName,
+              value: division.divisionId,
+            }))}
+            onChange={(value) => setSelectedDivision(value)}
+            onClear={() => setSelectedDivision('')}
+          />
+        </div>
         <Row gutter={[16, 16]} className="mb-6">
           <Col span={8}>
             <Card className="shadow-sm">
@@ -93,7 +95,9 @@ function Analytics() {
           <Col span={8}>
             <Card className="shadow-sm">
               <div className="flex items-center">
-                <FaChartBar className="text-2xl text-[#ce6d11] mr-2" />
+                <div className="flex justify-between">
+                  <FaChartBar className="text-2xl text-[#ce6d11] mr-2" />
+                </div>
                 <div>
                   <p className="text-[#582f08]">Total Spent</p>
                   <Title level={3} className="text-[#582f08]">
@@ -130,6 +134,7 @@ function Analytics() {
               className="shadow-sm"
               headStyle={{ color: '#582f08' }}
             >
+              {/* <div className="flex justify-between "> */}
               <BarChart
                 width={700}
                 height={300}
@@ -146,6 +151,8 @@ function Analytics() {
                 <Bar dataKey="budget" fill="#582f08" name="Budget" />
                 <Bar dataKey="spending" fill="#ce6d11" name="Spent" />
               </BarChart>
+              {/* <Select placeholder="Search" className="w-[10rem]" /> */}
+              {/* </div> */}
             </Card>
           </Col>
           <Col span={8}>
@@ -187,9 +194,18 @@ function Analytics() {
           className="mb-6 shadow-sm"
           headStyle={{ color: '#582f08' }}
         >
+          {/* <div className="flex mb-1 justify-end">
+            <Select placeholder="Filter" className="w-[10rem] " />
+          </div> */}
           <Table
             columns={columns}
-            dataSource={analytics && analytics?.data?.data?.topSpenders}
+            dataSource={
+              analytics &&
+              analytics?.data?.data?.topSpenders.map((item) => ({
+                ...item,
+                key: item._id,
+              }))
+            }
             pagination={false}
           />
         </Card>

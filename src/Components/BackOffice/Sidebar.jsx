@@ -66,6 +66,16 @@ const BackOfficeSideBar = () => {
                 <p className="text-[15px]">Role Management </p>
               </li>
             </Link>
+            <Link to="/backoffice/auditTrail">
+              <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">
+                <img
+                  className="w-[22px]"
+                  src="/asset/work-history.c7047f9c0a21ca2ba896c6c73f75c562.svg"
+                  alt=""
+                />
+                <p className="text-[15px]">Audit Trail </p>
+              </li>
+            </Link>
           </ul>
         </div>
       </div>

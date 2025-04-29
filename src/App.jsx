@@ -33,6 +33,7 @@ import AddBudget from './Pages/Routes/Budget/Add';
 import UpdateBudget from './Pages/Routes/Budget/Update';
 import Analytics from './Pages/Analytics';
 import FinancialYear from './Components/BackOffice/FinancialYear';
+import AuditTrail from './Components/BackOffice/AuditTrail';
 
 function App() {
   // API call for the users.
@@ -370,6 +371,21 @@ function App() {
                   ])}
                 >
                   <Department />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/backoffice/auditTrail"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.CREATE_DEPT,
+                    requiredPermissions.READ_DEPT,
+                    requiredPermissions.DELETE_DEPT,
+                    requiredPermissions.UPDATE_DEPT,
+                  ])}
+                >
+                  <AuditTrail />
                 </ProtectedRoutes>
               }
             />

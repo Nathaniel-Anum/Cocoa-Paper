@@ -38,6 +38,7 @@ import { EditOutlined } from '@ant-design/icons';
 import { approveDocument } from '../http/addDocument';
 import { hasPermission, requiredPermissions } from '../../utils/Roles';
 import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
+import { updateBudgetAmount } from '../http/budget';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -53,6 +54,7 @@ function ViewDocument() {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [selectedBudgetItem, setSelectedBudgetItem] = useState(false);
   const { user } = useUser();
 
   const { id: docId } = useParams();
@@ -149,7 +151,10 @@ function ViewDocument() {
           <Tooltip title="Edit Amount">
             <EditOutlined
               className="cursor-pointer"
-              onClick={() => setShowModal(true)}
+              onClick={() => {
+                setShowModal(true);
+                setSelectedBudgetItem(value);
+              }}
             />
           </Tooltip>
         );
@@ -176,6 +181,23 @@ function ViewDocument() {
     },
   });
 
+  const { mutate: updateAmount, isPending } = useMutation({
+    mutationKey: 'updateBudgetAmount',
+    mutationFn: () => {
+      return updateBudgetAmount(selectedBudgetItem);
+    },
+    onSuccess: () => {
+      message.success('Amount Updated Successfully');
+    },
+    onError: (err) => {
+      message.error('Error updating amount', err?.response?.data?.err);
+    },
+  });
+
+  const handleAmountUpdate = (values) => {
+    updateAmount(values);
+  };
+
   return (
     <div className="h-full">
       <Modal
@@ -185,7 +207,10 @@ function ViewDocument() {
         footer={false}
       >
         <div className="mt-3">
-          <Form layout="vertical">
+          <Form
+            layout="vertical"
+            onFinish={(values) => handleAmountUpdate(values)}
+          >
             <Form.Item name="amount" label="Amount">
               <InputNumber className="w-full" placeholder="Enter Amount...." />
             </Form.Item>
@@ -193,6 +218,7 @@ function ViewDocument() {
               className="w-full bg-[#582F08]"
               htmlType="submit"
               type="primary"
+              loading={isPending}
             >
               Submit
             </Button>

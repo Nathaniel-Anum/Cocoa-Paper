@@ -35,6 +35,7 @@ const BudgetIndex = () => {
   const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [reportFilters, setReportFilters] = useState({});
+  const { user: authUser } = useUser();
   const budgetColumns = [
     {
       title: 'Budgetary Item',
@@ -43,12 +44,16 @@ const BudgetIndex = () => {
       // width: '50%',
       render: (value) => <span className={'font-bold'}>{value}</span>,
     },
-    {
+    hasPermission(authUser?.role[0].rolePermissions, [
+      requiredPermissions.READ_BUDGET_GLOBAL,
+    ]) && {
       title: 'Department',
       key: 'department',
       dataIndex: ['department', 'departmentName'],
     },
-    {
+    hasPermission(authUser?.role[0].rolePermissions, [
+      requiredPermissions.READ_BUDGET_GLOBAL,
+    ]) && {
       title: 'Division',
       key: 'division',
       dataIndex: ['department', 'division', 'divisionName'],
@@ -87,7 +92,7 @@ const BudgetIndex = () => {
         </div>
       ),
     },
-  ];
+  ].filter(Boolean);
 
   const budgetData = [
     {

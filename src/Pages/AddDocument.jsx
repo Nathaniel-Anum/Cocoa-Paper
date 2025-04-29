@@ -1865,7 +1865,7 @@ const AddDocument = () => {
                   placeholder="Select Request Type"
                   onChange={handleRequestChange}
                   options={[
-                    { label: 'General Correspondence', value: 'GENERAL' },
+                    { label: 'General Correspondence', value: 'General' },
                     { label: 'Budget Release', value: 'BudgetRelease' },
                     {
                       label: 'Out of Budget Release',

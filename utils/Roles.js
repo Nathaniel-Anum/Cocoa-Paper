@@ -34,6 +34,8 @@ export const requiredPermissions = {
   CREATE_BUDGET: 'CREATE_BUDGET',
   READ_BUDGET: 'READ_BUDGET',
   APPROVE_DOCUMENT: 'APPROVE_DOCUMENT',
+  RECALL_TRAIL: 'RECALL_TRAIL',
+  READ_BUDGET_GLOBAL: 'READ_BUDGET_GLOBAL',
 };
 
 export function hasPermission(userPermissions, requiredPermissions) {

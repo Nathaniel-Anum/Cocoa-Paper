@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { Table, Popover, Steps, Modal, Popconfirm, message } from 'antd';
+import {
+  Table,
+  Popover,
+  Steps,
+  Modal,
+  Popconfirm,
+  message,
+  Tooltip,
+  Tag,
+} from 'antd';
 import { useTrail } from './CustomHook/useTrail';
 import { FaRegEye } from 'react-icons/fa';
 import axiosInstance from '../Components/axiosInstance';
@@ -7,12 +16,16 @@ import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import Trail from '../Components/Trail/Trail';
 import { GiRecycle } from 'react-icons/gi';
 import { recallDocument } from '../http/addDocument';
+import { hasPermission, requiredPermissions } from '../../utils/Roles';
+import { useUser } from './CustomHook/useUser';
 
 const Outgoing = () => {
   const { trails, isLoading } = useTrail('outgoing');
   const [trailId, setTrailId] = useState('');
   const [open, SetOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  const { user } = useUser();
 
   const handleView = (selectedRecord) => {
     // console.log(selectedRecord);
@@ -74,6 +87,18 @@ const Outgoing = () => {
       },
     },
     {
+      title: 'Status',
+      key: 'isApproved',
+      dataIndex: 'isApproved',
+      render: (value, record) => {
+        return record?.isApproved ? (
+          <Tag color="green">Approved</Tag>
+        ) : (
+          <Tag color="orange">Pending Approval</Tag>
+        );
+      },
+    },
+    {
       title: 'Date',
       key: 'action',
       dataIndex: 'createdAt',
@@ -108,12 +133,19 @@ const Outgoing = () => {
               <FaRegEye className="text-[20px] text-blue-500" />
             </button>
           </Popover>
-          <Popconfirm
-            title="Are you sure you want to recall this item?"
-            onConfirm={() => callBackDoc(selectedRecord.docID)}
-          >
-            <GiRecycle className="text-[20px] text-green-500 cursor-pointer" />
-          </Popconfirm>
+
+          {hasPermission(user?.role[0].rolePermissions, [
+            requiredPermissions.RECALL_TRAIL,
+          ]) && (
+            <Popconfirm
+              title="Are you sure you want to recall this item?"
+              onConfirm={() => callBackDoc(selectedRecord.docID)}
+            >
+              <Tooltip title="Recall">
+                <GiRecycle className="text-[20px] text-green-500 cursor-pointer" />
+              </Tooltip>
+            </Popconfirm>
+          )}
         </div>
       ),
     },
