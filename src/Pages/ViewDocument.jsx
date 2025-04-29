@@ -277,7 +277,8 @@ function ViewDocument() {
               {hasPermission(user?.role[0].rolePermissions, [
                 requiredPermissions.APPROVE_DOCUMENT,
               ]) &&
-                !document?.data?.document?.isApproved && (
+                !document?.data?.document?.isApproved &&
+                document?.data?.document?.documentType !== 'General' && (
                   <Button
                     type="primary"
                     htmlType="submit"

@@ -259,7 +259,7 @@ const BudgetIndex = () => {
                 }))}
               />
             </Form.Item>
-            <Form.Item name="year" label="Year">
+            <Form.Item name="financialYearId" label="Year">
               <Select
                 className="w-full"
                 options={financialYear?.data?.data?.map((year) => ({
