@@ -91,11 +91,22 @@ const Outgoing = () => {
       key: 'isApproved',
       dataIndex: 'isApproved',
       render: (value, record) => {
-        return record?.isApproved ? (
-          <Tag color="green">Approved</Tag>
-        ) : (
-          <Tag color="orange">Pending Approval</Tag>
-        );
+        if (record?.document?.isApproved === true) {
+          return <Tag color="green">Approved</Tag>;
+        } else if (
+          record?.document?.isApproved === false &&
+          record?.document?.documentType === 'BudgetRelease'
+        ) {
+          return <Tag color="orange">Pending Approval</Tag>;
+        } else if (record?.document?.documentType !== 'BudgetRelease') {
+          return <Tag color="blue">Approval Not Required</Tag>;
+        }
+
+        // return record?.document?.isApproved ? (
+        //   <Tag color="green">Approved</Tag>
+        // ) : (
+        //   <Tag color="orange">Pending Approval</Tag>
+        // );
       },
     },
     {
@@ -155,6 +166,8 @@ const Outgoing = () => {
     key: index,
   }));
   // console.log(_data);
+
+  console.log({ _data });
 
   const { mutate: callBackDoc } = useMutation({
     mutationKey: 'recallDocument',

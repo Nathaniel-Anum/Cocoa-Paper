@@ -208,6 +208,49 @@ const Incoming = () => {
     },
   });
 
+  const { mutate: uploadMultipleFiles, isPending: isMultipleUploading } =
+    useMutation({
+      mutationKey: ['uploadMultiple'],
+      mutationFn: async ({ files, subject, ref }) => {
+        console.log('Uploading multiple files...');
+
+        // Create an array of promises for each file upload
+        const uploadPromises = files.map((file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('subject', subject);
+          formData.append('ref', ref);
+
+          return uploadFile(formData).then((response) => {
+            if (!response?.data?.newFile?.fileId) {
+              throw new Error(
+                `File upload successful for ${file.name} but no file ID was returned`
+              );
+            }
+            return response.data.newFile.fileId;
+          });
+        });
+
+        // Wait for all uploads to complete
+        return Promise.all(uploadPromises);
+      },
+      onSuccess: (fileIds) => {
+        console.log('All files uploaded successfully with IDs:', fileIds);
+
+        // Get form values and add file IDs
+        const values = form.getFieldsValue();
+        forwardDocument({
+          ...values,
+          status: 'Forwarded',
+          attachmentIds: fileIds,
+        });
+      },
+      onError: (error) => {
+        // showErrorNotification('Attachment Upload Failed', error);
+        message.error(error?.response?.data?.error);
+      },
+    });
+
   // console.log(trailData?.data);
   const handleDivisionChange = (option) => {
     setSelectedDivision(option.value);
@@ -229,13 +272,23 @@ const Incoming = () => {
   const handleFormSubmit = (values) => {
     setLoading(true);
 
-    if (values.additionalFile && values.additionalFile.file) {
-      const formData = new FormData();
-      formData.append('file', values.additionalFile.file);
+    const attachmentFiles = values.attachments?.fileList;
 
-      uploadDoc(formData);
+    if (!attachmentFiles || attachmentFiles.length === 0) {
+      // No attachments, just upload the main file
+
+      forwardDocument({ ...values, status: 'Forwarded' });
     } else {
-      forwardDocument(values);
+      const attachmentFilesArray = attachmentFiles.map(
+        (fileItem) => fileItem.originFileObj
+      );
+      console.log('Upload all attachments with reference to main file');
+      // Upload all attachments with reference to main file
+      uploadMultipleFiles({
+        files: attachmentFilesArray,
+        subject: '',
+        ref: '',
+      });
     }
   };
 
@@ -248,6 +301,21 @@ const Incoming = () => {
   const handleViewDocument = (selectedRecord) => {
     setChosenRecord(selectedRecord);
     navigate(`/view-document/${selectedRecord?.docID}`);
+  };
+
+  const attachmentUploadProps = {
+    name: 'file', // The name of the file input field, not the form field name
+    multiple: true,
+    beforeUpload: () => false, // Prevent auto upload
+    onChange(info) {
+      console.log(
+        'Attachment files selected:',
+        info.fileList.map((f) => f.name)
+      );
+      // The fileList will be stored in the form
+      form.setFieldsValue({ attachments: { fileList: info.fileList } });
+    },
+    accept: '.pdf',
   };
 
   const getItems = (selectedRecord) => {
@@ -375,112 +443,115 @@ const Incoming = () => {
     <div className="mt-8">
       <Table columns={columns} dataSource={_data} loading={isLoading} />
       <Modal
-        name="Forward Document"
+        title="Forward Document"
         open={isModalOpen}
         onCancel={handleCancel}
         footer={null}
       >
-        <Form
-          form={form}
-          layout="vertical"
-          name="Forward Document"
-          onFinish={(values) => handleFormSubmit(values)}
-        >
-          <Form.Item
-            label="Division"
-            name="division"
-            rules={[
-              {
-                required: true,
-                message: 'Please choose your Division!',
-              },
-            ]}
+        <div className="mt-8">
+          <Form
+            form={form}
+            layout="vertical"
+            name="Forward Document"
+            onFinish={(values) => handleFormSubmit(values)}
           >
-            <Select
-              placeholder="Please choose your Division"
-              allowClear
-              labelInValue
-              options={divisions?.data.map((division, index) => {
-                return {
-                  label: division?.divisionName,
-                  value: division?.divisionId,
-                };
-              })}
-              onChange={handleDivisionChange}
-            />
-          </Form.Item>
-          <Form.Item
-            label="Department"
-            name="department"
-            rules={[
-              {
-                required: true,
-                message: 'Please choose your Department!',
-              },
-            ]}
-          >
-            <Select
-              placeholder="Please choose your Department"
-              allowClear
-              labelInValue
-              options={departments?.data?.data?.map((department, index) => {
-                return {
-                  label: department?.departmentName,
-                  value: department?.departmentId,
-                };
-              })}
-              onChange={handleDepartmentChange}
-            />
-          </Form.Item>
-          <Form.Item
-            name="userId"
-            label="User"
-            rules={[
-              {
-                required: true,
-                message: 'Please select a User!',
-              },
-            ]}
-          >
-            <Select
-              placeholder="Please select a User"
-              allowClear
-              options={(users?.data || [])
-                .filter((emp) => emp.userId !== user?.userId)
-                .map((user) => ({
-                  label: user?.name,
-                  value: user?.userId,
-                }))}
-              // onChange={handleUserChange}
-            />
-          </Form.Item>
-
-          <Form.Item label="Comment" name="comment">
-            <TextArea rows={4} placeholder="Enter Comment...." />
-          </Form.Item>
-
-          <Form.Item name="additionalFile" className="flex justify-start">
-            <Upload {...props}>
-              <Button
-                icon={<UploadOutlined />}
-                className="cursor-pointer w-full"
-              >
-                Upload Additional Docs
-              </Button>
-            </Upload>
-          </Form.Item>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className="bg-[#582F08] px-5 py-1 text-white w-full flex"
-              loading={loading}
+            <Form.Item
+              label="Division"
+              name="division"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please choose your Division!',
+                },
+              ]}
             >
-              Forward
-            </Button>
-          </Form.Item>
-        </Form>
+              <Select
+                placeholder="Please choose your Division"
+                allowClear
+                labelInValue
+                options={divisions?.data.map((division, index) => {
+                  return {
+                    label: division?.divisionName,
+                    value: division?.divisionId,
+                  };
+                })}
+                onChange={handleDivisionChange}
+              />
+            </Form.Item>
+            <Form.Item
+              label="Department"
+              name="department"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please choose your Department!',
+                },
+              ]}
+            >
+              <Select
+                placeholder="Please choose your Department"
+                allowClear
+                labelInValue
+                options={departments?.data?.data?.map((department, index) => {
+                  return {
+                    label: department?.departmentName,
+                    value: department?.departmentId,
+                  };
+                })}
+                onChange={handleDepartmentChange}
+              />
+            </Form.Item>
+            <Form.Item
+              name="userId"
+              label="User"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please select a User!',
+                },
+              ]}
+            >
+              <Select
+                placeholder="Please select a User"
+                allowClear
+                options={(users?.data || [])
+                  .filter((emp) => emp.userId !== user?.userId)
+                  .map((user) => ({
+                    label: user?.name,
+                    value: user?.userId,
+                  }))}
+                // onChange={handleUserChange}
+              />
+            </Form.Item>
+
+            <Form.Item label="Comment" name="comment">
+              <TextArea rows={4} placeholder="Enter Comment...." />
+            </Form.Item>
+
+            <Form.Item name="attachments" className="flex justify-start">
+              <Upload {...attachmentUploadProps}>
+                <Button
+                  icon={<UploadOutlined />}
+                  loading={isMultipleUploading}
+                  className="cursor-pointer w-full"
+                >
+                  Upload Additional Docs
+                </Button>
+              </Upload>
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="bg-[#582F08] px-5 py-1 text-white w-full flex"
+                loading={loading}
+              >
+                Forward
+              </Button>
+            </Form.Item>
+          </Form>{' '}
+        </div>
       </Modal>
       <Modal
         title="Locator"

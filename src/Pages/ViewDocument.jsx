@@ -61,8 +61,6 @@ function ViewDocument() {
 
   const { data: document, refetch } = useViewDocument(docId);
 
-  console.log(document && document?.data);
-
   const [form] = Form.useForm();
 
   const navigate = useNavigate();
@@ -239,9 +237,23 @@ function ViewDocument() {
               padding: '16px',
             }}
           >
-            <h1 className="font-semibold  text-xl mb-4 flex-shrink-0">
-              {document && document?.data?.document?.subject}
-            </h1>
+            <div className="flex justify-between items-center">
+              <h1 className="font-semibold  text-xl  flex-shrink-0">
+                {document && document?.data?.document?.subject}
+              </h1>
+              {document &&
+                document?.data?.document?.attachments?.length > 0 && (
+                  <span
+                    className="text-blue-400 cursor-pointer underline "
+                    onClick={() => {
+                      navigate(`/view-attachment/${docId}`);
+                    }}
+                  >
+                    View Files
+                  </span>
+                )}
+            </div>
+
             <div className="flex-1 overflow-hidden rounded-lg mb-4 bg-white flex items-center justify-center">
               <div className="text-center" onClick={() => setOpenFileViewer()}>
                 {document && document?.data?.document.file && (
@@ -457,7 +469,12 @@ function ViewDocument() {
           </Card>
         </div>
       </Content>
-      {openFileViewer && <PDFViewer document={document} />}
+      {openFileViewer && (
+        <PDFViewer
+          fileId={document?.data?.document?.file?.fileId}
+          fileName={document?.data?.document?.file?.fileName}
+        />
+      )}
       {showArchiveModal && (
         <ArchiveFiles
           show={showArchiveModal}

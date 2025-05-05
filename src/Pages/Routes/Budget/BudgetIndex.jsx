@@ -115,7 +115,7 @@ const BudgetIndex = () => {
       title: 'Balance',
       dataIndex: 'amountRemaining',
       key: 'amountRemaining',
-      render: (value) => <span>{formatMoney(value)}</span>,
+      render: (value) => <span>{value && formatMoney(value)}</span>,
     },
   ];
 

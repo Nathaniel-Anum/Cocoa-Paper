@@ -5,7 +5,7 @@ import axiosInstance from '../axiosInstance';
 import { useQuery } from '@tanstack/react-query';
 import Loader from '../Loader/Loader';
 
-export const PDFViewer = ({ document }) => {
+export const PDFViewer = ({ fileId, fileName }) => {
   const setOpenFileViewer = useStore((state) => state.setOpenFileViewer);
   const openFileViewer = useStore((state) => state.openFileViewer);
   const [fileUrl, setFileUrl] = useState('');
@@ -14,12 +14,9 @@ export const PDFViewer = ({ document }) => {
 
   useEffect(() => {
     const fetchFile = async function () {
-      const response = await axiosInstance.get(
-        `/archive/file/${document && document?.data?.document?.file?.fileId}`,
-        {
-          responseType: 'blob',
-        }
-      );
+      const response = await axiosInstance.get(`/archive/file/${fileId}`, {
+        responseType: 'blob',
+      });
       const fileUrl = URL.createObjectURL(response.data);
       setFileUrl(fileUrl);
     };
@@ -35,7 +32,7 @@ export const PDFViewer = ({ document }) => {
 
   return (
     <Modal
-      title={(document && document?.data?.file?.fileName) || 'Document Viewer'}
+      title={fileName || 'Document Viewer'}
       open={openFileViewer}
       onCancel={() => {
         if (fileUrl) {
@@ -48,12 +45,7 @@ export const PDFViewer = ({ document }) => {
       className="!top-9"
     >
       {fileUrl && !loading ? (
-        <iframe
-          src={fileUrl}
-          width="100%"
-          height="650px"
-          title={document && document?.data?.document.file?.fileName}
-        />
+        <iframe src={fileUrl} width="100%" height="650px" title={fileName} />
       ) : (
         <Loader />
       )}

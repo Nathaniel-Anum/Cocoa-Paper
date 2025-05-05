@@ -34,6 +34,7 @@ import UpdateBudget from './Pages/Routes/Budget/Update';
 import Analytics from './Pages/Analytics';
 import FinancialYear from './Components/BackOffice/FinancialYear';
 import AuditTrail from './Components/BackOffice/AuditTrail';
+import Attachments from './Pages/Attachments';
 
 function App() {
   // API call for the users.
@@ -164,6 +165,21 @@ function App() {
                   ])}
                 >
                   <ViewDocument />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/view-attachment/:id"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.UPDATE_DOCUMENT,
+                    requiredPermissions.DELETE_DOCUMENT,
+                    requiredPermissions.READ_DOCUMENT,
+                    requiredPermissions.CREATE_DOCUMENT,
+                  ])}
+                >
+                  <Attachments />
                 </ProtectedRoutes>
               }
             />
