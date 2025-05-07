@@ -6,6 +6,8 @@ import { PDFViewer } from '../Components/PDFViewer/PdfViewer';
 import useStore from '../store/store';
 import { EyeOutlined } from '@ant-design/icons';
 import { Table } from 'antd';
+import { create } from 'lodash';
+import dayjs from 'dayjs';
 const Attachments = () => {
   const { id: docId } = useParams();
 
@@ -44,6 +46,13 @@ const Attachments = () => {
       dataIndex: ['user', 'division', 'divisionName'],
       key: 'division',
     },
+    {
+      title: 'Timestamp',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (value) => dayjs(value).format('YYYY-MM-DD HH:mm').toString(),
+    },
+
     {
       title: 'Action',
       dataIndex: 'id',

@@ -101,10 +101,7 @@ const Incoming = () => {
   const { mutate: forwardDocument } = useMutation({
     mutationKey: 'forwardDocument',
     mutationFn: (values) => {
-      return axiosInstance.patch(`/trail/${selected}`, {
-        userId: values?.userId,
-        status: 'Forwarded',
-      });
+      return axiosInstance.patch(`/trail/${selected}`, values);
     },
     onSuccess: () => {
       setLoading(false);
@@ -180,33 +177,33 @@ const Incoming = () => {
     enabled: !!trailId, // Only fetch if trailId is set
   });
 
-  const { mutate: uploadDoc, isPending: isUploading } = useMutation({
-    mutationKey: ['upload'],
-    mutationFn: async (formData) => {
-      console.log('Uploading file...');
-      try {
-        const response = await uploadFile(formData);
+  // const { mutate: uploadDoc, isPending: isUploading } = useMutation({
+  //   mutationKey: ['upload'],
+  //   mutationFn: async (formData) => {
+  //     console.log('Uploading file...');
+  //     try {
+  //       const response = await uploadFile(formData);
 
-        if (!response?.data?.newFile?.fileId) {
-          throw new Error('File upload successful but no file ID was returned');
-        }
+  //       if (!response?.data?.newFile?.fileId) {
+  //         throw new Error('File upload successful but no file ID was returned');
+  //       }
 
-        return response.data.newFile.fileId;
-      } catch (error) {
-        // Re-throw for onError handler
-        throw error;
-      }
-    },
-    onSuccess: (fileId) => {
-      console.log('File uploaded successfully with ID:', fileId);
-      const values = form.getFieldsValue();
-      forwardDocument({ ...values, fileId });
-    },
-    onError: (error) => {
-      setLoading(false);
-      showErrorNotification('File Upload Failed', error.response.data.error);
-    },
-  });
+  //       return response.data.newFile.fileId;
+  //     } catch (error) {
+  //       // Re-throw for onError handler
+  //       throw error;
+  //     }
+  //   },
+  //   onSuccess: (fileId) => {
+  //     console.log('File uploaded successfully with ID:', fileId);
+  //     const values = form.getFieldsValue();
+  //     forwardDocument({ ...values, fileId });
+  //   },
+  //   onError: (error) => {
+  //     setLoading(false);
+  //     showErrorNotification('File Upload Failed', error.response.data.error);
+  //   },
+  // });
 
   const { mutate: uploadMultipleFiles, isPending: isMultipleUploading } =
     useMutation({
@@ -282,7 +279,7 @@ const Incoming = () => {
       const attachmentFilesArray = attachmentFiles.map(
         (fileItem) => fileItem.originFileObj
       );
-      console.log('Upload all attachments with reference to main file');
+
       // Upload all attachments with reference to main file
       uploadMultipleFiles({
         files: attachmentFilesArray,

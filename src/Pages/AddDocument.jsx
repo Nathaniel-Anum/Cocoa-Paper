@@ -154,7 +154,7 @@
 //       onSuccess: () => {
 //         setLoading(false);
 //         showSuccessNotification(
-//           'Document Created',
+//           'Request Successful',
 //           'Your document has been created successfully!'
 //         );
 //         form.resetFields();
@@ -671,6 +671,7 @@ import {
   Row,
   Col,
   Spin,
+  message,
 } from 'antd';
 import axiosInstance from '../Components/axiosInstance';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -809,7 +810,7 @@ const AddDocument = () => {
       onSuccess: () => {
         setLoading(false);
         showSuccessNotification(
-          'Document Created',
+          'Request Successful',
           'Your document has been created successfully!'
         );
         form.resetFields();
@@ -818,10 +819,7 @@ const AddDocument = () => {
       },
       onError: (error) => {
         setLoading(false);
-        showErrorNotification(
-          'Document Creation Failed',
-          error?.response?.data?.error
-        );
+        showErrorNotification('Error  ', error?.response?.data?.error);
       },
     });
 
@@ -957,18 +955,26 @@ const AddDocument = () => {
 
   // Form submission handler
   const handleSubmit = (values) => {
-    setLoading(true);
-    // Prepare submission data
     const submissionData = {
       ...values,
       physicalDoc: isPhysical,
     };
-
-    // For physical documents, no file uploads needed
     if (isPhysical) {
       startDocument(submissionData);
       return;
     }
+    if (values.file === undefined && values.attachments) {
+      showErrorNotification(
+        'Missing File',
+        'Please upload a main document file.'
+      );
+      return;
+    }
+
+    setLoading(true);
+    // Prepare submission data
+
+    // For physical documents, no file uploads needed
 
     // For electronic documents, check if main file exists
     if (!values.file || !values.file.file) {
@@ -1349,48 +1355,50 @@ const AddDocument = () => {
 
               {/* Main File Upload (for electronic documents) */}
 
-              <Form.Item
-                name="file"
-                label="Main Document"
-                rules={[
-                  { required: true, message: 'Please upload a PDF file' },
-                ]}
-              >
-                <Upload
-                  {...uploadProps}
-                  listType="text"
-                  className="w-full"
-                  maxCount={1}
-                >
-                  <Button
-                    icon={<UploadOutlined />}
-                    className="w-full cursor-pointer"
+              {!isPhysical && (
+                <>
+                  <Form.Item
+                    name="file"
+                    label="Main Document"
+                    // rules={[
+                    //   { required: true, message: 'Please upload a PDF file' },
+                    // ]}
                   >
-                    Upload PDF
-                  </Button>
-                </Upload>
-              </Form.Item>
+                    <Upload
+                      {...uploadProps}
+                      listType="text"
+                      className="w-full"
+                      maxCount={1}
+                    >
+                      <Button
+                        icon={<UploadOutlined />}
+                        className="w-full cursor-pointer"
+                      >
+                        Upload PDF
+                      </Button>
+                    </Upload>
+                  </Form.Item>
 
-              {/* Attachments Upload (for electronic documents) */}
-
-              <Form.Item name="attachments" label="Attachments">
-                <Upload
-                  {...attachmentUploadProps}
-                  listType="text"
-                  className="w-full"
-                  style={{ width: '100%' }}
-                >
-                  <Button
-                    icon={<UploadOutlined />}
-                    className="w-full cursor-pointer"
-                  >
-                    Upload Attachments
-                  </Button>
-                </Upload>
-                <div className="text-gray-500 text-sm mt-1">
-                  You can upload multiple attachment files
-                </div>
-              </Form.Item>
+                  <Form.Item name="attachments" label="Attachments">
+                    <Upload
+                      {...attachmentUploadProps}
+                      listType="text"
+                      className="w-full"
+                      style={{ width: '100%' }}
+                    >
+                      <Button
+                        icon={<UploadOutlined />}
+                        className="w-full cursor-pointer"
+                      >
+                        Upload Attachments
+                      </Button>
+                    </Upload>
+                    <div className="text-gray-500 text-sm mt-1">
+                      You can upload multiple attachment files
+                    </div>
+                  </Form.Item>
+                </>
+              )}
 
               {/* Submit Button */}
               <Form.Item>

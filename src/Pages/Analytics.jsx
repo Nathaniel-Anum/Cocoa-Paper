@@ -24,12 +24,16 @@ const { Title } = Typography;
 const COLORS = ['#e4c8ad', '#ce6d11', '#582f08', '#ce6d11'];
 
 function Analytics() {
+  const { data: divisions } = useGetDivisions();
+
+  const bod = divisions?.data.find(
+    (division) => division.divisionName === 'COCOBOD'
+  );
+
   const [selectedDivision, setSelectedDivision] = useState('');
   const { data: analytics, refetch } = useGetAnalytics({
-    divisionId: selectedDivision,
+    divisionId: selectedDivision || bod?.divisionId,
   });
-
-  const { data: divisions } = useGetDivisions();
 
   // const [topSpendersFilter, setTopSpendersFilter] = useState('');
 
@@ -130,7 +134,7 @@ function Analytics() {
         <Row gutter={[16, 16]} className="mb-6">
           <Col span={16}>
             <Card
-              title="Budget vs Spending by Division"
+              title="Budget vs Spending by Department"
               className="shadow-sm"
               headStyle={{ color: '#582f08' }}
             >
@@ -138,9 +142,7 @@ function Analytics() {
               <BarChart
                 width={700}
                 height={300}
-                data={
-                  analytics && analytics?.data?.data?.divisionSpendingPerBudgets
-                }
+                data={analytics && analytics?.data?.data?.spendingPerBudgets}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e4c8ad" />
@@ -163,7 +165,7 @@ function Analytics() {
             >
               <PieChart width={300} height={300}>
                 <Pie
-                  data={analytics && analytics?.data?.data?.divisionSpending}
+                  data={analytics && analytics?.data?.data?.spending}
                   cx={150}
                   cy={150}
                   labelLine={false}
@@ -172,14 +174,12 @@ function Analytics() {
                   dataKey="spending"
                 >
                   {analytics &&
-                    analytics?.data?.data?.divisionSpending.map(
-                      (entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      )
-                    )}
+                    analytics?.data?.data?.spending.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
                 </Pie>
                 <Tooltip />
                 <Legend />

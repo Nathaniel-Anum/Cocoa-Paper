@@ -45,7 +45,7 @@ const Department = () => {
   };
 
   // Usequery for getting department
-  const { data: department } = useQuery({
+  const { data: department, isLoading } = useQuery({
     queryKey: ['departments'],
     queryFn: () => {
       return axiosInstance.get('/department');
@@ -141,10 +141,10 @@ const Department = () => {
             className="bg-[#582F08] text-[#edd3bb] font-semibold "
             // loading={loading}
           >
-            Add Staff
+            Add Department
           </Button>
         </div>
-        <Table columns={columns} dataSource={_data} />
+        <Table columns={columns} dataSource={_data} loading={isLoading} />
       </div>
       <AddDepartment setOpen={setOpen} open={open} />
 

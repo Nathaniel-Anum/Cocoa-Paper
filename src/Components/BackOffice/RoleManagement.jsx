@@ -54,7 +54,7 @@ const RoleManagement = () => {
   });
 
   //useQuery to get role
-  const { data: roles } = useQuery({
+  const { data: roles, isLoading } = useQuery({
     queryKey: ['roles'],
     queryFn: () => {
       return axiosInstance.get('/role');
@@ -82,7 +82,7 @@ const RoleManagement = () => {
   }, [wholeRecord]);
 
   //UsMutation to edit permissions assigned to roles
-  const { mutate } = useMutation({
+  const { mutate, isPending: updateLoading } = useMutation({
     mutationKey: 'permission',
     mutationFn: (values) => {
       // console.log(values);
@@ -233,13 +233,14 @@ const RoleManagement = () => {
                 className="w-full bg-[#9D4D01]"
                 type="primary"
                 htmlType="submit"
+                loading={updateLoading}
               >
                 Update
               </Button>
             </Form.Item>
           </Form>
         </Modal>
-        <Table columns={columns} dataSource={_data} />
+        <Table columns={columns} dataSource={_data} loading={isLoading} />
       </div>
     </div>
   );

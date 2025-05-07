@@ -186,7 +186,7 @@ const FinancialYear = () => {
               Add
             </Button>
           </div>
-          <Table columns={columns} dataSource={_data} />
+          <Table columns={columns} dataSource={_data} loading={isLoading} />
         </div>
       </div>
     </>

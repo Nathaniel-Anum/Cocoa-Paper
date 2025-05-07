@@ -21,17 +21,18 @@ const AuditTrail = () => {
     },
   ];
 
-  const { data: auditTrail } = useGetAuditTrail();
+  const { data: auditTrail, isLoading } = useGetAuditTrail();
 
   console.log({ auditTrail });
 
   return (
-    <div>
+    <div className=" px-[240px] pt-[50px] mx-auto ">
       <Table
         columns={columns}
+        loading={isLoading}
         dataSource={
           (auditTrail &&
-            auditTrail?.data?.map((trail) => ({
+            auditTrail?.data?.data?.map((trail) => ({
               ...trail,
               key: trail.id,
             }))) ||

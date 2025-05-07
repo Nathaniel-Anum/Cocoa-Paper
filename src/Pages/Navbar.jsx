@@ -214,8 +214,6 @@ const Navbar = () => {
     enabled: !!trailId, // Only fetch if trailId is set
   });
 
-  // console.log(trailData?.data);
-
   // Function to handle button click actions based on button type and item properties
   const handleButtonClick = async (item, actionType) => {
     if (actionType === 'View') {
@@ -326,7 +324,11 @@ const Navbar = () => {
 
         <div className="pr-[80px] flex gap-2 items-center">
           <p className="bg-[#E3BC97] text-[#582F08] px-3 py-2 font-semibold rounded-md text-[18px]">
-            IS
+            {user &&
+              user?.name
+                .split(' ')
+                .map((name) => name.charAt(0))
+                .reduce((a, b) => `${a}${b}`, '')}
           </p>
           <Dropdown
             menu={{
