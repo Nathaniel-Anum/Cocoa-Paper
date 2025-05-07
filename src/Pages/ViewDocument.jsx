@@ -275,16 +275,13 @@ function ViewDocument() {
               className="bg-[#582F08]/5 flex-shrink-0"
               bodyStyle={{ padding: '16px' }}
             >
-              {hasPermission(user?.role[0].rolePermissions, [
-                requiredPermissions.APPROVE_DOCUMENT,
-              ]) &&
-                document?.data?.document?.documentType === 'BudgetRelease' && (
-                  <Table
-                    dataSource={_data}
-                    columns={budgetColums}
-                    pagination={false}
-                  />
-                )}
+              {document?.data?.document?.documentType === 'BudgetRelease' && (
+                <Table
+                  dataSource={_data}
+                  columns={budgetColums}
+                  pagination={false}
+                />
+              )}
 
               {hasPermission(user?.role[0].rolePermissions, [
                 requiredPermissions.APPROVE_DOCUMENT,
