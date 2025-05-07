@@ -5,7 +5,7 @@ const AuditTrail = () => {
   const columns = [
     {
       title: 'User',
-      dataIndex: ['user', 'userName'],
+      dataIndex: ['user', 'name'],
     },
     {
       title: 'Ip address',
