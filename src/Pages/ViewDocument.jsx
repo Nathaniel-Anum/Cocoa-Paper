@@ -39,6 +39,7 @@ import { approveDocument } from '../http/addDocument';
 import { hasPermission, requiredPermissions } from '../../utils/Roles';
 import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
 import { updateBudgetAmount } from '../http/budget';
+import Loader from '../Components/Loader/Loader';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -61,11 +62,35 @@ function ViewDocument() {
 
   const { data: document, refetch } = useViewDocument(docId);
 
+  const [fileUrl, setFileUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
   const [form] = Form.useForm();
 
   const navigate = useNavigate();
 
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const fetchFile = async function () {
+      const response = await axiosInstance.get(
+        `/archive/file/${document?.data?.document?.file?.fileId}`,
+        {
+          responseType: 'blob',
+        }
+      );
+      const fileUrl = URL.createObjectURL(response.data);
+      setFileUrl(fileUrl);
+    };
+    try {
+      setIsLoading(true);
+      fetchFile();
+      setIsLoading(false);
+    } catch (e) {
+      setIsLoading(false);
+      console.log(e.message);
+    }
+  }, []);
 
   const { mutate: forwardDocument, isPending: submitLoading } = useMutation({
     mutationKey: 'forwardDocument',
@@ -140,7 +165,9 @@ function ViewDocument() {
         </span>
       ),
     },
-    {
+    hasPermission(authUser?.role[0].rolePermissions, [
+      requiredPermissions.UPDATE_DOCUMENT_AMOUNT,
+    ]) && {
       title: 'Action',
       dataIndex: 'id',
       key: 'id',
@@ -254,21 +281,24 @@ function ViewDocument() {
                 )}
             </div>
 
-            <div className="flex-1 overflow-hidden rounded-lg mb-4 bg-white flex items-center justify-center">
-              <div className="text-center" onClick={() => setOpenFileViewer()}>
-                {document && document?.data?.document.file && (
-                  <>
-                    <img
-                      src={pdf}
-                      alt="PDF placeholder"
-                      className="w-48 h-48 mx-auto cursor-zoom-in"
-                    />
-                    <p className="mt-4 text-gray-600 font-medium">
-                      {document && document?.data?.document.file?.fileName}
-                    </p>
-                  </>
-                )}
-              </div>
+            <div className="flex-1 overflow-hidden rounded-lg mb-4 bg-white ">
+              {fileUrl ? (
+                <div className="text-center">
+                  {fileUrl && !isLoading ? (
+                    <iframe src={fileUrl} width="100%" height="650px" />
+                  ) : (
+                    <Loader />
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-7 justify-center items-center w-full h-full">
+                  <img
+                    src={pdf}
+                    className="w-[50%] h-[50%] cursor-not-allowed"
+                  />
+                  <p className="text-[#582F08]">No File Attached </p>
+                </div>
+              )}
             </div>
             <Card
               bordered={false}
@@ -451,15 +481,19 @@ function ViewDocument() {
                   >
                     Send
                   </Button>
-                  <Button
-                    icon={<LuArchive className="w-4 h-4" />}
-                    className="flex-1 bg-[#9d4d01] hover:bg-[#9d4d01]/80 text-white"
-                    onClick={() => {
-                      setShowArchiveModal(true);
-                    }}
-                  >
-                    Archive
-                  </Button>
+                  {hasPermission(user?.role[0].rolePermissions, [
+                    requiredPermissions.ARCHIVE_DOCUMENT,
+                  ]) && (
+                    <Button
+                      icon={<LuArchive className="w-4 h-4" />}
+                      className="flex-1 bg-[#9d4d01] hover:bg-[#9d4d01]/80 text-white"
+                      onClick={() => {
+                        setShowArchiveModal(true);
+                      }}
+                    >
+                      Archive
+                    </Button>
+                  )}
                 </div>
               </Form.Item>
             </Form>

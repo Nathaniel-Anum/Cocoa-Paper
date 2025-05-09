@@ -69,7 +69,9 @@ const BudgetIndex = () => {
         ).getFullYear()} - ${new Date(value.endDate).getFullYear()}`}</span>
       ),
     },
-    {
+    hasPermission(authUser?.role[0].rolePermissions, [
+      requiredPermissions.UPDATE_BUDGET,
+    ]) && {
       title: 'Action',
       dataIndex: 'id',
       key: 'action',

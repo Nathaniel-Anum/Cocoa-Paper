@@ -10,6 +10,7 @@ import {
   Popconfirm,
   Spin,
   Tag,
+  Checkbox,
 } from 'antd';
 import axiosInstance from '../axiosInstance';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -38,6 +39,7 @@ const Staff = () => {
   const [selectedDivision, setSelectedDivision] = useState('');
   const [loading, setLoading] = useState(false); // Loading state for button
   const [searchText, setSearchText] = useState('');
+  const [isDepartment, setIsDepartment] = useState(false);
 
   const [staffDetail, setStaffDetail] = useState({});
 
@@ -58,8 +60,6 @@ const Staff = () => {
   });
 
   const { data: roles } = useGetRoles();
-  // console.log(divisions.data);
-  console.log(roles && roles);
 
   // useQuery for departments
   const { data: departments, refetch } = useQuery({
@@ -138,13 +138,8 @@ const Staff = () => {
   // console.log(_data);
 
   const handleSubmit = (values) => {
-    console.log('object');
-    mutate(values);
+    mutate({ ...values, isDepartment });
   };
-
-  // if (isLoading || isPending)
-  //   return <Spin className=" flex justify-center pt-[100px]" />;
-  // return <div className="  flex justify-center pt-[100px] ">LOADING....</div>;
 
   const handleDepartmentChange = (value) => {
     // console.log(`selected: ${value}`);
@@ -333,7 +328,15 @@ const Staff = () => {
                 onChange={handleDepartmentChange}
               />
             </Form.Item>
-            <Form.Item name="roleId">
+            <Form.Item>
+              <Checkbox
+                onChange={(e) => setIsDepartment(e.target.checked)}
+                checked={isDepartment}
+              >
+                Setup as department
+              </Checkbox>
+            </Form.Item>
+            <Form.Item name="roleId" label="Role" required>
               <Select
                 placeholder="Choose Role"
                 options={

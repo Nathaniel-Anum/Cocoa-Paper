@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { FaUser } from 'react-icons/fa';
 import { LuCalendar } from 'react-icons/lu';
 import { CalendarFilled } from '@ant-design/icons';
+import { GiTrail, GiWheelbarrow } from 'react-icons/gi';
+import { HiOutlineWrenchScrewdriver } from 'react-icons/hi2';
 
 const BackOfficeSideBar = () => {
   return (
@@ -68,12 +70,14 @@ const BackOfficeSideBar = () => {
             </Link>
             <Link to="/backoffice/auditTrail">
               <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">
-                <img
-                  className="w-[22px]"
-                  src="/asset/work-history.c7047f9c0a21ca2ba896c6c73f75c562.svg"
-                  alt=""
-                />
+                <GiTrail className="text-[#E3BC97] text-lg" />
                 <p className="text-[15px]">Audit Trail </p>
+              </li>
+            </Link>
+            <Link to="/backoffice/config">
+              <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">
+                <HiOutlineWrenchScrewdriver className="text-[#E3BC97] text-lg" />
+                <p className="text-[15px]">Configuration </p>
               </li>
             </Link>
           </ul>

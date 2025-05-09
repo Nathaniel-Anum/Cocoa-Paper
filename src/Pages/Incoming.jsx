@@ -15,19 +15,18 @@ import {
 import { useTrail } from './CustomHook/useTrail';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import axiosInstance from '../Components/axiosInstance';
-import { ForwardOutlined, UploadOutlined } from '@ant-design/icons';
-import { LuForward } from 'react-icons/lu';
-import { RiInboxArchiveFill } from 'react-icons/ri';
-import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
-import { FaRegEye } from 'react-icons/fa';
+import { UploadOutlined } from '@ant-design/icons';
 
-import { useNavigate, useParams } from 'react-router-dom';
-import { GiTrail } from 'react-icons/gi';
+import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
+
+import { useNavigate } from 'react-router-dom';
+
 import useStore from '../store/store';
 import { SlOptionsVertical } from 'react-icons/sl';
 import TextArea from 'antd/es/input/TextArea';
 import { useUser } from './CustomHook/useUser';
 import { uploadFile } from '../http/addDocument';
+import { hasPermission, requiredPermissions } from '../../utils/Roles';
 
 const Incoming = () => {
   const { trails, isLoading } = useTrail('incoming');
@@ -177,34 +176,6 @@ const Incoming = () => {
     enabled: !!trailId, // Only fetch if trailId is set
   });
 
-  // const { mutate: uploadDoc, isPending: isUploading } = useMutation({
-  //   mutationKey: ['upload'],
-  //   mutationFn: async (formData) => {
-  //     console.log('Uploading file...');
-  //     try {
-  //       const response = await uploadFile(formData);
-
-  //       if (!response?.data?.newFile?.fileId) {
-  //         throw new Error('File upload successful but no file ID was returned');
-  //       }
-
-  //       return response.data.newFile.fileId;
-  //     } catch (error) {
-  //       // Re-throw for onError handler
-  //       throw error;
-  //     }
-  //   },
-  //   onSuccess: (fileId) => {
-  //     console.log('File uploaded successfully with ID:', fileId);
-  //     const values = form.getFieldsValue();
-  //     forwardDocument({ ...values, fileId });
-  //   },
-  //   onError: (error) => {
-  //     setLoading(false);
-  //     showErrorNotification('File Upload Failed', error.response.data.error);
-  //   },
-  // });
-
   const { mutate: uploadMultipleFiles, isPending: isMultipleUploading } =
     useMutation({
       mutationKey: ['uploadMultiple'],
@@ -327,7 +298,9 @@ const Incoming = () => {
         label: <span onClick={() => handleClick(selectedRecord)}>Forward</span>,
         key: 1,
       },
-      {
+      hasPermission(user?.role[0].rolePermissions, [
+        requiredPermissions.ARCHIVE_DOCUMENT,
+      ]) && {
         label: <span onClick={() => handleFile(selectedRecord)}>Archive</span>,
         key: 2,
       },
@@ -335,7 +308,7 @@ const Incoming = () => {
         label: <span onClick={() => handleView(selectedRecord)}>Trail</span>,
         key: 3,
       },
-    ];
+    ].filter(Boolean);
   };
 
   const columns = [

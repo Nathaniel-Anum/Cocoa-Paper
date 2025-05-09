@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Input, Form, Select, message } from 'antd';
+import { Modal, Button, Input, Form, Select, message, Checkbox } from 'antd';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '../../axiosInstance';
 
@@ -8,6 +8,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
   const [form] = Form.useForm();
 
   const [selectedDivision, setSelectedDivision] = useState('');
+  const [isDepartment, setIsDepartment] = useState(false);
 
   const handleDivisionChange = (value) => {
     // console.log(`selected Division: ${value}`);
@@ -47,6 +48,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
         departmentId: staffDetail?.department?.departmentId,
         roleId: staffDetail?.role?.map((role) => role.roleId),
       });
+      setIsDepartment(staffDetail?.isDepartment);
     }
   }, [staffDetail]);
 
@@ -55,10 +57,10 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
     mutationKey: 'staff',
     mutationFn: (values) => {
       console.log(values);
-      return axiosInstance.patch(
-        `/staff/${staffDetail?.staff?.staffId}`,
-        values
-      ); //This way or
+      return axiosInstance.patch(`/staff/${staffDetail?.staff?.staffId}`, {
+        ...values,
+        isDepartment,
+      }); //This way or
       // addUser(data);  //This way
     },
     onSuccess: () => {
@@ -167,6 +169,15 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
             onChange={handleChange}
           />
         </Form.Item>
+        <Form.Item label="">
+          <Checkbox
+            onChange={(e) => setIsDepartment(e.target.checked)}
+            checked={isDepartment}
+          >
+            Setup as department
+          </Checkbox>
+        </Form.Item>
+
         <Form.Item name={'roleId'}>
           <Select
             mode="multiple"
@@ -181,6 +192,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
             }
           />
         </Form.Item>
+
         <Form.Item>
           <Button
             className="w-full bg-[#9D4D01]"

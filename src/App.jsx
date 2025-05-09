@@ -35,6 +35,7 @@ import Analytics from './Pages/Analytics';
 import FinancialYear from './Components/BackOffice/FinancialYear';
 import AuditTrail from './Components/BackOffice/AuditTrail';
 import Attachments from './Pages/Attachments';
+import Configuration from './Components/BackOffice/Configuration';
 
 function App() {
   // API call for the users.
@@ -429,6 +430,21 @@ function App() {
                   ])}
                 >
                   <Role />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/backoffice/config"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                    // requiredPermissions.READ_CONFIGURATION,
+                    // requiredPermissions.CREATE_CONFIGURATION,
+                    // requiredPermissions.DELETE_CONFIGURATION,
+                    requiredPermissions.READ_ARCHIVE,
+                  ])}
+                >
+                  <Configuration />
                 </ProtectedRoutes>
               }
             />
