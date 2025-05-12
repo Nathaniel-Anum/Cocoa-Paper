@@ -2,6 +2,7 @@ import {
   Button,
   DatePicker,
   Input,
+  InputNumber,
   message,
   Modal,
   Popconfirm,
@@ -30,6 +31,7 @@ import {
   deleteConfiguration,
   updateConfiguration,
 } from '../../http/configuration';
+import { CONFIGS } from '../../../utils/constants';
 
 const Configuration = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -91,13 +93,12 @@ const Configuration = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: (value) => <span>{new Date(value).toLocaleDateString()}</span>,
+      render: (value) => <span>{CONFIGS[value]}</span>,
     },
     {
       title: 'Value',
       dataIndex: 'value',
       key: 'value',
-      render: (value) => <span>{new Date(value).toLocaleDateString()}</span>,
     },
 
     {
@@ -152,11 +153,29 @@ const Configuration = () => {
           requiredMark
           form={form}
         >
-          <Form.Item name="startDate" label="Start Date" required>
-            <DatePicker className="w-full" />
+          <Form.Item name="name" label="Name" required>
+            <Select
+              placeholder="Select Config Name"
+              options={[
+                { label: 'F & A Threshold', value: 'F_AND_A_THRESHOLD' },
+                {
+                  label: 'Director Finance Threshold',
+                  value: 'DIRECTOR_THRESHOLD',
+                },
+                { label: 'Chief Executive Threshold', value: 'CE_THRESHOLD' },
+              ]}
+            />
           </Form.Item>
-          <Form.Item name="endDate" label="End Date" required>
-            <DatePicker className="w-full" />
+
+          <Form.Item name="value" label="Value" required>
+            <Input
+              placeholder="Enter Amount"
+              className="w-full"
+              formatter={(value) =>
+                `₵ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+              }
+              parser={(value) => value?.replace(/₵\s?|(,*)/g, '')}
+            />
           </Form.Item>
 
           <Button htmlType="submit" className="w-full bg-[#694421] text-white">

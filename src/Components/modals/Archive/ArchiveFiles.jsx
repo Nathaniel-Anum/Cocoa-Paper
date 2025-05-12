@@ -1,12 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import React, { useEffect, useState } from "react";
-import axiosInstance from "../../axiosInstance";
-import { Button, Form, Input, Modal, Upload, message, Cascader } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import { useUser } from "../../../Pages/CustomHook/useUser";
-import { useTrail } from "../../../Pages/CustomHook/useTrail";
-import useArchiveTransform from "../../../Pages/CustomHook/useArchiveTransform";
-import { getArchive, getArchiveByFolderId } from "../../../http/archive";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
+import axiosInstance from '../../axiosInstance';
+import { Button, Form, Input, Modal, Upload, message, Cascader } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import { useUser } from '../../../Pages/CustomHook/useUser';
+import { useTrail } from '../../../Pages/CustomHook/useTrail';
+import useArchiveTransform from '../../../Pages/CustomHook/useArchiveTransform';
+import { getArchive, getArchiveByFolderId } from '../../../http/archive';
 
 const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
   const { user } = useUser();
@@ -14,21 +14,21 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
   const queryClient = useQueryClient();
 
   const [options, setOptions] = useState([]);
-  const [selectedFile, setSelectedFile] = useState("");
+  const [selectedFile, setSelectedFile] = useState('');
 
   //Mutation to change document status
   const { mutate: status } = useMutation({
-    mutationKey: "status",
+    mutationKey: 'status',
     mutationFn: () => {
       return axiosInstance.patch(`/trail/${record?.docID}`, {
         userId: sender,
-        status: "Archived",
+        status: 'Archived',
       });
     },
     onSuccess: () => {
       setShow(false);
       form.resetFields();
-      queryClient.invalidateQueries({ queryKey: ["trail"] });
+      queryClient.invalidateQueries({ queryKey: ['trail'] });
     },
     onError: (error) => {
       setOpen(false);
@@ -38,18 +38,18 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
 
   //Mutation to upload file
   const { mutate: uploadFile } = useMutation({
-    mutationKey: "fileUpload",
+    mutationKey: 'fileUpload',
     mutationFn: (values) => {
       // console.log(values);
-      return axiosInstance.post("/upload", values);
+      return axiosInstance.post(`/archive/${record?.docID}`, values);
     },
     onSuccess: () => {
       setShow(false);
 
       form.resetFields();
-      message.success("file uploaded successfully!");
-      status("status");
-      queryClient.invalidateQueries({ mutationKey: "folder" });
+      message.success('file uploaded successfully!');
+      status('status');
+      queryClient.invalidateQueries({ mutationKey: 'folder' });
     },
     onError: (error) => {
       setOpen(false);
@@ -62,7 +62,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
     return (
       data &&
       data
-        .filter((item) => item.type === "Folder")
+        .filter((item) => item.type === 'Folder')
         .map((folder) => ({
           value: folder?.folderId,
           label: folder?.folderName,
@@ -90,18 +90,20 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
     if (selectedFile) {
       const folderId = values?.folderId
         ? values?.folderId[values.folderId.length - 1]
-        : "undefined";
+        : 'undefined';
       // console.log(values, typeof folderId);
 
       let formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("ref", values.ref);
-      formData.append("subject", values.subject);
-      formData.append("folderId", folderId);
-      formData.append("docId", record?.docID);
+      if (!record.file) {
+        formData.append('file', selectedFile);
+        formData.append('ref', values.ref);
+        formData.append('subject', values.subject);
+      }
+
+      formData.append('folderId', folderId);
+      uploadFile(formData);
 
       // console.log(formData);
-      uploadFile(formData);
     }
   };
 
@@ -133,7 +135,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
           rules={[
             {
               required: true,
-              message: "Please input a subject for your file!",
+              message: 'Please input a subject for your file!',
             },
           ]}
         >
@@ -146,37 +148,41 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
           rules={[
             {
               required: true,
-              message: "Please enter a reference for your file!",
+              message: 'Please enter a reference for your file!',
             },
           ]}
         >
           <Input placeholder="Reference" allowClear disabled />
         </Form.Item>
 
-        <Form.Item label="File" name="file">
-          <div className="flex justify-center">
-            <Upload
-              // action={"http://localhost:5000/upload"}
+        {!record?.file && (
+          <Form.Item label="File" name="file">
+            <div className="flex justify-center">
+              <Upload
+                // action={"http://localhost:5000/upload"}
 
-              name="file"
-              onChange={(info) => setSelectedFile(info.file.originFileObj)}
-              accept=".pdf"
-            >
-              <button className="border border-black px-20 py-1">
-                <div className="flex gap-2 text-[18px]">
-                  <UploadOutlined className="text-[19px]" />
-                  <p>Upload</p>
-                </div>
-              </button>
-            </Upload>
-          </div>
-        </Form.Item>
+                name="file"
+                onChange={(info) => setSelectedFile(info.file.originFileObj)}
+                accept=".pdf"
+              >
+                <button className="border border-black px-20 py-1">
+                  <div className="flex gap-2 text-[18px]">
+                    <UploadOutlined className="text-[19px]" />
+                    <p>Upload</p>
+                  </div>
+                </button>
+              </Upload>
+            </div>
+          </Form.Item>
+        )}
+
         <Form.Item name="folderId" label="Folder">
           <Cascader
             label="Folder"
             options={options}
             loadData={loadData}
             changeOnSelect
+            placeholder={'Choose Folder'}
           />
         </Form.Item>
         <Form.Item>

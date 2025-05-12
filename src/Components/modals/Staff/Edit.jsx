@@ -48,7 +48,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
         departmentId: staffDetail?.department?.departmentId,
         roleId: staffDetail?.role?.map((role) => role.roleId),
       });
-      setIsDepartment(staffDetail?.isDepartment);
+      setIsDepartment(staffDetail?.staff?.isDepartment);
     }
   }, [staffDetail]);
 

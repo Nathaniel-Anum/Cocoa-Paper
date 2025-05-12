@@ -1120,7 +1120,7 @@ const AddDocument = () => {
                     { label: 'Budget Release', value: 'BudgetRelease' },
                     {
                       label: 'Out of Budget Release',
-                      value: 'OutOfBudgetRelease',
+                      value: 'OutOfBudget',
                     },
                   ]}
                 />
@@ -1134,24 +1134,44 @@ const AddDocument = () => {
               </Form.Item>
               {/* Amount (for Out of Budget) */}
               {requestType === 'OutOfBudgetRelease' && (
-                <Form.Item
-                  name="amount"
-                  label="Amount"
-                  rules={
-                    [
-                      // { required: true, message: 'Please enter an amount' },
-                    ]
-                  }
-                >
-                  <InputNumber
-                    placeholder="Enter Amount"
-                    className="w-full"
-                    formatter={(value) =>
-                      `₵ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                <>
+                  <Form.Item
+                    name="amount"
+                    label="Amount"
+                    rules={
+                      [
+                        // { required: true, message: 'Please enter an amount' },
+                      ]
                     }
-                    parser={(value) => value?.replace(/₵\s?|(,*)/g, '')}
-                  />
-                </Form.Item>
+                  >
+                    <InputNumber
+                      placeholder="Enter Amount"
+                      className="w-full"
+                      formatter={(value) =>
+                        `₵ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                      }
+                      parser={(value) => value?.replace(/₵\s?|(,*)/g, '')}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name="dollarAmount"
+                    label="Dollar Amount"
+                    rules={
+                      [
+                        // { required: true, message: 'Please enter an amount' },
+                      ]
+                    }
+                  >
+                    <InputNumber
+                      placeholder="Enter Dollar Amount"
+                      className="w-full"
+                      formatter={(value) =>
+                        `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                      }
+                      parser={(value) => value?.replace(/\$\s?|(,*)/g, '')}
+                    />
+                  </Form.Item>
+                </>
               )}
               {/* Budget Items (for Budget Release) */}
               {requestType === 'BudgetRelease' && (
@@ -1166,7 +1186,7 @@ const AddDocument = () => {
                           className="mb-4 pb-4 border-b border-dashed last:border-b-0"
                         >
                           <Row gutter={16}>
-                            <Col span={8}>
+                            <Col span={6}>
                               <Form.Item
                                 {...field}
                                 name={[field.name, 'itemCategory']}
@@ -1189,7 +1209,7 @@ const AddDocument = () => {
                                 />
                               </Form.Item>
                             </Col>
-                            <Col span={8}>
+                            <Col span={6}>
                               <Form.Item
                                 {...field}
                                 name={[field.name, 'budgetItemId']}
@@ -1211,7 +1231,7 @@ const AddDocument = () => {
                                 />
                               </Form.Item>
                             </Col>
-                            <Col span={7}>
+                            <Col span={5}>
                               <Form.Item
                                 {...field}
                                 name={[field.name, 'amount']}
@@ -1237,9 +1257,30 @@ const AddDocument = () => {
                                 />
                               </Form.Item>
                             </Col>
+                            <Col span={5}>
+                              <Form.Item
+                                {...field}
+                                name={[field.name, 'dollarAmount']}
+                                label="Dollar Amount"
+                              >
+                                <InputNumber
+                                  placeholder="Amount"
+                                  className="w-full"
+                                  formatter={(value) =>
+                                    `$ ${value}`.replace(
+                                      /\B(?=(\d{3})+(?!\d))/g,
+                                      ','
+                                    )
+                                  }
+                                  parser={(value) =>
+                                    value?.replace(/\$\s?|(,*)/g, '')
+                                  }
+                                />
+                              </Form.Item>
+                            </Col>
                             <Col
                               span={1}
-                              className="flex items-end justify-center pb-2"
+                              className="flex  justify-center items-center pb-2"
                             >
                               <Button
                                 type="text"

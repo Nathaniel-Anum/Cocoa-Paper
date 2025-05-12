@@ -197,6 +197,13 @@ const Staff = () => {
       render: (value) => <span>{capitalize(value)}</span>,
     },
     {
+      title: 'Is Department',
+      key: 'isDepartment',
+      dataIndex: ['staff', 'isDepartment'],
+      render: (value) => <span>{value ? 'Yes' : 'No'}</span>,
+    },
+
+    {
       title: 'Role',
       key: 'role',
       dataIndex: 'role',

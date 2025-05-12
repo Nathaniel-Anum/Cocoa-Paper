@@ -27,11 +27,7 @@ const HomeDashboard = () => {
         <Link to="/incoming">
           <div>
             <div className=" relative hover:bg-[#E3BC97] duration-500 px-3 hover:rounded-lg py-2 hover:scale-110 ">
-              <img
-                className="w-[140px]"
-                src="/asset/Incoming.svg"
-                alt=""
-              />
+              <img className="w-[140px]" src="/asset/Incoming.svg" alt="" />
               <p className="text-center font-semibold text-[21px] text-[#582F08]">
                 Incoming
               </p>
@@ -45,11 +41,7 @@ const HomeDashboard = () => {
         <Link to="/outgoing">
           <div>
             <div className="relative hover:bg-[#E3BC97] duration-500 hover:px-3 hover:rounded-lg py-2 hover:scale-110 ">
-              <img
-                className="w-[140px]"
-                src="/asset/Outgoing.svg"
-                alt=""
-              />
+              <img className="w-[140px]" src="/asset/Outgoing.svg" alt="" />
               <p className="text-center font-semibold text-[21px] text-[#582F08]">
                 Outgoing
               </p>
@@ -63,11 +55,7 @@ const HomeDashboard = () => {
         <Link to="/physicaldocs">
           <div>
             <div className="relative hover:bg-[#E3BC97] duration-500 hover:px-3 hover:rounded-lg py-2 hover:scale-110">
-              <img
-                className="w-[140px]"
-                src="/asset/PhysicalDocs.svg"
-                alt=""
-              />
+              <img className="w-[140px]" src="/asset/PhysicalDocs.svg" alt="" />
               <div>
                 <p className="text-center font-semibold text-[21px] text-[#582F08]">
                   Physical Docs

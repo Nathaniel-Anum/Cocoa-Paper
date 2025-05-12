@@ -112,7 +112,7 @@ const AddBudget = () => {
                 {fields.map(({ key, name, ...restField }) => (
                   <div
                     key={key}
-                    className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto] gap-4 items-start mb-4"
+                    className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-4 items-start mb-4"
                   >
                     <Form.Item
                       {...restField}
@@ -150,6 +150,20 @@ const AddBudget = () => {
                           `₵ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                         }
                         parser={(value) => value?.replace(/₵\s?|(,*)/g, '')}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'dollarAmount']}
+                      label="Dollar Amount"
+                    >
+                      <InputNumber
+                        placeholder="Enter Amount"
+                        className="w-full"
+                        formatter={(value) =>
+                          `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                        }
+                        parser={(value) => value?.replace(/\$\s?|(,*)/g, '')}
                       />
                     </Form.Item>
 
