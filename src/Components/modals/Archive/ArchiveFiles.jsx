@@ -87,24 +87,23 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
 
   const handleUpload = (values) => {
     console.log(values);
-    if (selectedFile) {
-      const folderId = values?.folderId
-        ? values?.folderId[values.folderId.length - 1]
-        : 'undefined';
-      // console.log(values, typeof folderId);
 
-      let formData = new FormData();
-      if (!record.file) {
-        formData.append('file', selectedFile);
-        formData.append('ref', values.ref);
-        formData.append('subject', values.subject);
-      }
+    const folderId = values?.folderId
+      ? values?.folderId[values.folderId.length - 1]
+      : 'undefined';
+    // console.log(values, typeof folderId);
 
-      formData.append('folderId', folderId);
-      uploadFile(formData);
-
-      // console.log(formData);
+    let formData = new FormData();
+    if (!record.file) {
+      formData.append('file', selectedFile);
+      formData.append('ref', values.ref);
+      formData.append('subject', values.subject);
     }
+
+    formData.append('folderId', folderId);
+    uploadFile(formData);
+
+    // console.log(formData);
   };
 
   //fetching initial archive folders
