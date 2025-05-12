@@ -125,7 +125,7 @@ const BudgetIndex = () => {
       key: 'amountRemaining',
       render: (value, record) => (
         <span>
-          {value.length
+          {value && value.length
             ? formatMoney(value[value.length - 1].balance)
             : formatMoney(record.amount)}
         </span>
