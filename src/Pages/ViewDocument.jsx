@@ -691,7 +691,13 @@ function ViewDocument() {
       title: 'Amount',
       key: 'amount',
       dataIndex: 'amount',
-      render: (value) => <span>{value && `¢${formatMoney(value)}`}</span>,
+      render: (value) => <span>{value ? `¢${formatMoney(value)}` : '--'}</span>,
+    },
+    {
+      title: 'Dollar Amount',
+      key: 'dollarAmount',
+      dataIndex: 'dollarAmount',
+      render: (value) => <span>{value ? `$${formatMoney(value)}` : '--'}</span>,
     },
     {
       title: 'Allocation',

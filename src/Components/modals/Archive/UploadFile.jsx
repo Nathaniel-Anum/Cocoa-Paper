@@ -39,7 +39,9 @@ const UploadFile = ({ setShow, show, id }) => {
       formData.append('file', selectedFile);
       formData.append('ref', values.ref);
       formData.append('subject', values.subject);
-      formData.append('folderId', id);
+      if (id) {
+        formData.append('folderId', id);
+      }
       formData.append('isArchive', true);
       uploadFile(formData);
     }

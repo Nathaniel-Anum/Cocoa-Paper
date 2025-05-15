@@ -31,7 +31,7 @@ const PhysicalDocs = () => {
       }
     },
     onError: (error) => {
-      message.error(error?.response?.data?.Trail?.error);
+      message.error(error?.response?.data?.trail?.error);
     },
   });
 
