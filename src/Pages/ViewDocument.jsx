@@ -534,6 +534,7 @@ import {
   Modal,
   InputNumber,
   Spin,
+  message,
 } from 'antd';
 import { LuArchive, LuMessageSquare, LuSend, LuUser } from 'react-icons/lu';
 import { FaHandshake } from 'react-icons/fa';
@@ -954,6 +955,8 @@ function ViewDocument() {
               >
                 <Select
                   placeholder="Select division"
+                  showSearch
+                  optionFilterProp="label"
                   allowClear
                   options={divisions?.data?.map((division) => ({
                     label: division.divisionName,
@@ -971,6 +974,8 @@ function ViewDocument() {
               >
                 <Select
                   placeholder="Select department"
+                  showSearch
+                  optionFilterProp="label"
                   allowClear
                   options={departments?.data?.data?.map((department) => ({
                     label: department.departmentName,
@@ -989,6 +994,8 @@ function ViewDocument() {
               >
                 <Select
                   placeholder="Select recipient"
+                  showSearch
+                  optionFilterProp="label"
                   allowClear
                   options={users?.data
                     ?.filter((emp) => emp.userId !== user?.userId)

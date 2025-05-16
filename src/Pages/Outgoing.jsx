@@ -101,12 +101,6 @@ const Outgoing = () => {
         } else if (record?.document?.documentType !== 'BudgetRelease') {
           return <Tag color="blue">Approval Not Required</Tag>;
         }
-
-        // return record?.document?.isApproved ? (
-        //   <Tag color="green">Approved</Tag>
-        // ) : (
-        //   <Tag color="orange">Pending Approval</Tag>
-        // );
       },
     },
     {
@@ -161,7 +155,20 @@ const Outgoing = () => {
       ),
     },
   ];
-  const _data = trails.map((s, index) => ({
+  // Filter trails to keep only the most recent record for each unique reference
+  const uniqueTrailsMap = new Map();
+  trails.forEach((trail) => {
+    const ref = trail.document.ref;
+    if (
+      !uniqueTrailsMap.has(ref) ||
+      new Date(trail.createdAt) > new Date(uniqueTrailsMap.get(ref).createdAt)
+    ) {
+      uniqueTrailsMap.set(ref, trail);
+    }
+  });
+  const filteredTrails = Array.from(uniqueTrailsMap.values());
+
+  const _data = filteredTrails.map((s, index) => ({
     ...s,
     key: index,
   }));

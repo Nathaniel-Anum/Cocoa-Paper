@@ -70,6 +70,7 @@ const UpdateBudget = () => {
         budgetItems: chosenRecord?.budgetItems?.map((item) => ({
           item: item?.item,
           amount: item?.amount,
+          dollarAmount: item?.dollarAmount,
           quantity: item?.quantity || 0,
         })),
       });
@@ -182,6 +183,21 @@ const UpdateBudget = () => {
                           `₵ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                         }
                         parser={(value) => value?.replace(/₵\s?|(,*)/g, '')}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'dollarAmount']}
+                      label="Dollar Amount"
+                    >
+                      <InputNumber
+                        placeholder="Enter Amount"
+                        className="w-full"
+                        formatter={(value) =>
+                          `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                        }
+                        parser={(value) => value?.replace(/\$\s?|(,*)/g, '')}
                       />
                     </Form.Item>
 
