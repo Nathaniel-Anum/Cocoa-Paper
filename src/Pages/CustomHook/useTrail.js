@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { useUser } from "./useUser";
-import { useEffect, useState } from "react";
-import axiosInstance from "../../Components/axiosInstance";
+import { useQuery } from '@tanstack/react-query';
+import { useUser } from './useUser';
+import { useEffect, useState } from 'react';
+import axiosInstance from '../../Components/axiosInstance';
 
 export const useTrail = (type) => {
   const { user } = useUser();
@@ -14,31 +14,42 @@ export const useTrail = (type) => {
 
   // useQuery to fetch all trails
   const { data: trails, isLoading } = useQuery({
-    queryKey: ["trail"],
+    queryKey: ['trail'],
     queryFn: () => {
-      return axiosInstance.get("/all-Trails");
+      return axiosInstance.get('/all-Trails');
     },
   });
   // console.log(trails?.data);
 
-  
-
   useEffect(() => {
     if (!isLoading && user && trails?.data.length) {
       const incomingData = trails.data.filter(
-        (i) =>
-          i.receiver.userId === user?.userId && i.status === "Received"   
+        (i) => i.receiver.userId === user?.userId && i.status === 'Received'
       );
 
       setIncoming(incomingData);
 
-      const outgoingData = trails.data.filter(
+      const outgoingDataRaw = trails.data.filter(
         (i) => i.sender.userId === user?.userId
       );
+      // Filter outgoingData to keep only the most recent record for each unique reference
+      const uniqueOutgoingMap = new Map();
+      outgoingDataRaw.forEach((trail) => {
+        const ref = trail.document.ref;
+        if (
+          !uniqueOutgoingMap.has(ref) ||
+          new Date(trail.createdAt) >
+            new Date(uniqueOutgoingMap.get(ref).createdAt)
+        ) {
+          uniqueOutgoingMap.set(ref, trail);
+        }
+      });
+      const outgoingData = Array.from(uniqueOutgoingMap.values());
       setOutgoing(outgoingData);
 
       const physicalDocsData = trails.data.filter(
-        (i) =>  i.receiver.userId === user?.userId && i.status === "PendingReceipt"
+        (i) =>
+          i.receiver.userId === user?.userId && i.status === 'PendingReceipt'
       );
       setPhysicalDocument(physicalDocsData);
     }
@@ -54,9 +65,9 @@ export const useTrail = (type) => {
 
   return {
     trails:
-      type === "incoming"
+      type === 'incoming'
         ? incoming
-        : type === "outgoing"
+        : type === 'outgoing'
         ? outgoing
         : physicalDocument,
     isLoading,
