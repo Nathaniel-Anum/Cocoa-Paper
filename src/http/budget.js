@@ -28,6 +28,6 @@ export const deleteBudget = (id) => {
   return axiosInstance.delete(`/budget/${id}`);
 };
 
-export const updateBudgetAmount = (id) => {
-  return axiosInstance.patch(`/document/budget-allocation/${id}`);
+export const updateBudgetAmount = (id, values) => {
+  return axiosInstance.patch(`/document/budget-allocation/${id}`, values);
 };

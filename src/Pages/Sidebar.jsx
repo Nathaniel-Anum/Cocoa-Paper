@@ -1,12 +1,17 @@
 import { Link } from 'react-router-dom';
 import { useUser } from './CustomHook/useUser';
 import './Home.css';
-import { hasPermission, requiredPermissions } from '../../utils/Roles';
+import {
+  hasPermission,
+  requiredPermissions,
+  getAllRolePermissions,
+} from '../../utils/Roles';
 import { GiTakeMyMoney } from 'react-icons/gi';
 import { HiMiniPresentationChartLine } from 'react-icons/hi2';
 
 const Sidebar = () => {
   const { user } = useUser();
+  const allRolePermissions = getAllRolePermissions(user);
 
   return (
     <div className="">
@@ -16,7 +21,7 @@ const Sidebar = () => {
             <img src="/asset/logo.9a18109e1c16584832d5.png" alt="" />
           </div>
           <ul className="list-none  px-[15px] py-[25px]  flex flex-col gap-[35px]  my-[20px] cursor-pointer ">
-            {hasPermission(user?.role[0].rolePermissions, [
+            {hasPermission(allRolePermissions, [
               requiredPermissions.READ_ANALYTICS,
             ]) && (
               <Link to="/analytics">
@@ -52,7 +57,7 @@ const Sidebar = () => {
               </li>
             </Link>
 
-            {hasPermission(user?.role[0].rolePermissions, [
+            {hasPermission(allRolePermissions, [
               requiredPermissions.CREATE_ARCHIVE,
             ]) && (
               <Link to="/archive">
@@ -67,7 +72,7 @@ const Sidebar = () => {
                 </li>
               </Link>
             )}
-            {hasPermission(user?.role[0].rolePermissions, [
+            {hasPermission(allRolePermissions, [
               requiredPermissions.CREATE_ARCHIVE,
             ]) && (
               <Link to="/work-history">
@@ -83,7 +88,7 @@ const Sidebar = () => {
               </Link>
             )}
 
-            {hasPermission(user?.role[0].rolePermissions, [
+            {hasPermission(allRolePermissions, [
               requiredPermissions.READ_BUDGET,
             ]) && (
               <Link to="/budget">

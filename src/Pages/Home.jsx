@@ -8,6 +8,11 @@ import axiosInstance, { baseURL } from '../Components/axiosInstance';
 import { useCookies } from 'react-cookie';
 import { useState } from 'react';
 import { useUser } from './CustomHook/useUser';
+import {
+  hasPermission,
+  requiredPermissions,
+  getAllRolePermissions,
+} from '../../utils/Roles';
 
 const Home = () => {
   const [form] = Form.useForm();
@@ -18,6 +23,8 @@ const Home = () => {
 
   const [loading, setLoading] = useState(false);
   const { setUser, setIsLoading } = useUser();
+  const { user } = useUser();
+  const allRolePermissions = getAllRolePermissions(user);
 
   const navigate = useNavigate();
 

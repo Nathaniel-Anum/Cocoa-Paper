@@ -26,7 +26,11 @@ import { SlOptionsVertical } from 'react-icons/sl';
 import TextArea from 'antd/es/input/TextArea';
 import { useUser } from './CustomHook/useUser';
 import { uploadFile } from '../http/addDocument';
-import { hasPermission, requiredPermissions } from '../../utils/Roles';
+import {
+  hasPermission,
+  requiredPermissions,
+  getAllRolePermissions,
+} from '../../utils/Roles';
 
 const Incoming = () => {
   const { trails, isLoading } = useTrail('incoming');
@@ -40,6 +44,7 @@ const Incoming = () => {
   const [senderId, setSenderId] = useState('');
 
   const { user } = useUser();
+  const allRolePermissions = getAllRolePermissions(user);
   const navigate = useNavigate();
 
   const queryClient = useQueryClient();
@@ -67,6 +72,8 @@ const Incoming = () => {
   const [selected, setSelected] = useState('');
 
   const setChosenRecord = useStore((state) => state.setChosenRecord);
+
+  const { user: authUser } = useUser();
 
   // useQuery for getting all  divisions
   const { data: divisions } = useQuery({
@@ -298,7 +305,7 @@ const Incoming = () => {
         label: <span onClick={() => handleClick(selectedRecord)}>Forward</span>,
         key: 1,
       },
-      hasPermission(user?.role[0].rolePermissions, [
+      hasPermission(allRolePermissions, [
         requiredPermissions.ARCHIVE_DOCUMENT,
       ]) && {
         label: <span onClick={() => handleFile(selectedRecord)}>Archive</span>,
@@ -563,7 +570,7 @@ const Incoming = () => {
           show={show}
           setShow={setShow}
           record={record}
-          sender={senderId?.sender?.userId}
+          sender={authUser?.userId}
         />
       ) : null}
     </div>

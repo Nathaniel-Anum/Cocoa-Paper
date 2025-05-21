@@ -45,6 +45,21 @@ export const requiredPermissions = {
   UPDATE_DOCUMENT_AMOUNT: 'UPDATE_DOCUMENT_AMOUNT',
 };
 
+export function getAllRolePermissions(user) {
+  if (!user?.role) return [];
+  return user.role.flatMap((role) => role.rolePermissions || []);
+}
+
+// export function hasPermission(userRoles, requiredPermissions) {
+//   return requiredPermissions.every((requiredPermission) =>
+//     userRoles?.some((role) =>
+//       role.rolePermission?.some(
+//         (perm) => perm.permission.permission === requiredPermission
+//       )
+//     )
+//   );
+// }
+
 export function hasPermission(userPermissions, requiredPermissions) {
   return !!requiredPermissions.every((permission) =>
     userPermissions?.find((perm) => perm.permission.permission == permission)

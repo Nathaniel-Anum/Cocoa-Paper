@@ -12,7 +12,7 @@ import {
 } from 'antd';
 
 import React, { useEffect, useState } from 'react';
-import { formatMoney } from '../../../../utils/typography';
+import { capitalize, formatMoney } from '../../../../utils/typography';
 import { EditOutlined } from '@ant-design/icons';
 import { BiTrash } from 'react-icons/bi';
 import { useNavigate } from 'react-router-dom';
@@ -24,7 +24,11 @@ import {
 } from '../../../queryHooks/budget';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { deleteBudget } from '../../../http/budget';
-import { hasPermission, requiredPermissions } from '../../../../utils/Roles';
+import {
+  hasPermission,
+  requiredPermissions,
+  getAllRolePermissions,
+} from '../../../../utils/Roles';
 import { useUser } from '../../CustomHook/useUser';
 import axiosInstance from '../../../Components/axiosInstance';
 
@@ -36,27 +40,32 @@ const BudgetIndex = () => {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [reportFilters, setReportFilters] = useState({});
   const { user: authUser } = useUser();
+  const allRolePermissions = getAllRolePermissions(authUser);
   const budgetColumns = [
     {
       title: 'Budgetary Item',
       dataIndex: 'name',
       key: 'name',
       // width: '50%',
-      render: (value) => <span className={'font-bold'}>{value}</span>,
+      render: (value) => (
+        <span className="font-bold">{value && capitalize(value)}</span>
+      ),
     },
-    hasPermission(authUser?.role[0].rolePermissions, [
+    hasPermission(allRolePermissions, [
       requiredPermissions.READ_BUDGET_GLOBAL,
     ]) && {
       title: 'Department',
       key: 'department',
       dataIndex: ['department', 'departmentName'],
+      render: (value) => <span>{value && capitalize(value)}</span>,
     },
-    hasPermission(authUser?.role[0].rolePermissions, [
+    hasPermission(allRolePermissions, [
       requiredPermissions.READ_BUDGET_GLOBAL,
     ]) && {
       title: 'Division',
       key: 'division',
       dataIndex: ['department', 'division', 'divisionName'],
+      render: (value) => <span>{value && capitalize(value)}</span>,
     },
     {
       title: 'Year',
@@ -69,9 +78,7 @@ const BudgetIndex = () => {
         ).getFullYear()} - ${new Date(value.endDate).getFullYear()}`}</span>
       ),
     },
-    hasPermission(authUser?.role[0].rolePermissions, [
-      requiredPermissions.UPDATE_BUDGET,
-    ]) && {
+    hasPermission(allRolePermissions, [requiredPermissions.UPDATE_BUDGET]) && {
       title: 'Action',
       dataIndex: 'id',
       key: 'action',
@@ -101,6 +108,7 @@ const BudgetIndex = () => {
       title: 'Budgetary Item',
       dataIndex: 'item',
       key: 'item',
+      render: (value) => <span>{value && capitalize(value)}</span>,
     },
     {
       title: 'Quantity',
@@ -113,12 +121,12 @@ const BudgetIndex = () => {
       key: 'amount',
       render: (value) => <span>{formatMoney(value)}</span>,
     },
-    {
-      title: 'Dollar Amount',
-      dataIndex: 'dollarAmount',
-      key: 'amount',
-      render: (value) => <span>{value ? formatMoney(value) : '--'}</span>,
-    },
+    // {
+    //   title: 'Dollar Amount',
+    //   dataIndex: 'dollarAmount',
+    //   key: 'amount',
+    //   render: (value) => <span>{value ? formatMoney(value) : '--'}</span>,
+    // },
     {
       title: 'Balance',
       dataIndex: 'budgetAllocation',

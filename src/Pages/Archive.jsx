@@ -29,12 +29,19 @@ import axiosInstance from '../Components/axiosInstance';
 import useArchiveTransform from './CustomHook/useArchiveTransform';
 import CreateFolder from '../Components/modals/Archive/CreateFolder';
 import UploadFile from '../Components/modals/Archive/UploadFile';
-import { isArray } from 'lodash';
+import {
+  hasPermission,
+  requiredPermissions,
+  getAllRolePermissions,
+} from '../../utils/Roles';
+import { useUser } from './CustomHook/useUser';
 
 const Archive = () => {
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
   const { id } = useParams();
+  const { user } = useUser();
+  const allRolePermissions = getAllRolePermissions(user);
 
   // State management
   const [modalStates, setModalStates] = useState({
@@ -484,7 +491,7 @@ const Archive = () => {
 
       <Table
         columns={columns}
-        dataSource={isArray(tableData) ? tableData : []}
+        dataSource={Array.isArray(tableData) ? tableData : []}
         rowSelection={{
           selectedRowKeys: selectedItem.rowKeys,
           onChange: (keys, rows) =>

@@ -186,7 +186,7 @@ const UpdateBudget = () => {
                       />
                     </Form.Item>
 
-                    <Form.Item
+                    {/* <Form.Item
                       {...restField}
                       name={[name, 'dollarAmount']}
                       label="Dollar Amount"
@@ -199,7 +199,7 @@ const UpdateBudget = () => {
                         }
                         parser={(value) => value?.replace(/\$\s?|(,*)/g, '')}
                       />
-                    </Form.Item>
+                    </Form.Item> */}
 
                     <div className="flex items-center mt-6">
                       <MinusCircleOutlined

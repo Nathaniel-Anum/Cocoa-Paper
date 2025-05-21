@@ -13,7 +13,6 @@ import {
 } from 'antd';
 import { EditTwoTone, DeleteTwoTone } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
-import { set } from 'lodash';
 
 const RoleManagement = () => {
   const queryClient = useQueryClient();
@@ -180,6 +179,7 @@ const RoleManagement = () => {
           title="Edit Role Management"
           onCancel={handleCancel}
           footer={null}
+          maskClosable={false}
         >
           <Form
             name="Edit"

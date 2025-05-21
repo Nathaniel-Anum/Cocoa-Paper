@@ -248,6 +248,7 @@ const Staff = () => {
           title="Add Staff"
           onCancel={handleCancel}
           footer={null}
+          maskClosable={false}
         >
           <Form
             name="addStaff"
@@ -303,6 +304,8 @@ const Staff = () => {
             >
               <Select
                 placeholder="Please choose your Division"
+                showSearch
+                optionFilterProp="label"
                 allowClear
                 options={divisions?.data.map((division, index) => {
                   return {
@@ -325,6 +328,8 @@ const Staff = () => {
             >
               <Select
                 placeholder="Please choose your Department"
+                showSearch
+                optionFilterProp="label"
                 allowClear
                 options={departments?.data?.data?.map((department, index) => {
                   return {
@@ -346,6 +351,8 @@ const Staff = () => {
             <Form.Item name="roleId" label="Role" required>
               <Select
                 placeholder="Choose Role"
+                showSearch
+                optionFilterProp="label"
                 options={
                   roles?.data?.data.map((role) => ({
                     label: role.role,

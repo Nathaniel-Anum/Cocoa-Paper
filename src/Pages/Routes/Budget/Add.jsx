@@ -112,7 +112,7 @@ const AddBudget = () => {
                 {fields.map(({ key, name, ...restField }) => (
                   <div
                     key={key}
-                    className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-4 items-start mb-4"
+                    className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-start mb-4"
                   >
                     <Form.Item
                       {...restField}
@@ -139,9 +139,9 @@ const AddBudget = () => {
                       {...restField}
                       name={[name, 'amount']}
                       label="Amount"
-                      rules={[
-                        { required: true, message: 'Please enter an amount' },
-                      ]}
+                      // rules={[
+                      //   { required: true, message: 'Please enter an amount' },
+                      // ]}
                     >
                       <InputNumber
                         placeholder="Enter Amount"
@@ -152,7 +152,7 @@ const AddBudget = () => {
                         parser={(value) => value?.replace(/₵\s?|(,*)/g, '')}
                       />
                     </Form.Item>
-                    <Form.Item
+                    {/* <Form.Item
                       {...restField}
                       name={[name, 'dollarAmount']}
                       label="Dollar Amount"
@@ -165,7 +165,7 @@ const AddBudget = () => {
                         }
                         parser={(value) => value?.replace(/\$\s?|(,*)/g, '')}
                       />
-                    </Form.Item>
+                    </Form.Item> */}
 
                     <div className="flex items-center mt-9">
                       <MinusCircleOutlined

@@ -24,7 +24,11 @@ import Archive from './Pages/Archive';
 import { SignIn } from './Pages/SignIn';
 import ConfirmEmail from './Pages/ConfirmEmail';
 import ResetPassword from './Pages/ResetPassword';
-import { hasPermission, requiredPermissions } from '../utils/Roles';
+import {
+  hasPermission,
+  requiredPermissions,
+  getAllRolePermissions,
+} from '../utils/Roles';
 import WorkHistory from './Pages/WorkHistory';
 import RecycleBin from './Pages/RecycleBin';
 import ViewDocument from './Pages/ViewDocument';
@@ -44,7 +48,7 @@ function App() {
   // axiosInstance.get("/archive").then((res) => console.log(res?.data?.archives));
 
   // console.log(user, isLoading);
-  // console.log(user);
+  console.log(user);
 
   useEffect(() => {
     const fetchUser = () => {
@@ -57,6 +61,8 @@ function App() {
     };
     fetchUser();
   }, []);
+
+  const allRolePermissions = getAllRolePermissions(user);
 
   // console.log(
   //   hasPermission(user?.role[0].rolePermissions, [
@@ -89,7 +95,7 @@ function App() {
               index
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.READ_ALL_USERS,
                   ])}
                 >
@@ -101,7 +107,7 @@ function App() {
               path="/add-document"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.UPDATE_DOCUMENT,
                     requiredPermissions.DELETE_DOCUMENT,
                     requiredPermissions.READ_DOCUMENT,
@@ -116,7 +122,7 @@ function App() {
               path="/add-budget-item"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.UPDATE_DOCUMENT,
                     requiredPermissions.DELETE_DOCUMENT,
                     requiredPermissions.READ_DOCUMENT,
@@ -131,7 +137,7 @@ function App() {
               path="/update-budget-item/:id"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.UPDATE_DOCUMENT,
                     requiredPermissions.DELETE_DOCUMENT,
                     requiredPermissions.READ_DOCUMENT,
@@ -146,7 +152,7 @@ function App() {
               path="/analytics"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.READ_ANALYTICS,
                   ])}
                 >
@@ -158,7 +164,7 @@ function App() {
               path="/view-document/:id"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.UPDATE_DOCUMENT,
                     requiredPermissions.DELETE_DOCUMENT,
                     requiredPermissions.READ_DOCUMENT,
@@ -173,7 +179,7 @@ function App() {
               path="/view-attachment/:id"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.UPDATE_DOCUMENT,
                     requiredPermissions.DELETE_DOCUMENT,
                     requiredPermissions.READ_DOCUMENT,
@@ -188,7 +194,7 @@ function App() {
               path="/incoming"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_TRAIL,
                     requiredPermissions.DELETE_TRAIL,
                     requiredPermissions.READ_TRAIL,
@@ -204,7 +210,7 @@ function App() {
               path="/budget"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.READ_BUDGET,
                   ])}
                 >
@@ -216,7 +222,7 @@ function App() {
               path="/outgoing"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_TRAIL,
                     requiredPermissions.DELETE_TRAIL,
                     requiredPermissions.READ_TRAIL,
@@ -231,7 +237,7 @@ function App() {
               path="/physicaldocs"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_TRAIL,
                     requiredPermissions.DELETE_TRAIL,
                     requiredPermissions.READ_TRAIL,
@@ -246,7 +252,7 @@ function App() {
               path="/locator"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_TRAIL,
                     requiredPermissions.DELETE_TRAIL,
                     requiredPermissions.READ_TRAIL,
@@ -261,7 +267,7 @@ function App() {
               path="/archive"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_ARCHIVE,
                     requiredPermissions.READ_ARCHIVE,
                     requiredPermissions.DELETE_ARCHIVE,
@@ -276,7 +282,7 @@ function App() {
               path="/work-history"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_ARCHIVE,
                     requiredPermissions.READ_ARCHIVE,
                     requiredPermissions.DELETE_ARCHIVE,
@@ -291,7 +297,7 @@ function App() {
               path="/trash"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_ARCHIVE,
                     requiredPermissions.READ_ARCHIVE,
                     requiredPermissions.DELETE_ARCHIVE,
@@ -306,7 +312,7 @@ function App() {
               path="/archive/:id"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_ARCHIVE,
                     requiredPermissions.READ_ARCHIVE,
                     requiredPermissions.DELETE_ARCHIVE,
@@ -322,7 +328,7 @@ function App() {
             path="/backoffice"
             element={
               <ProtectedRoutes
-                isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                isAllowed={hasPermission(allRolePermissions, [
                   requiredPermissions.READ_USER,
                   requiredPermissions.UPDATE_USER,
                   requiredPermissions.CREATE_USER,
@@ -349,7 +355,7 @@ function App() {
               path="/backoffice/bod"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_STAFF,
                     requiredPermissions.READ_STAFF,
                     requiredPermissions.DELETE_STAFF,
@@ -364,7 +370,7 @@ function App() {
               path="/backoffice/financialYears"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_STAFF,
                     requiredPermissions.READ_STAFF,
                     requiredPermissions.DELETE_STAFF,
@@ -380,7 +386,7 @@ function App() {
               path="/backoffice/department"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_DEPT,
                     requiredPermissions.READ_DEPT,
                     requiredPermissions.DELETE_DEPT,
@@ -395,7 +401,7 @@ function App() {
               path="/backoffice/auditTrail"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.CREATE_DEPT,
                     requiredPermissions.READ_DEPT,
                     requiredPermissions.DELETE_DEPT,
@@ -410,7 +416,7 @@ function App() {
               path="/backoffice/division"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.READ_DIVISION,
                   ])}
                 >
@@ -422,7 +428,7 @@ function App() {
               path="/backoffice/roles"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.READ_ROLES,
                     requiredPermissions.CREATE_ROLES,
                     requiredPermissions.DELETE_ROLES,
@@ -437,7 +443,7 @@ function App() {
               path="/backoffice/config"
               element={
                 <ProtectedRoutes
-                  isAllowed={hasPermission(user?.role[0].rolePermissions, [
+                  isAllowed={hasPermission(allRolePermissions, [
                     // requiredPermissions.READ_CONFIGURATION,
                     // requiredPermissions.CREATE_CONFIGURATION,
                     // requiredPermissions.DELETE_CONFIGURATION,

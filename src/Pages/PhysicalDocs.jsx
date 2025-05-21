@@ -5,10 +5,18 @@ import { useTrail } from './CustomHook/useTrail';
 import axiosInstance from '../Components/axiosInstance';
 import { CheckOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import {
+  hasPermission,
+  requiredPermissions,
+  getAllRolePermissions,
+} from '../../utils/Roles';
+import { useUser } from './CustomHook/useUser';
 
 const PhysicalDocs = () => {
   const { trails, isLoading } = useTrail();
   const navigate = useNavigate();
+  const { user } = useUser();
+  const allRolePermissions = getAllRolePermissions(user);
 
   const [form] = Form.useForm();
 

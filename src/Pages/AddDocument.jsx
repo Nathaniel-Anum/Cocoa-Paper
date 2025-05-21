@@ -1153,7 +1153,7 @@ const AddDocument = () => {
                       parser={(value) => value?.replace(/₵\s?|(,*)/g, '')}
                     />
                   </Form.Item>
-                  <Form.Item
+                  {/* <Form.Item
                     name="dollarAmount"
                     label="Dollar Amount"
                     rules={
@@ -1170,7 +1170,7 @@ const AddDocument = () => {
                       }
                       parser={(value) => value?.replace(/\$\s?|(,*)/g, '')}
                     />
-                  </Form.Item>
+                  </Form.Item> */}
                 </>
               )}
               {/* Budget Items (for Budget Release) */}
@@ -1197,6 +1197,8 @@ const AddDocument = () => {
                               >
                                 <Select
                                   placeholder="Select Item Category"
+                                  optionFilterProp="label"
+                                  showSearch
                                   onChange={(value) =>
                                     handleItemCategoryChange(value, field.name)
                                   }
@@ -1220,6 +1222,8 @@ const AddDocument = () => {
                               >
                                 <Select
                                   placeholder="Select Budgetary Item"
+                                  optionFilterProp="label"
+                                  showSearch
                                   options={budgetUnits[field.name] || []}
                                   disabled={
                                     !form.getFieldValue([
@@ -1380,7 +1384,7 @@ const AddDocument = () => {
                 />
               </Form.Item>
               {/* Physical Document */}
-              <Form.Item>
+              {/* <Form.Item>
                 <Checkbox
                   checked={isPhysical}
                   onChange={(e) => setIsPhysical(e.target.checked)}
@@ -1392,7 +1396,7 @@ const AddDocument = () => {
                     ? 'No file upload needed for physical documents'
                     : 'Please upload a PDF file for electronic documents'}
                 </div>
-              </Form.Item>
+              </Form.Item> */}
 
               {/* Main File Upload (for electronic documents) */}
 

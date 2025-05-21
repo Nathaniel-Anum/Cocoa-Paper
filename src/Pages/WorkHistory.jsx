@@ -5,9 +5,15 @@ import axiosInstance from '../Components/axiosInstance';
 import Trail from '../Components/Trail/Trail';
 import { FaRegEye } from 'react-icons/fa';
 import { isArray } from 'lodash';
+import { IoLocationOutline } from 'react-icons/io5';
+import { render } from 'react-dom';
+import { capitalize } from '../../utils/typography';
+import { useNavigate } from 'react-router-dom';
 const WorkHistory = () => {
   const [showModal, setShowModal] = React.useState(false);
   const [trails, setTrails] = React.useState([]);
+
+  const navigate = useNavigate();
 
   const {
     data: workHistory,
@@ -31,6 +37,7 @@ const WorkHistory = () => {
       title: 'File Name',
       dataIndex: ['file', 'fileName'],
       key: 'FileName',
+      render: (value) => <span>{value && capitalize(value)}</span>,
     },
     {
       title: 'Reference',
@@ -41,23 +48,37 @@ const WorkHistory = () => {
       title: 'Action',
       dataIndex: 'trail',
       key: 'trail',
-      render: (value) => {
+      render: (value, record) => {
         return (
-          <Popover
-            content={
-              <div>
-                <p>View Trail</p>
-              </div>
-            }
-          >
-            <FaRegEye
-              className=" text-xl cursor-pointer"
-              onClick={() => {
-                setShowModal(true);
-                setTrails(value);
-              }}
-            />
-          </Popover>
+          <div className="flex items-center gap-5">
+            <Popover
+              content={
+                <div>
+                  <p>View Document</p>
+                </div>
+              }
+            >
+              <FaRegEye
+                className=" text-xl  cursor-pointer"
+                onClick={() => navigate(`/view-document/${record?.docID}`)}
+              />
+            </Popover>
+            <Popover
+              content={
+                <div>
+                  <p>View Trail</p>
+                </div>
+              }
+            >
+              <IoLocationOutline
+                className=" text-xl  cursor-pointer"
+                onClick={() => {
+                  setShowModal(true);
+                  setTrails(value);
+                }}
+              />
+            </Popover>
+          </div>
         );
       },
     },

@@ -16,8 +16,15 @@ import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import Trail from '../Components/Trail/Trail';
 import { GiRecycle } from 'react-icons/gi';
 import { recallDocument } from '../http/addDocument';
-import { hasPermission, requiredPermissions } from '../../utils/Roles';
+import {
+  hasPermission,
+  requiredPermissions,
+  getAllRolePermissions,
+} from '../../utils/Roles';
 import { useUser } from './CustomHook/useUser';
+import { IoIosLocate } from 'react-icons/io';
+import { IoLocationOutline } from 'react-icons/io5';
+import { useNavigate } from 'react-router-dom';
 
 const Outgoing = () => {
   const { trails, isLoading } = useTrail('outgoing');
@@ -26,6 +33,7 @@ const Outgoing = () => {
   const queryClient = useQueryClient();
 
   const { user } = useUser();
+  const allRolePermissions = getAllRolePermissions(user);
 
   const handleView = (selectedRecord) => {
     // console.log(selectedRecord);
@@ -47,6 +55,8 @@ const Outgoing = () => {
     },
     enabled: !!trailId, // Only fetch if trailId is set
   });
+
+  const navigate = useNavigate();
 
   const columns = [
     {
@@ -126,7 +136,22 @@ const Outgoing = () => {
       key: 'action',
 
       render: (selectedRecord) => (
-        <div className="flex gap-x-5">
+        <div className="flex gap-x-3">
+          <Popover
+            content={
+              <div>
+                <p>View Document</p>
+              </div>
+            }
+          >
+            <button
+              onClick={() =>
+                navigate(`/view-document/${selectedRecord?.docID}`)
+              }
+            >
+              <FaRegEye className="text-[20px] " />
+            </button>
+          </Popover>
           <Popover
             content={
               <div>
@@ -135,11 +160,11 @@ const Outgoing = () => {
             }
           >
             <button onClick={() => handleView(selectedRecord)}>
-              <FaRegEye className="text-[20px] text-blue-500" />
+              <IoLocationOutline className="text-[20px] " />
             </button>
           </Popover>
 
-          {hasPermission(user?.role[0].rolePermissions, [
+          {hasPermission(allRolePermissions, [
             requiredPermissions.RECALL_TRAIL,
           ]) && (
             <Popconfirm
@@ -147,7 +172,7 @@ const Outgoing = () => {
               onConfirm={() => callBackDoc(selectedRecord.docID)}
             >
               <Tooltip title="Recall">
-                <GiRecycle className="text-[20px] text-green-500 cursor-pointer" />
+                <GiRecycle className="text-[20px] cursor-pointer" />
               </Tooltip>
             </Popconfirm>
           )}
@@ -173,8 +198,6 @@ const Outgoing = () => {
     key: index,
   }));
   // console.log(_data);
-
-  console.log({ _data });
 
   const { mutate: callBackDoc } = useMutation({
     mutationKey: 'recallDocument',

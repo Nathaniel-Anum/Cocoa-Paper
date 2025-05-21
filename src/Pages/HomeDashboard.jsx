@@ -2,9 +2,17 @@ import Badge from '../Components/Badge';
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTrail } from './CustomHook/useTrail';
+import {
+  hasPermission,
+  requiredPermissions,
+  getAllRolePermissions,
+} from '../../utils/Roles';
+import { useUser } from './CustomHook/useUser';
 
 const HomeDashboard = () => {
   const { outgoingLength, incomingLength, physicalLength } = useTrail();
+  const { user } = useUser();
+  const allRolePermissions = getAllRolePermissions(user);
 
   return (
     <>
@@ -52,7 +60,7 @@ const HomeDashboard = () => {
           </div>
         </Link>
 
-        <Link to="/physicaldocs">
+        {/* <Link to="/physicaldocs">
           <div>
             <div className="relative hover:bg-[#E3BC97] duration-500 hover:px-3 hover:rounded-lg py-2 hover:scale-110">
               <img className="w-[140px]" src="/asset/PhysicalDocs.svg" alt="" />
@@ -66,7 +74,7 @@ const HomeDashboard = () => {
               </div>
             </div>
           </div>
-        </Link>
+        </Link> */}
         {/* <div>
           <div className="relative hover:bg-[#E3BC97] duration-500 hover:px-3 hover:rounded-lg py-2 hover:scale-110">
             <img
