@@ -33,7 +33,7 @@ const Home = () => {
     setLoading(true);
     await setTimeout(() => {
       setLoading(false);
-      form.resetFields();
+      // form.resetFields();
     }, 2500);
     try {
       const res = await axiosInstance.post('/login', values);

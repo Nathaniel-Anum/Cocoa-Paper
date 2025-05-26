@@ -443,11 +443,11 @@ function Analytics() {
                         '',
                       ]}
                     />
-                    <Legend
+                    {/* <Legend
                       layout="vertical"
                       verticalAlign="middle"
-                      align="right"
-                    />
+                      align="bottom"
+                    /> */}
                   </PieChart>
                 </ResponsiveContainer>
               </div>

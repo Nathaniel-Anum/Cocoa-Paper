@@ -14,6 +14,8 @@ import {
   InputNumber,
   Spin,
   message,
+  Checkbox,
+  Mentions,
 } from 'antd';
 import { LuArchive, LuMessageSquare, LuSend, LuUser } from 'react-icons/lu';
 import { FaHandshake } from 'react-icons/fa';
@@ -39,6 +41,7 @@ import {
 import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
 import { updateBudgetAmount } from '../http/budget';
 import Loader from '../Components/Loader/Loader';
+import { useGetAllUsers } from '../queryHooks/user';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -62,6 +65,7 @@ function ViewDocument() {
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedBudgetItem, setSelectedBudgetItem] = useState(null);
+  const [isPrivate, setIsPrivate] = useState(false);
 
   // Data fetching
   const { data: document, refetch } = useViewDocument(docId);
@@ -170,10 +174,12 @@ function ViewDocument() {
     staleTime: 1000 * 60 * 5,
   });
 
+  const { data: allUsers } = useGetAllUsers();
+
   // Handlers
   const handleDivisionChange = (value) => setSelectedDivision(value);
   const handleDepartmentChange = (value) => setSelectedDepartment(value);
-  const handleSubmit = (values) => forwardDocument(values);
+  const handleSubmit = (values) => forwardDocument({ ...values, isPrivate });
   const handleAmountUpdate = (values) => updateAmount(values);
 
   // Table configuration
@@ -182,30 +188,64 @@ function ViewDocument() {
       title: 'Item',
       key: 'item',
       dataIndex: ['budgetItem', 'item'],
+      render: (value, record) => (
+        <span
+          className={
+            record?.balance > record.amount && (
+              <span className="text-red-500"></span>
+            )
+          }
+        >
+          {value}
+        </span>
+      ),
     },
     {
       title: 'Amount',
       key: 'amount',
       dataIndex: 'amount',
-      render: (value) => <span>{value ? `¢${formatMoney(value)}` : '--'}</span>,
+      render: (value, record) => (
+        <span
+          className={
+            record?.balance > record.amount && (
+              <span className="text-red-500"></span>
+            )
+          }
+        >
+          {value ? `¢${formatMoney(value)}` : '--'}
+        </span>
+      ),
     },
-    {
-      title: 'Dollar Amount',
-      key: 'dollarAmount',
-      dataIndex: 'dollarAmount',
-      render: (value) => <span>{value ? `$${formatMoney(value)}` : '--'}</span>,
-    },
+
     {
       title: 'Allocation',
       key: 'allocation',
       dataIndex: ['budgetItem', 'amount'],
-      render: (value) => <span>{`¢${formatMoney(value)}`}</span>,
+      render: (value, record) => (
+        <span
+          className={
+            record?.balance > record.amount && (
+              <span className="text-red-500"></span>
+            )
+          }
+        >{`¢${formatMoney(value)}`}</span>
+      ),
     },
     {
       title: 'Balance',
       dataIndex: 'balance',
       key: 'balance',
-      render: (value) => <span>{value && `¢${formatMoney(value)}`}</span>,
+      render: (value, record) => (
+        <span
+          className={
+            record?.balance > record.amount && (
+              <span className="text-red-500"></span>
+            )
+          }
+        >
+          {value && `¢${formatMoney(value)}`}
+        </span>
+      ),
     },
     ...(hasPermission(getAllRolePermissions(user), [
       requiredPermissions.UPDATE_DOCUMENT_AMOUNT,
@@ -241,6 +281,24 @@ function ViewDocument() {
   if (!document) {
     return <Loader fullScreen />;
   }
+
+  const filteredComments =
+    document.data.document.comments?.filter((comment) => {
+      // Show if not private, or if private and current user is recipient
+      return (
+        !comment.isPrivate ||
+        (comment.isPrivate && comment.recipientId === user?.userId)
+      );
+    }) || [];
+
+  const lastUserCommentIndex = filteredComments.findLastIndex(
+    (comment) => comment.userId === user?.userId
+  );
+
+  const commentsToShow =
+    lastUserCommentIndex === -1
+      ? filteredComments
+      : filteredComments.slice(0, lastUserCommentIndex + 1);
 
   return (
     <div className="h-full">
@@ -390,8 +448,8 @@ function ViewDocument() {
                 maxHeight: 'calc(100vh - 20rem)',
               }}
             >
-              {document.data.document.comments?.length > 0 ? (
-                document.data.document.comments.map((comment) => (
+              {commentsToShow.length > 0 ? (
+                commentsToShow.map((comment) => (
                   <div
                     key={comment.id}
                     className={`flex ${
@@ -432,111 +490,136 @@ function ViewDocument() {
                 </div>
               )}
             </div>
-            {document.data.document.trail === 'Received' && (
-              <Form
-                onFinish={handleSubmit}
-                layout="vertical"
-                className="flex-shrink-0"
-                form={forwardForm}
-              >
-                <Form.Item
-                  name="divisionId"
-                  label="Division"
-                  rules={[{ required: true, message: 'Division is required' }]}
+            {document &&
+              document.data.document.trail[
+                document.data.document.trail.length - 1
+              ].status === 'Received' && (
+                <Form
+                  onFinish={handleSubmit}
+                  layout="vertical"
+                  className="flex-shrink-0"
+                  form={forwardForm}
                 >
-                  <Select
-                    placeholder="Select division"
-                    showSearch
-                    optionFilterProp="label"
-                    allowClear
-                    options={divisions?.data?.map((division) => ({
-                      label: division.divisionName,
-                      value: division.divisionId,
-                    }))}
-                    onChange={handleDivisionChange}
-                    loading={!divisions}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="departmentId"
-                  label="Department"
-                  rules={[
-                    { required: true, message: 'Department is required' },
-                  ]}
-                >
-                  <Select
-                    placeholder="Select department"
-                    showSearch
-                    optionFilterProp="label"
-                    allowClear
-                    options={departments?.data?.data?.map((department) => ({
-                      label: department.departmentName,
-                      value: department.departmentId,
-                    }))}
-                    onChange={handleDepartmentChange}
-                    loading={!departments && !!selectedDivision}
-                    disabled={!selectedDivision}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="userId"
-                  label="Recipient"
-                  rules={[{ required: true, message: 'Recipient is required' }]}
-                >
-                  <Select
-                    placeholder="Select recipient"
-                    showSearch
-                    optionFilterProp="label"
-                    allowClear
-                    options={users?.data
-                      ?.filter((emp) => emp.userId !== user?.userId)
-                      .map((user) => ({
-                        label: user.name,
-                        value: user.userId,
+                  <Form.Item
+                    name="divisionId"
+                    label="Division"
+                    rules={[
+                      { required: true, message: 'Division is required' },
+                    ]}
+                  >
+                    <Select
+                      placeholder="Select division"
+                      showSearch
+                      optionFilterProp="label"
+                      allowClear
+                      options={divisions?.data?.map((division) => ({
+                        label: division.divisionName,
+                        value: division.divisionId,
                       }))}
-                    loading={!users && !!selectedDepartment}
-                    disabled={!selectedDepartment}
-                  />
-                </Form.Item>
+                      onChange={handleDivisionChange}
+                      loading={!divisions}
+                    />
+                  </Form.Item>
 
-                <Form.Item label="Comment" name="comment" className="mb-2">
-                  <Input.TextArea
-                    rows={3}
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Add a comment..."
-                  />
-                </Form.Item>
+                  <Form.Item
+                    name="departmentId"
+                    label="Department"
+                    rules={[
+                      { required: true, message: 'Department is required' },
+                    ]}
+                  >
+                    <Select
+                      placeholder="Select department"
+                      showSearch
+                      optionFilterProp="label"
+                      allowClear
+                      options={departments?.data?.data?.map((department) => ({
+                        label: department.departmentName,
+                        value: department.departmentId,
+                      }))}
+                      onChange={handleDepartmentChange}
+                      loading={!departments && !!selectedDivision}
+                      disabled={!selectedDivision}
+                    />
+                  </Form.Item>
 
-                <Form.Item className="mb-0">
-                  <div className="flex gap-4">
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      icon={<LuSend className="w-4 h-4" />}
-                      className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80"
-                      loading={submitLoading}
-                      disabled={submitLoading}
-                    >
-                      Send
-                    </Button>
-                    {hasPermission(getAllRolePermissions(user), [
-                      requiredPermissions.ARCHIVE_DOCUMENT,
-                    ]) && (
+                  <Form.Item
+                    name="userId"
+                    label="Recipient"
+                    rules={[
+                      { required: true, message: 'Recipient is required' },
+                    ]}
+                  >
+                    <Select
+                      placeholder="Select recipient"
+                      showSearch
+                      optionFilterProp="label"
+                      allowClear
+                      options={users?.data
+                        ?.filter((emp) => emp.userId !== user?.userId)
+                        .map((user) => ({
+                          label: user.name,
+                          value: user.userId,
+                        }))}
+                      loading={!users && !!selectedDepartment}
+                      disabled={!selectedDepartment}
+                    />
+                  </Form.Item>
+                  <Form.Item label="">
+                    <Checkbox onChange={() => setIsPrivate(!isPrivate)}>
+                      Private Comment?
+                    </Checkbox>
+                  </Form.Item>
+
+                  <Form.Item label="Comment" name="comment" className="mb-2">
+                    {/* <Input.TextArea
+                      rows={3}
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Add a comment..."
+                    /> */}
+                    <Mentions
+                      rows={5}
+                      options={
+                        users &&
+                        users?.data
+                          ?.filter((emp) => emp.userId !== user?.userId)
+                          .map((user) => ({
+                            label: user.name,
+                            value: user.name,
+                          }))
+                      }
+                      placeholder="Add a new comment"
+                    />
+                  </Form.Item>
+
+                  <Form.Item className="mb-0">
+                    <div className="flex gap-4">
                       <Button
-                        icon={<LuArchive className="w-4 h-4" />}
-                        className="flex-1 bg-[#9d4d01] hover:bg-[#9d4d01]/80 text-white"
-                        onClick={() => setShowArchiveModal(true)}
+                        type="primary"
+                        htmlType="submit"
+                        icon={<LuSend className="w-4 h-4" />}
+                        className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80"
+                        loading={submitLoading}
+                        disabled={submitLoading}
                       >
-                        Archive
+                        Send
                       </Button>
-                    )}
-                  </div>
-                </Form.Item>
-              </Form>
-            )}
+                      {hasPermission(getAllRolePermissions(user), [
+                        requiredPermissions.ARCHIVE_DOCUMENT,
+                      ]) && (
+                        <Button
+                          icon={<LuArchive className="w-4 h-4" />}
+                          className="flex-1 bg-[#9d4d01] hover:bg-[#9d4d01]/80 text-white"
+                          onClick={() => setShowArchiveModal(true)}
+                        >
+                          Archive
+                        </Button>
+                      )}
+                    </div>
+                  </Form.Item>
+                </Form>
+              )}
           </Card>
         </div>
       </Content>

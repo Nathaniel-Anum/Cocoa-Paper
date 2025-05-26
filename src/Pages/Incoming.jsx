@@ -11,6 +11,7 @@ import {
   Dropdown,
   Upload,
   notification,
+  Mentions,
 } from 'antd';
 import { useTrail } from './CustomHook/useTrail';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -416,6 +417,8 @@ const Incoming = () => {
     },
   };
 
+  console.log({ users });
+
   return (
     <div className="mt-8">
       <Table columns={columns} dataSource={_data} loading={isLoading} />
@@ -491,18 +494,33 @@ const Incoming = () => {
               <Select
                 placeholder="Please select a User"
                 allowClear
-                options={(users?.data || [])
-                  .filter((emp) => emp.userId !== user?.userId)
-                  .map((user) => ({
-                    label: user?.name,
-                    value: user?.userId,
-                  }))}
+                options={
+                  users &&
+                  users?.data
+                    .filter((emp) => emp.userId !== user?.userId)
+                    .map((user) => ({
+                      label: user?.name,
+                      value: user?.userId,
+                    }))
+                }
                 // onChange={handleUserChange}
               />
             </Form.Item>
 
             <Form.Item label="Comment" name="comment">
-              <TextArea rows={4} placeholder="Enter Comment...." />
+              <Mentions
+                rows={4}
+                placeholder="Enter Comment...."
+                options={
+                  users &&
+                  users?.data
+                    .filter((emp) => emp.userId !== user?.userId)
+                    .map((user) => ({
+                      label: user?.name,
+                      value: user?.name,
+                    }))
+                }
+              />
             </Form.Item>
 
             <Form.Item name="attachments" className="flex justify-start">

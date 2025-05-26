@@ -683,6 +683,7 @@ import TextArea from 'antd/es/input/TextArea';
 import { useGetAllBudgets } from '../queryHooks/budget';
 import { useNavigate } from 'react-router-dom';
 import { multiply } from 'lodash';
+import { capitalize } from '../../utils/typography';
 
 // Set up notification configuration
 notification.config({
@@ -934,7 +935,7 @@ const AddDocument = () => {
 
     if (selectedBudget?.budgetItems) {
       const options = selectedBudget.budgetItems.map((unit) => ({
-        label: unit.item,
+        label: capitalize(unit.item),
         value: unit.id,
       }));
 
@@ -1186,7 +1187,7 @@ const AddDocument = () => {
                           className="mb-4 pb-4 border-b border-dashed last:border-b-0"
                         >
                           <Row gutter={16}>
-                            <Col span={6}>
+                            <Col span={8}>
                               <Form.Item
                                 {...field}
                                 name={[field.name, 'itemCategory']}
@@ -1211,7 +1212,7 @@ const AddDocument = () => {
                                 />
                               </Form.Item>
                             </Col>
-                            <Col span={6}>
+                            <Col span={8}>
                               <Form.Item
                                 {...field}
                                 name={[field.name, 'budgetItemId']}
@@ -1261,7 +1262,7 @@ const AddDocument = () => {
                                 />
                               </Form.Item>
                             </Col>
-                            <Col span={5}>
+                            {/* <Col span={5}>
                               <Form.Item
                                 {...field}
                                 name={[field.name, 'dollarAmount']}
@@ -1281,9 +1282,9 @@ const AddDocument = () => {
                                   }
                                 />
                               </Form.Item>
-                            </Col>
+                            </Col> */}
                             <Col
-                              span={1}
+                              span={2}
                               className="flex  justify-center items-center pb-2"
                             >
                               <Button
