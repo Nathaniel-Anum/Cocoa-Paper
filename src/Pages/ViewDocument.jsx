@@ -16,11 +16,12 @@ import {
   message,
   Checkbox,
   Mentions,
+  Upload,
 } from 'antd';
 import { LuArchive, LuMessageSquare, LuSend, LuUser } from 'react-icons/lu';
 import { FaHandshake } from 'react-icons/fa';
 import { BiEdit } from 'react-icons/bi';
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, UploadOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -32,7 +33,7 @@ import { useUser } from './CustomHook/useUser';
 import { capitalize, formatMoney } from '../../utils/typography';
 import useStore from '../store/store';
 import { PDFViewer } from '../Components/PDFViewer/PdfViewer';
-import { approveDocument } from '../http/addDocument';
+import { approveDocument, uploadFile } from '../http/addDocument';
 import {
   hasPermission,
   requiredPermissions,
@@ -70,6 +71,8 @@ function ViewDocument() {
   // Data fetching
   const { data: document, refetch } = useViewDocument(docId);
   const { user } = useUser();
+
+  const [form] = Form.useForm();
 
   // Fetch file data
   const fetchFile = useCallback(async () => {
@@ -112,7 +115,7 @@ function ViewDocument() {
     },
     onError: (error) => {
       message.error(
-        error.response?.data?.message || 'Failed to forward document'
+        error.response?.data?.error || 'Failed to forward document'
       );
     },
   });
@@ -174,12 +177,73 @@ function ViewDocument() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const { data: allUsers } = useGetAllUsers();
+  const { mutate: uploadMultipleFiles, isPending: isMultipleUploading } =
+    useMutation({
+      mutationKey: ['uploadMultiple'],
+      mutationFn: async ({ files, subject, ref }) => {
+        // Create an array of promises for each file upload
+        const uploadPromises = files.map((file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('subject', subject);
+          formData.append('ref', ref);
+
+          return uploadFile(formData).then((response) => {
+            if (!response?.data?.newFile?.fileId) {
+              throw new Error(
+                `File upload successful for ${file.name} but no file ID was returned`
+              );
+            }
+            return response.data.newFile.fileId;
+          });
+        });
+
+        // Wait for all uploads to complete
+        return Promise.all(uploadPromises);
+      },
+      onSuccess: (fileIds) => {
+        console.log('All files uploaded successfully with IDs:', fileIds);
+
+        // Get form values and add file IDs
+        const values = forwardForm.getFieldsValue();
+        forwardDocument({
+          ...values,
+          status: 'Forwarded',
+          isPrivate,
+          attachmentIds: fileIds,
+        });
+      },
+      onError: (error) => {
+        // showErrorNotification('Attachment Upload Failed', error);
+        message.error(error?.response?.data?.error);
+      },
+    });
 
   // Handlers
   const handleDivisionChange = (value) => setSelectedDivision(value);
   const handleDepartmentChange = (value) => setSelectedDepartment(value);
-  const handleSubmit = (values) => forwardDocument({ ...values, isPrivate });
+  const handleSubmit = (values) => {
+    const attachmentFiles = values.attachments?.fileList;
+
+    if (!attachmentFiles || attachmentFiles.length === 0) {
+      // No attachments, just upload the main file
+
+      forwardDocument({ ...values, status: 'Forwarded', isPrivate });
+    } else {
+      const attachmentFilesArray = attachmentFiles.map(
+        (fileItem) => fileItem.originFileObj
+      );
+
+      // Upload all attachments with reference to main file
+      uploadMultipleFiles({
+        files: attachmentFilesArray,
+        subject: '',
+        ref: '',
+      });
+    }
+
+    // forwardDocument({ ...values, isPrivate })
+  };
   const handleAmountUpdate = (values) => updateAmount(values);
 
   // Table configuration
@@ -287,13 +351,29 @@ function ViewDocument() {
       // Show if not private, or if private and current user is recipient
       return (
         !comment.isPrivate ||
-        (comment.isPrivate && comment.recipientId === user?.userId)
+        (comment.isPrivate && comment.receipientId === user?.userId)
       );
     }) || [];
 
   const lastUserCommentIndex = filteredComments.findLastIndex(
-    (comment) => comment.userId === user?.userId
+    (comment) =>
+      comment.userId === user?.userId || comment.receipientId === user?.userId
   );
+
+  const attachmentUploadProps = {
+    name: 'file', // The name of the file input field, not the form field name
+    multiple: true,
+    beforeUpload: () => false, // Prevent auto upload
+    onChange(info) {
+      console.log(
+        'Attachment files selected:',
+        info.fileList.map((f) => f.name)
+      );
+      // The fileList will be stored in the form
+      form.setFieldsValue({ attachments: { fileList: info.fileList } });
+    },
+    accept: '.pdf',
+  };
 
   const commentsToShow =
     lastUserCommentIndex === -1
@@ -338,9 +418,16 @@ function ViewDocument() {
           </Button>
         </Form>
       </Modal>
+      <div></div>
 
-      <Content className="p-4 h-full">
-        <div className="h-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <Content className="p-4 h-full mb-10">
+        <div className="w-5/6 mx-auto mb-4 ">
+          <h1 className=" text-center font-semibold text-xl text-slate-500 ">
+            {document.data.document.subject}
+          </h1>
+        </div>
+
+        <div className="h-full  mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Document Preview Section */}
           <Card
             bordered={false}
@@ -352,16 +439,13 @@ function ViewDocument() {
               padding: '16px',
             }}
           >
-            <div className="flex justify-between items-center">
-              <h1 className="font-semibold text-xl flex-shrink-0">
-                {document.data.document.subject}
-              </h1>
+            <div className="flex justify-between items-center mb-3">
               {document.data.document.attachments?.length > 0 && (
                 <span
                   className="text-blue-400 cursor-pointer underline"
                   onClick={() => navigate(`/view-attachment/${docId}`)}
                 >
-                  View Files
+                  View Attachments
                 </span>
               )}
             </div>
@@ -493,7 +577,10 @@ function ViewDocument() {
             {document &&
               document.data.document.trail[
                 document.data.document.trail.length - 1
-              ].status === 'Received' && (
+              ].status === 'Received' &&
+              document.data.document.trail[
+                document.data.document.trail.length - 1
+              ].receiverId === user.userId && (
                 <Form
                   onFinish={handleSubmit}
                   layout="vertical"
@@ -555,12 +642,15 @@ function ViewDocument() {
                       showSearch
                       optionFilterProp="label"
                       allowClear
-                      options={users?.data
-                        ?.filter((emp) => emp.userId !== user?.userId)
-                        .map((user) => ({
-                          label: user.name,
-                          value: user.userId,
-                        }))}
+                      options={
+                        users &&
+                        users?.data
+                          ?.filter((emp) => emp.userId !== user?.userId)
+                          .map((user) => ({
+                            label: user.name,
+                            value: user.userId,
+                          }))
+                      }
                       loading={!users && !!selectedDepartment}
                       disabled={!selectedDepartment}
                     />
@@ -572,12 +662,6 @@ function ViewDocument() {
                   </Form.Item>
 
                   <Form.Item label="Comment" name="comment" className="mb-2">
-                    {/* <Input.TextArea
-                      rows={3}
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Add a comment..."
-                    /> */}
                     <Mentions
                       rows={5}
                       options={
@@ -591,6 +675,19 @@ function ViewDocument() {
                       }
                       placeholder="Add a new comment"
                     />
+                  </Form.Item>
+                  <div className="mt-2">&nbsp;</div>
+                  <Form.Item name="attachments">
+                    <Upload {...attachmentUploadProps}>
+                      <Button
+                        icon={<UploadOutlined />}
+                        loading={isMultipleUploading}
+                        style={{ width: '100%' }}
+                        className="cursor-pointer w-full"
+                      >
+                        Upload Additional Docs
+                      </Button>
+                    </Upload>
                   </Form.Item>
 
                   <Form.Item className="mb-0">

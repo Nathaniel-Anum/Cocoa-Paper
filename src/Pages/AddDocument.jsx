@@ -704,6 +704,7 @@ const AddDocument = () => {
   const [requestType, setRequestType] = useState('');
   const [isPhysical, setIsPhysical] = useState(false);
   const [budgetUnits, setBudgetUnits] = useState({});
+  const [isPrivate, setIsPrivate] = useState(false);
 
   // Animation options
   const defaultOptions = {
@@ -845,7 +846,7 @@ const AddDocument = () => {
     onSuccess: (fileId) => {
       console.log('File uploaded successfully with ID:', fileId);
       const values = form.getFieldsValue();
-      startDocument({ ...values, fileId });
+      startDocument({ ...values, fileId, isPrivate });
     },
     onError: (error) => {
       setLoading(false);
@@ -894,6 +895,7 @@ const AddDocument = () => {
           ...values,
           fileId: mainFileId,
           attachmentIds: fileIds,
+          isPrivate,
         });
       },
       onError: (error) => {
@@ -959,6 +961,7 @@ const AddDocument = () => {
     const submissionData = {
       ...values,
       physicalDoc: isPhysical,
+      isPrivate,
     };
     if (isPhysical) {
       startDocument(submissionData);
@@ -1378,6 +1381,13 @@ const AddDocument = () => {
                 />
               </Form.Item>
               {/* Comment */}
+
+              <Form.Item>
+                <Checkbox onChange={() => setIsPrivate(!isPrivate)}>
+                  Private Comment
+                </Checkbox>
+              </Form.Item>
+
               <Form.Item label="Comment" name="comment">
                 <TextArea
                   rows={4}

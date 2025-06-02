@@ -12,6 +12,7 @@ import {
   Upload,
   notification,
   Mentions,
+  Checkbox,
 } from 'antd';
 import { useTrail } from './CustomHook/useTrail';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -41,6 +42,7 @@ const Incoming = () => {
   const [record, setRecord] = useState({});
   const [trailId, setTrailId] = useState('');
   const [open, SetOpen] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
 
   const [senderId, setSenderId] = useState('');
 
@@ -218,6 +220,7 @@ const Incoming = () => {
         forwardDocument({
           ...values,
           status: 'Forwarded',
+          isPrivate,
           attachmentIds: fileIds,
         });
       },
@@ -253,7 +256,7 @@ const Incoming = () => {
     if (!attachmentFiles || attachmentFiles.length === 0) {
       // No attachments, just upload the main file
 
-      forwardDocument({ ...values, status: 'Forwarded' });
+      forwardDocument({ ...values, status: 'Forwarded', isPrivate });
     } else {
       const attachmentFilesArray = attachmentFiles.map(
         (fileItem) => fileItem.originFileObj
@@ -417,137 +420,150 @@ const Incoming = () => {
     },
   };
 
-  console.log({ users });
-
   return (
     <div className="mt-8">
       <Table columns={columns} dataSource={_data} loading={isLoading} />
-      <Modal
-        title="Forward Document"
-        open={isModalOpen}
-        onCancel={handleCancel}
-        footer={null}
-      >
-        <div className="mt-8">
-          <Form
-            form={form}
-            layout="vertical"
-            name="Forward Document"
-            onFinish={(values) => handleFormSubmit(values)}
-          >
-            <Form.Item
-              label="Division"
-              name="division"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please choose your Division!',
-                },
-              ]}
+      {isModalOpen && (
+        <Modal
+          title="Forward Document"
+          open={isModalOpen}
+          onCancel={handleCancel}
+          footer={null}
+        >
+          <div className="mt-8">
+            <Form
+              form={form}
+              layout="vertical"
+              name="Forward Document"
+              onFinish={(values) => handleFormSubmit(values)}
             >
-              <Select
-                placeholder="Please choose your Division"
-                allowClear
-                labelInValue
-                options={divisions?.data.map((division, index) => {
-                  return {
-                    label: division?.divisionName,
-                    value: division?.divisionId,
-                  };
-                })}
-                onChange={handleDivisionChange}
-              />
-            </Form.Item>
-            <Form.Item
-              label="Department"
-              name="department"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please choose your Department!',
-                },
-              ]}
-            >
-              <Select
-                placeholder="Please choose your Department"
-                allowClear
-                labelInValue
-                options={departments?.data?.data?.map((department, index) => {
-                  return {
-                    label: department?.departmentName,
-                    value: department?.departmentId,
-                  };
-                })}
-                onChange={handleDepartmentChange}
-              />
-            </Form.Item>
-            <Form.Item
-              name="userId"
-              label="User"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please select a User!',
-                },
-              ]}
-            >
-              <Select
-                placeholder="Please select a User"
-                allowClear
-                options={
-                  users &&
-                  users?.data
-                    .filter((emp) => emp.userId !== user?.userId)
-                    .map((user) => ({
-                      label: user?.name,
-                      value: user?.userId,
-                    }))
-                }
-                // onChange={handleUserChange}
-              />
-            </Form.Item>
-
-            <Form.Item label="Comment" name="comment">
-              <Mentions
-                rows={4}
-                placeholder="Enter Comment...."
-                options={
-                  users &&
-                  users?.data
-                    .filter((emp) => emp.userId !== user?.userId)
-                    .map((user) => ({
-                      label: user?.name,
-                      value: user?.name,
-                    }))
-                }
-              />
-            </Form.Item>
-
-            <Form.Item name="attachments" className="flex justify-start">
-              <Upload {...attachmentUploadProps}>
-                <Button
-                  icon={<UploadOutlined />}
-                  loading={isMultipleUploading}
-                  className="cursor-pointer w-full"
-                >
-                  Upload Additional Docs
-                </Button>
-              </Upload>
-            </Form.Item>
-
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="bg-[#582F08] px-5 py-1 text-white w-full flex"
-                loading={loading}
+              <Form.Item
+                label="Division"
+                name="division"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please choose your Division!',
+                  },
+                ]}
               >
-                Forward
-              </Button>
-            </Form.Item>
-          </Form>{' '}
-        </div>
-      </Modal>
+                <Select
+                  placeholder="Please choose your Division"
+                  optionFilterProp="label"
+                  showSearch
+                  allowClear
+                  labelInValue
+                  options={divisions?.data.map((division, index) => {
+                    return {
+                      label: division?.divisionName,
+                      value: division?.divisionId,
+                    };
+                  })}
+                  onChange={handleDivisionChange}
+                />
+              </Form.Item>
+              <Form.Item
+                label="Department"
+                name="department"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please choose your Department!',
+                  },
+                ]}
+              >
+                <Select
+                  placeholder="Please choose your Department"
+                  optionFilterProp="label"
+                  showSearch
+                  allowClear
+                  labelInValue
+                  options={departments?.data?.data?.map((department, index) => {
+                    return {
+                      label: department?.departmentName,
+                      value: department?.departmentId,
+                    };
+                  })}
+                  onChange={handleDepartmentChange}
+                />
+              </Form.Item>
+              <Form.Item
+                name="userId"
+                label="User"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please select a User!',
+                  },
+                ]}
+              >
+                <Select
+                  placeholder="Please select a User"
+                  optionFilterProp="label"
+                  showSearch
+                  allowClear
+                  options={
+                    (users &&
+                      users?.data
+                        .filter((emp) => emp.userId !== user?.userId)
+                        .map((user) => ({
+                          label: user?.name,
+                          value: user?.userId,
+                        }))) ||
+                    []
+                  }
+                  // onChange={handleUserChange}
+                />
+              </Form.Item>
+              <Form.Item>
+                <Checkbox onChange={() => setIsPrivate(!isPrivate)}>
+                  Private Comment?
+                </Checkbox>
+              </Form.Item>
+
+              <Form.Item label="Comment" name="comment">
+                <Mentions
+                  rows={4}
+                  placeholder="Enter Comment...."
+                  options={
+                    (users &&
+                      users?.data
+                        ?.filter((emp) => emp.userId !== user?.userId)
+                        .map((user) => ({
+                          label: user?.name,
+                          value: user?.name,
+                        }))) ||
+                    []
+                  }
+                />
+              </Form.Item>
+
+              <Form.Item name="attachments">
+                <Upload {...attachmentUploadProps}>
+                  <Button
+                    icon={<UploadOutlined />}
+                    loading={isMultipleUploading}
+                    className="cursor-pointer w-full"
+                  >
+                    Upload Additional Docs
+                  </Button>
+                </Upload>
+              </Form.Item>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  className="bg-[#582F08] px-5 py-1 text-white w-full flex"
+                  loading={loading}
+                >
+                  Forward
+                </Button>
+              </Form.Item>
+            </Form>{' '}
+          </div>
+        </Modal>
+      )}
       <Modal
         title="Locator"
         open={open}

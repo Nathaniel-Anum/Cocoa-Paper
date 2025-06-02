@@ -112,6 +112,8 @@ const Archive = () => {
     },
   });
 
+  console.log({ navHistory: moveModalState.navigationHistory });
+
   useEffect(() => {
     if (moveFolderData) {
       const folders =
@@ -237,13 +239,11 @@ const Archive = () => {
 
   // Update the back click handler
   const handleBackClick = () => {
-    const newHistory = [...moveModalState.navigationHistory];
-    const previousFolderId = newHistory.pop();
-
+    const parentFolderId = moveFolderData?.data?.archive?.parentFolderId;
     setMoveModalState((prev) => ({
       ...prev,
-      currentFolderId: previousFolderId,
-      navigationHistory: newHistory,
+      currentFolderId: parentFolderId,
+      navigationHistory: [...prev.navigationHistory, prev.currentFolderId],
       isNavigating: true,
     }));
   };
@@ -425,6 +425,8 @@ const Archive = () => {
     (i) => i.type === 'Folder'
   );
   // console.log(onlyFolders);
+
+  console.log(moveFolderData);
   return (
     <div className="">
       <div className="border-b-2 border-black/40 mb-4 mt-4">
@@ -464,7 +466,7 @@ const Archive = () => {
                 }));
                 // Manual refetch after state is set
                 // setTimeout(() => refetchMoveFolder(), 0);
-                refetchMoveFolder();
+                // refetchMoveFolder();
               }}
             >
               <MdDriveFileMoveOutline className="text-[1.3rem]" />
@@ -492,7 +494,10 @@ const Archive = () => {
       <Table
         columns={columns}
         dataSource={Array.isArray(tableData) ? tableData : []}
+        showExpandColumn={false}
         rowSelection={{
+          hideSelectAll: true,
+          type: 'radio',
           selectedRowKeys: selectedItem.rowKeys,
           onChange: (keys, rows) =>
             setSelectedItem((prev) => ({

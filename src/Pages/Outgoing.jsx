@@ -107,7 +107,7 @@ const Outgoing = () => {
           record?.document?.isApproved === false &&
           record?.document?.documentType === 'BudgetRelease'
         ) {
-          return <Tag color="orange">Pending Approval</Tag>;
+          return <Tag color="orange">Pending Financial Approval</Tag>;
         } else if (record?.document?.documentType !== 'BudgetRelease') {
           return <Tag color="blue">Approval Not Required</Tag>;
         }
