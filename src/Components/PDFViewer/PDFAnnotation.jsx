@@ -64,7 +64,7 @@ const PDFAnnotation = ({
             // Initialize the pencil brush
             const pencilBrush = new PencilBrush(fabricCanvas);
             pencilBrush.width = 2;
-            pencilBrush.color = '#000000';
+            pencilBrush.color = '#FF0000';
             fabricCanvas.freeDrawingBrush = pencilBrush;
             fabricCanvas.isDrawingMode = true;
 
@@ -358,7 +358,7 @@ const PDFAnnotation = ({
             pencilBrush.globalCompositeOperation = 'multiply';
           } else if (tool === 'pen') {
             pencilBrush.width = 2;
-            pencilBrush.color = '#000000';
+            pencilBrush.color = '#FF0000';
             pencilBrush.globalCompositeOperation = 'source-over';
           }
 
@@ -496,6 +496,8 @@ const PDFAnnotation = ({
 
         return baseAnnotation;
       });
+
+      console.log({ annotations });
 
       await saveAnnotationMutation.mutateAsync(annotations);
     } catch (error) {
