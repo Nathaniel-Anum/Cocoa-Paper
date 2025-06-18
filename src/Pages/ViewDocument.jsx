@@ -32,7 +32,7 @@ import axiosInstance from '../Components/axiosInstance';
 import { useUser } from './CustomHook/useUser';
 import { capitalize, formatMoney } from '../../utils/typography';
 import useStore from '../store/store';
-import { PDFViewer } from '../Components/PDFViewer/PdfViewer';
+
 import { approveDocument, uploadFile } from '../http/addDocument';
 import {
   hasPermission,
@@ -43,6 +43,7 @@ import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
 import { updateBudgetAmount } from '../http/budget';
 import Loader from '../Components/Loader/Loader';
 import { useGetAllUsers } from '../queryHooks/user';
+import { PDFViewerContent } from '../Components/PDFViewer/PDFViewer';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -453,12 +454,7 @@ function ViewDocument() {
             <div className="flex-1 overflow-hidden rounded-lg mb-4 bg-white">
               {fileUrl ? (
                 <Spin spinning={isLoading} tip="Loading document...">
-                  <iframe
-                    src={fileUrl}
-                    width="100%"
-                    height="650px"
-                    title="Document Preview"
-                  />
+                  <PDFViewerContent pdfUrl={fileUrl} documentId={docId} />
                 </Spin>
               ) : (
                 <div className="flex flex-col gap-7 justify-center items-center w-full h-full">
@@ -722,7 +718,7 @@ function ViewDocument() {
       </Content>
 
       {openFileViewer && (
-        <PDFViewer
+        <PDFViewerContent
           fileId={document.data.document.file?.fileId}
           fileName={document.data.document.file?.fileName}
         />

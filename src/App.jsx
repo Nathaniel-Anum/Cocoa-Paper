@@ -40,6 +40,7 @@ import FinancialYear from './Components/BackOffice/FinancialYear';
 import AuditTrail from './Components/BackOffice/AuditTrail';
 import Attachments from './Pages/Attachments';
 import Configuration from './Components/BackOffice/Configuration';
+import UserGroups from './Components/BackOffice/UserGroups';
 
 function App() {
   // API call for the users.
@@ -363,6 +364,21 @@ function App() {
                   ])}
                 >
                   <Staff />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/backoffice/user-groups"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(allRolePermissions, [
+                    requiredPermissions.CREATE_STAFF,
+                    requiredPermissions.READ_STAFF,
+                    requiredPermissions.DELETE_STAFF,
+                    requiredPermissions.UPDATE_STAFF,
+                  ])}
+                >
+                  <UserGroups />
                 </ProtectedRoutes>
               }
             />

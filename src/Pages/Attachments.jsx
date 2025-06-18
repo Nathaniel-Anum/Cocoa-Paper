@@ -2,12 +2,13 @@ import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useViewDocument } from '../queryHooks/document';
 import pdf from '../assets/pdf.svg';
-import { PDFViewer } from '../Components/PDFViewer/PdfViewer';
+
 import useStore from '../store/store';
 import { EyeOutlined } from '@ant-design/icons';
 import { Table } from 'antd';
 import { create } from 'lodash';
 import dayjs from 'dayjs';
+import PDFViewer from '../Components/PDFViewer/PDFViewer';
 const Attachments = () => {
   const { id: docId } = useParams();
 
@@ -75,6 +76,7 @@ const Attachments = () => {
         <PDFViewer
           fileId={selectedFile?.fileId}
           fileName={selectedFile.fileName}
+          documentId={selectedFile?.fileId}
         />
       )}
       <Table

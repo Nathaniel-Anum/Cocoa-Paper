@@ -9,6 +9,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
 
   const [selectedDivision, setSelectedDivision] = useState('');
   const [isDepartment, setIsDepartment] = useState(false);
+  const [isMainSecretariat, setIsMainSecretariat] = useState(false);
 
   const handleDivisionChange = (value) => {
     // console.log(`selected Division: ${value}`);
@@ -49,6 +50,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
         roleId: staffDetail?.role?.map((role) => role.roleId),
       });
       setIsDepartment(staffDetail?.staff?.isDepartment);
+      setIsMainSecretariat(staffDetail?.staff?.isMainSecretariat);
     }
   }, [staffDetail]);
 
@@ -174,7 +176,15 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
             onChange={(e) => setIsDepartment(e.target.checked)}
             checked={isDepartment}
           >
-            Setup as department
+            Setup as Secretariat
+          </Checkbox>
+        </Form.Item>
+        <Form.Item label="">
+          <Checkbox
+            onChange={(e) => setIsMainSecretariat(e.target.checked)}
+            checked={isMainSecretariat}
+          >
+            Setup as Main Secretariat
           </Checkbox>
         </Form.Item>
 

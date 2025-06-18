@@ -5,6 +5,7 @@ import { LuCalendar } from 'react-icons/lu';
 import { CalendarFilled } from '@ant-design/icons';
 import { GiTrail, GiWheelbarrow } from 'react-icons/gi';
 import { HiOutlineWrenchScrewdriver } from 'react-icons/hi2';
+import { FaUserGroup } from 'react-icons/fa6';
 
 const BackOfficeSideBar = () => {
   return (
@@ -20,6 +21,13 @@ const BackOfficeSideBar = () => {
                 <FaUser className="w-[22px] text-[#E3BC97]" />
 
                 <p className="text-[15px] ">Staff</p>
+              </li>
+            </Link>
+            <Link to="/backoffice/user-groups">
+              <li className=" flex gap-3 duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md">
+                <FaUserGroup className="w-[22px] text-[#E3BC97]" />
+
+                <p className="text-[15px] ">User Groups</p>
               </li>
             </Link>
             <Link to="/backoffice/department">

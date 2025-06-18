@@ -40,6 +40,7 @@ const Staff = () => {
   const [loading, setLoading] = useState(false); // Loading state for button
   const [searchText, setSearchText] = useState('');
   const [isDepartment, setIsDepartment] = useState(false);
+  const [isMainSecretariat, setIsMainSecretariat] = useState(false);
 
   const [staffDetail, setStaffDetail] = useState({});
 
@@ -197,9 +198,15 @@ const Staff = () => {
       render: (value) => <span>{capitalize(value)}</span>,
     },
     {
-      title: 'Is Department',
+      title: 'Is Secretariat',
       key: 'isDepartment',
       dataIndex: ['staff', 'isDepartment'],
+      render: (value) => <span>{value ? 'Yes' : 'No'}</span>,
+    },
+    {
+      title: 'Is Main Secretariat',
+      key: 'isMainSecretariat',
+      dataIndex: ['staff', 'isMainSecretariat'],
       render: (value) => <span>{value ? 'Yes' : 'No'}</span>,
     },
 
@@ -345,7 +352,15 @@ const Staff = () => {
                 onChange={(e) => setIsDepartment(e.target.checked)}
                 checked={isDepartment}
               >
-                Setup as department
+                Setup as Secretariat
+              </Checkbox>
+            </Form.Item>
+            <Form.Item>
+              <Checkbox
+                onChange={(e) => setIsMainSecretariat(e.target.checked)}
+                checked={isMainSecretariat}
+              >
+                Setup as Main Secretariat
               </Checkbox>
             </Form.Item>
             <Form.Item name="roleId" label="Role" required>

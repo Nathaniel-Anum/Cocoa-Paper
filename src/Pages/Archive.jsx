@@ -35,6 +35,7 @@ import {
   getAllRolePermissions,
 } from '../../utils/Roles';
 import { useUser } from './CustomHook/useUser';
+import PDFViewer from '../Components/PDFViewer/PDFViewer';
 
 const Archive = () => {
   const queryClient = useQueryClient();
@@ -663,11 +664,9 @@ const Archive = () => {
         className="!top-9"
       >
         {selectedItem.file?.fileUrl && (
-          <iframe
-            src={selectedItem.file.fileUrl}
-            width="100%"
-            height="650px"
-            title="PDF Viewer"
+          <PDFViewer
+            pdfUrl={selectedItem.file.fileUrl}
+            documentId={selectedItem.file.fileId}
           />
         )}
       </Modal>
