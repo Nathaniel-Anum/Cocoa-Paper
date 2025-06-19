@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+
 // import './AnnotationToolbar.css';
 import {
   FaPen,
@@ -10,6 +10,9 @@ import {
   FaRedo,
 } from 'react-icons/fa';
 import { PiSelectionPlusDuotone } from 'react-icons/pi';
+import ColorPicker from './ColorPicker';
+import { Tooltip } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 
 const AnnotationToolbar = ({
   selectedTool,
@@ -17,7 +20,9 @@ const AnnotationToolbar = ({
   onUndo,
   onRedo,
   onSave,
-  onClear,
+  currentColor,
+  onColorChange,
+  isSaving,
 }) => {
   const tools = [
     { id: 'pen', label: 'Pen', icon: <FaPen /> },
@@ -30,24 +35,61 @@ const AnnotationToolbar = ({
   return (
     <div className="annotation-toolbar">
       {tools.map((tool) => (
-        <button
+        <Tooltip
           key={tool.id}
-          className={`tool-button ${selectedTool === tool.id ? 'active' : ''}`}
-          onClick={() => onToolSelect(tool.id)}
           title={tool.label}
+          mouseEnterDelay={0}
+          mouseLeaveDelay={0}
+          placement="right"
         >
-          {tool.icon}
-        </button>
+          <button
+            className={`tool-button ${
+              selectedTool === tool.id ? 'active' : ''
+            }`}
+            onClick={() => onToolSelect(tool.id)}
+            type="button"
+          >
+            {tool.icon}
+          </button>
+        </Tooltip>
       ))}
       <div className="tool-separator" />
-      <button className="tool-button" onClick={onUndo} title="Undo">
-        <FaUndo />
-      </button>
-      <button className="tool-button" onClick={onRedo} title="Redo">
-        <FaRedo />
-      </button>
-      <button className="save-button" onClick={onSave}>
-        Save
+      <Tooltip
+        title="Undo"
+        mouseEnterDelay={0}
+        mouseLeaveDelay={0}
+        placement="right"
+      >
+        <button className="tool-button" onClick={onUndo} type="button">
+          <FaUndo />
+        </button>
+      </Tooltip>
+      <Tooltip
+        title="Redo"
+        mouseEnterDelay={0}
+        mouseLeaveDelay={0}
+        placement="right"
+      >
+        <button className="tool-button" onClick={onRedo} type="button">
+          <FaRedo />
+        </button>
+      </Tooltip>
+      {selectedTool === 'pen' && (
+        <ColorPicker
+          currentColor={currentColor}
+          onColorChange={onColorChange}
+        />
+      )}
+      <button
+        className="save-button"
+        onClick={onSave}
+        type="button"
+        disabled={isSaving}
+      >
+        {isSaving ? (
+          <LoadingOutlined spin style={{ fontSize: 18, marginRight: 8 }} />
+        ) : null}
+        {isSaving ? 'Saving...' : 'Save'}
       </button>
     </div>
   );
@@ -59,7 +101,9 @@ AnnotationToolbar.propTypes = {
   onUndo: PropTypes.func.isRequired,
   onRedo: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
-  onClear: PropTypes.func.isRequired,
+  currentColor: PropTypes.string,
+  onColorChange: PropTypes.func,
+  isSaving: PropTypes.bool,
 };
 
 export default AnnotationToolbar;

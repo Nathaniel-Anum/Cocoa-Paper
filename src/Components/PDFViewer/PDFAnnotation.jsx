@@ -1,13 +1,15 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { Document, Page, pdfjs } from 'react-pdf';
-import { Canvas, Image, PencilBrush, Path, util } from 'fabric';
+import { Document, Page } from 'react-pdf';
+import '../../utils/pdfjs-worker';
+import * as fabric from 'fabric';
+import { message } from 'antd';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '../axiosInstance';
 import AnnotationToolbar from './AnnotationToolbar';
 import SignaturePad from 'react-signature-canvas';
 import './PDFAnnotation.css';
-import 'fabric';
+import { useUser } from '../../Pages/CustomHook/useUser';
 
 const PDFAnnotation = ({
   pdfUrl,
@@ -23,12 +25,14 @@ const PDFAnnotation = ({
   const [isPageLoaded, setIsPageLoaded] = useState(false);
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
-  const [signatureImage, setSignatureImage] = useState(null);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const eraserHandlersRef = useRef(null);
   const [erasedAnnotations, setErasedAnnotations] = useState([]);
+  const [penColor, setPenColor] = useState('#000000');
   const queryClient = useQueryClient();
+  const { user } = useUser();
+  const [isSaving, setIsSaving] = useState(false);
 
   // Query to fetch annotations
   const { data: annotations } = useQuery({
@@ -51,22 +55,29 @@ const PDFAnnotation = ({
         const pdfPage = containerRef.current.querySelector('.react-pdf__Page');
         if (pdfPage) {
           try {
-            fabricCanvas = new Canvas('annotation-canvas', {
-              isDrawingMode: true,
+            const canvas = document.getElementById('annotation-canvas');
+            if (!canvas) return;
+
+            canvas.width = pdfPage.offsetWidth;
+            canvas.height = pdfPage.offsetHeight;
+
+            fabricCanvas = new fabric.Canvas(canvas, {
+              isDrawingMode: selectedTool === 'pen',
               width: pdfPage.offsetWidth,
               height: pdfPage.offsetHeight,
               selection: false,
               preserveObjectStacking: true,
+              backgroundColor: 'transparent',
             });
 
             canvasRef.current = fabricCanvas;
 
             // Initialize the pencil brush
-            const pencilBrush = new PencilBrush(fabricCanvas);
+            const pencilBrush = new fabric.PencilBrush(fabricCanvas);
             pencilBrush.width = 2;
-            pencilBrush.color = '#FF0000';
+            pencilBrush.color = penColor;
             fabricCanvas.freeDrawingBrush = pencilBrush;
-            fabricCanvas.isDrawingMode = true;
+            fabricCanvas.isDrawingMode = selectedTool === 'pen';
 
             setCanvas(fabricCanvas);
           } catch (error) {
@@ -111,7 +122,7 @@ const PDFAnnotation = ({
       canvasRef.current = null;
       setCanvas(null);
     };
-  }, [isPageLoaded]);
+  }, [isPageLoaded, penColor]);
 
   // Update canvas when page or scale changes
   useEffect(() => {
@@ -169,7 +180,7 @@ const PDFAnnotation = ({
           if (annotation.type === 'draw') {
             // Recreate drawing path
             const pathData = annotation.annotationData;
-            const path = new Path(pathData.path, {
+            const path = new fabric.Path(pathData.path, {
               stroke: pathData.stroke,
               strokeWidth: pathData.strokeWidth,
               globalCompositeOperation: pathData.globalCompositeOperation,
@@ -237,11 +248,42 @@ const PDFAnnotation = ({
     setSelectedTool(tool);
     if (canvas) {
       try {
-        // Clean up any existing eraser handlers
         cleanupEraserHandlers();
-
-        if (tool === 'select') {
-          // Enable selection mode
+        // Reset all objects to locked state by default
+        canvas.forEachObject((obj) => {
+          obj.selectable = false;
+          obj.hasControls = false;
+          obj.hasBorders = false;
+          obj.lockMovementX = true;
+          obj.lockMovementY = true;
+          obj.lockRotation = true;
+          obj.lockScalingX = true;
+          obj.lockScalingY = true;
+          obj.lockUniScaling = true;
+        });
+        if (tool === 'pen') {
+          canvas.isDrawingMode = true;
+          canvas.selection = false;
+          canvas.defaultCursor = 'crosshair';
+          if (
+            !canvas.freeDrawingBrush ||
+            !(canvas.freeDrawingBrush instanceof fabric.PencilBrush)
+          ) {
+            canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+          }
+          canvas.freeDrawingBrush.width = 2;
+          canvas.freeDrawingBrush.color = penColor;
+          canvas.freeDrawingBrush.globalCompositeOperation = 'source-over';
+        } else if (tool === 'highlighter') {
+          canvas.isDrawingMode = true;
+          canvas.selection = false;
+          canvas.defaultCursor = 'crosshair';
+          const pencilBrush = new fabric.PencilBrush(canvas);
+          pencilBrush.width = 10;
+          pencilBrush.color = 'rgba(255, 255, 0, 0.3)';
+          pencilBrush.globalCompositeOperation = 'multiply';
+          canvas.freeDrawingBrush = pencilBrush;
+        } else if (tool === 'select') {
           canvas.isDrawingMode = false;
           canvas.selection = true;
           canvas.forEachObject((obj) => {
@@ -260,31 +302,20 @@ const PDFAnnotation = ({
           setShowSignaturePad(true);
           canvas.defaultCursor = 'crosshair';
         } else if (tool === 'eraser') {
-          // Enable eraser mode
           canvas.isDrawingMode = false;
           canvas.selection = false;
-          canvas.forEachObject((obj) => {
-            obj.selectable = false;
-            obj.hasControls = false;
-            obj.hasBorders = false;
-          });
           canvas.defaultCursor =
             "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><path d='M6 18L18 6M6 6l12 12'/></svg>\") 12 12, auto";
-
           let isErasing = false;
-
           const handleEraserStart = (e) => {
             isErasing = true;
             handleEraserMove(e);
           };
-
           const handleEraserMove = (e) => {
             if (!isErasing) return;
-
             const pointer = canvas.getPointer(e.e);
             const objects = canvas.getObjects();
-
-            // Find objects that intersect with the eraser path
+            // Find objects that intersect with the eraser path (paths or images)
             const objectsToErase = objects.filter((obj) => {
               if (obj.type === 'path') {
                 const path = obj.path;
@@ -293,18 +324,23 @@ const PDFAnnotation = ({
                     Math.pow(point[1] - pointer.x, 2) +
                       Math.pow(point[2] - pointer.y, 2)
                   );
-                  return distance < 10; // Eraser radius of 10 pixels
+                  return distance < 10;
                 });
+              } else if (obj.type === 'image') {
+                // For images (signatures), check bounding box
+                return (
+                  pointer.x >= obj.left &&
+                  pointer.x <= obj.left + obj.width * obj.scaleX &&
+                  pointer.y >= obj.top &&
+                  pointer.y <= obj.top + obj.height * obj.scaleY
+                );
               }
               return false;
             });
-
-            // Store erased objects for database update and undo stack
             objectsToErase.forEach((obj) => {
               if (obj.annotationId) {
                 setErasedAnnotations((prev) => [...prev, obj.annotationId]);
               }
-              // Store the object in the undo stack before removing it
               setUndoStack((prev) => [
                 ...prev,
                 {
@@ -322,49 +358,19 @@ const PDFAnnotation = ({
             });
             canvas.renderAll();
           };
-
           const handleEraserEnd = () => {
             isErasing = false;
           };
-
-          // Store handlers in ref for cleanup
           eraserHandlersRef.current = {
             start: handleEraserStart,
             move: handleEraserMove,
             end: handleEraserEnd,
           };
-
           canvas.on('mouse:down', handleEraserStart);
           canvas.on('mouse:move', handleEraserMove);
           canvas.on('mouse:up', handleEraserEnd);
           canvas.on('mouse:leave', handleEraserEnd);
-        } else {
-          // Drawing tools (pen and highlighter)
-          canvas.isDrawingMode = true;
-          canvas.selection = false;
-          canvas.forEachObject((obj) => {
-            obj.selectable = false;
-            obj.hasControls = false;
-            obj.hasBorders = false;
-          });
-          canvas.defaultCursor = 'crosshair';
-
-          // Create a new brush for each tool
-          const pencilBrush = new PencilBrush(canvas);
-
-          if (tool === 'highlighter') {
-            pencilBrush.width = 10;
-            pencilBrush.color = 'rgba(255, 255, 0, 0.3)';
-            pencilBrush.globalCompositeOperation = 'multiply';
-          } else if (tool === 'pen') {
-            pencilBrush.width = 2;
-            pencilBrush.color = '#FF0000';
-            pencilBrush.globalCompositeOperation = 'source-over';
-          }
-
-          canvas.freeDrawingBrush = pencilBrush;
         }
-
         canvas.renderAll();
       } catch (error) {
         console.error('Error setting tool:', error);
@@ -408,15 +414,19 @@ const PDFAnnotation = ({
     if (canvas) {
       try {
         // Create fabric image directly from data URL
-        Image.fromURL(
+        fabric.Image.fromURL(
           signatureData,
           (img) => {
+            // Calculate dimensions to maintain aspect ratio
+            const maxWidth = canvas.width / 3; // Limit signature to 1/3 of canvas width
+            const scale = maxWidth / img.width;
+
             // Set initial position and size
             img.set({
-              left: canvas.width / 4,
-              top: canvas.height / 4,
-              scaleX: 0.5,
-              scaleY: 0.5,
+              left: canvas.width / 2 - (img.width * scale) / 2, // Center horizontally
+              top: canvas.height / 2 - (img.height * scale) / 2, // Center vertically
+              scaleX: scale,
+              scaleY: scale,
               selectable: true,
               hasControls: true,
               hasBorders: true,
@@ -425,12 +435,28 @@ const PDFAnnotation = ({
               lockScalingY: false,
               lockMovementX: false,
               lockMovementY: false,
+              type: 'signature',
             });
 
-            // Add to canvas
+            // Add to canvas and undo stack
             canvas.add(img);
             canvas.setActiveObject(img);
             canvas.renderAll();
+
+            // Add to undo stack
+            setUndoStack((prev) => [
+              ...prev,
+              {
+                type: 'signature',
+                object: img.toJSON([
+                  'selectable',
+                  'hasControls',
+                  'hasBorders',
+                  'type',
+                ]),
+              },
+            ]);
+            setRedoStack([]); // Clear redo stack
           },
           { crossOrigin: 'anonymous' }
         );
@@ -447,23 +473,14 @@ const PDFAnnotation = ({
 
   // Update saveAnnotationMutation to handle erased annotations
   const saveAnnotationMutation = useMutation({
-    mutationFn: async (annotations) => {
+    mutationFn: async (formData) => {
       try {
-        // First, delete erased annotations
-        if (erasedAnnotations.length > 0) {
-          await Promise.all(
-            erasedAnnotations.map((id) =>
-              axiosInstance.delete(`/annotations/${id}`)
-            )
-          );
-          setErasedAnnotations([]); // Clear erased annotations after successful deletion
-        }
-
-        // Then save new annotations
-        if (annotations.length > 0) {
-          const response = await axiosInstance.post('/annotations', {
-            documentId,
-            annotations,
+        // Backend will handle deletion of erased annotations
+        if (formData.get('annotations')) {
+          const response = await axiosInstance.post('/annotations', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
           });
           return response.data;
         }
@@ -474,42 +491,94 @@ const PDFAnnotation = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['annotations', documentId]);
+      setErasedAnnotations([]); // Clear erased annotations after successful save
     },
   });
 
   const handleSave = async () => {
     if (!canvas) return;
-
+    if (!user || !user.userId) {
+      message.error('User ID is missing. Please log in again.');
+      return;
+    }
     try {
+      setIsSaving(true);
+      // Get canvas objects
       const objects = canvas.getObjects();
+      // Convert canvas to an image
+      const canvasDataUrl = canvas.toDataURL({
+        format: 'png',
+        quality: 1,
+        multiplier: 2, // For better quality
+      });
+      // Prepare annotations data
       const annotations = objects.map((obj) => {
         const baseAnnotation = {
           type: obj.type === 'path' ? 'draw' : 'signature',
           data: obj.toJSON(['selectable', 'hasControls', 'hasBorders']),
           pageNumber,
+          position: {
+            x: obj.left,
+            y: obj.top,
+            width: obj.width * obj.scaleX,
+            height: obj.height * obj.scaleY,
+            rotation: obj.angle,
+          },
         };
-
+        if (obj.type === 'signature') {
+          baseAnnotation.signatureData = {
+            timestamp: new Date().toISOString(),
+            signedBy: 'User', // Replace with actual user info
+          };
+        }
         // If the object has an existing annotation ID, include it
         if (obj.annotationId) {
           baseAnnotation.id = obj.annotationId;
         }
-
         return baseAnnotation;
       });
-
-      console.log({ annotations });
-
-      await saveAnnotationMutation.mutateAsync(annotations);
+      // Create form data with both annotations and canvas image
+      const formData = new FormData();
+      formData.append('annotations', JSON.stringify(annotations));
+      formData.append('pageImage', canvasDataUrl);
+      formData.append('pageNumber', pageNumber);
+      formData.append('documentId', documentId);
+      formData.append('scale', scale);
+      formData.append('userId', user.userId);
+      formData.append('erasedAnnotationIds', JSON.stringify(erasedAnnotations));
+      console.log(
+        '[handleSave] Sending erasedAnnotationIds:',
+        erasedAnnotations
+      );
+      // Send to backend for PDF modification
+      await saveAnnotationMutation.mutateAsync(formData);
+      message.success('Annotations saved and embedded in PDF successfully');
     } catch (error) {
       console.error('Error saving annotations:', error);
+      message.error('Failed to save annotations');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  // Add a function to save erased annotations to localStorage
+  // Add a function to save erased annotations to localStorage with timestamp
   const saveErasedAnnotations = useCallback(
     (pageNum, annotations) => {
       const key = `erased_annotations_${documentId}_page_${pageNum}`;
-      localStorage.setItem(key, JSON.stringify(annotations));
+      const data = {
+        annotations,
+        timestamp: new Date().getTime(),
+        documentId,
+        pageNumber: pageNum,
+      };
+      localStorage.setItem(key, JSON.stringify(data));
+
+      // Also save to global erased annotations
+      const globalKey = `erased_annotations_${documentId}`;
+      const existingGlobal = localStorage.getItem(globalKey);
+      const globalData = existingGlobal ? JSON.parse(existingGlobal) : {};
+      globalData[pageNum] = data;
+      localStorage.setItem(globalKey, JSON.stringify(globalData));
     },
     [documentId]
   );
@@ -517,9 +586,24 @@ const PDFAnnotation = ({
   // Add a function to load erased annotations from localStorage
   const loadErasedAnnotations = useCallback(
     (pageNum) => {
+      // Try loading from global storage first
+      const globalKey = `erased_annotations_${documentId}`;
+      const globalData = localStorage.getItem(globalKey);
+      if (globalData) {
+        const parsed = JSON.parse(globalData);
+        if (parsed[pageNum] && parsed[pageNum].annotations) {
+          return parsed[pageNum].annotations;
+        }
+      }
+
+      // Fallback to page-specific storage
       const key = `erased_annotations_${documentId}_page_${pageNum}`;
       const saved = localStorage.getItem(key);
-      return saved ? JSON.parse(saved) : [];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.annotations || [];
+      }
+      return [];
     },
     [documentId]
   );
@@ -542,47 +626,6 @@ const PDFAnnotation = ({
     }
   }, [canvas, pageNumber, loadErasedAnnotations]);
 
-  // Update the handleErase function
-  const handleErase = useCallback(
-    (e) => {
-      if (!canvas || selectedTool !== 'eraser') return;
-
-      const pointer = canvas.getPointer(e.e);
-      const objects = canvas.getObjects();
-
-      objects.forEach((obj) => {
-        if (obj.containsPoint(pointer)) {
-          // Add to erased annotations
-          setErasedAnnotations((prev) => {
-            const newErased = [...prev, obj.annotationId];
-            // Save to localStorage
-            saveErasedAnnotations(pageNumber, newErased);
-            return newErased;
-          });
-
-          // Add to undo stack
-          setUndoStack((prev) => [
-            ...prev,
-            {
-              type: 'erase',
-              object: obj.toJSON([
-                'selectable',
-                'hasControls',
-                'hasBorders',
-                'annotationId',
-              ]),
-              annotationId: obj.annotationId,
-            },
-          ]);
-
-          canvas.remove(obj);
-          canvas.renderAll();
-        }
-      });
-    },
-    [canvas, selectedTool, pageNumber, saveErasedAnnotations]
-  );
-
   // Update the handleUndo function
   const handleUndo = (e) => {
     if (e) {
@@ -597,7 +640,7 @@ const PDFAnnotation = ({
 
     if (lastAction.type === 'erase') {
       // Restore erased object
-      util.enlivenObjects([lastAction.object], ([restoredObject]) => {
+      fabric.util.enlivenObjects([lastAction.object], ([restoredObject]) => {
         if (restoredObject) {
           restoredObject.annotationId = lastAction.annotationId;
           canvas.add(restoredObject);
@@ -639,25 +682,27 @@ const PDFAnnotation = ({
       e.preventDefault();
       e.stopPropagation();
     }
-
     if (redoStack.length === 0) return;
-
     const lastAction = redoStack[redoStack.length - 1];
     setRedoStack((prev) => prev.slice(0, -1));
-
-    if (lastAction.type === 'draw') {
-      util.enlivenObjects([lastAction.object], ([restoredObject]) => {
+    if (lastAction.type === 'draw' || lastAction.type === 'signature') {
+      fabric.util.enlivenObjects([lastAction.object], ([restoredObject]) => {
         if (restoredObject) {
-          restoredObject.selectable = false;
-          restoredObject.hasControls = false;
-          restoredObject.hasBorders = false;
+          if (lastAction.type === 'signature') {
+            restoredObject.selectable = true;
+            restoredObject.hasControls = true;
+            restoredObject.hasBorders = true;
+          } else {
+            restoredObject.selectable = false;
+            restoredObject.hasControls = false;
+            restoredObject.hasBorders = false;
+          }
           canvas.add(restoredObject);
           canvas.renderAll();
-          // Add the restored object back to the undo stack
           setUndoStack((prev) => [
             ...prev,
             {
-              type: 'draw',
+              type: lastAction.type,
               object: restoredObject.toJSON([
                 'selectable',
                 'hasControls',
@@ -669,23 +714,18 @@ const PDFAnnotation = ({
         }
       });
     } else if (lastAction.type === 'erase') {
-      // Find the object to erase
       const objects = canvas.getObjects();
       const objectToErase = objects.find(
         (obj) => obj.annotationId === lastAction.annotationId
       );
-
       if (objectToErase) {
-        // Add to erased annotations and update localStorage
         setErasedAnnotations((prev) => {
           const newErased = [...prev, objectToErase.annotationId];
           saveErasedAnnotations(pageNumber, newErased);
           return newErased;
         });
-        // Remove from canvas
         canvas.remove(objectToErase);
         canvas.renderAll();
-        // Add back to undo stack
         setUndoStack((prev) => [
           ...prev,
           {
@@ -727,8 +767,23 @@ const PDFAnnotation = ({
   useEffect(() => {
     if (canvas && canvas.wrapperEl) {
       canvas.wrapperEl.setAttribute('data-tool', selectedTool);
+      if (selectedTool === 'pen') {
+        canvas.isDrawingMode = true;
+        canvas.freeDrawingBrush.color = penColor;
+        canvas.freeDrawingBrush.width = 2;
+      }
     }
-  }, [canvas, selectedTool]);
+  }, [canvas, selectedTool, penColor]);
+
+  // Update pen color when it changes
+  useEffect(() => {
+    if (canvas && selectedTool === 'pen') {
+      const pencilBrush = new fabric.PencilBrush(canvas);
+      pencilBrush.width = 2;
+      pencilBrush.color = penColor;
+      canvas.freeDrawingBrush = pencilBrush;
+    }
+  }, [canvas, penColor, selectedTool]);
 
   // Clean up eraser handlers when component unmounts
   useEffect(() => {
@@ -736,28 +791,6 @@ const PDFAnnotation = ({
       cleanupEraserHandlers();
     };
   }, []);
-
-  const saveCanvasState = () => {
-    if (canvas) {
-      const objects = canvas.getObjects();
-      const lastObject = objects[objects.length - 1];
-      if (lastObject) {
-        setUndoStack((prev) => [
-          ...prev,
-          {
-            type: 'draw',
-            object: lastObject.toJSON([
-              'selectable',
-              'hasControls',
-              'hasBorders',
-              'annotationId',
-            ]),
-          },
-        ]);
-        setRedoStack([]); // Clear redo stack when new action is performed
-      }
-    }
-  };
 
   return (
     <div className="pdf-annotation-container" ref={containerRef}>
@@ -779,7 +812,15 @@ const PDFAnnotation = ({
         </Document>
       </div>
       <div className="annotation-canvas-container">
-        <canvas id="annotation-canvas" />
+        <canvas
+          id="annotation-canvas"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'auto',
+          }}
+        />
       </div>
       <AnnotationToolbar
         selectedTool={selectedTool}
@@ -788,6 +829,14 @@ const PDFAnnotation = ({
         onRedo={(e) => handleRedo(e)}
         onSave={handleSave}
         onClear={handleSignatureClear}
+        currentColor={penColor}
+        onColorChange={(color) => {
+          setPenColor(color);
+          if (canvas) {
+            canvas.freeDrawingBrush.color = color;
+          }
+        }}
+        isSaving={isSaving}
       />
       {showSignaturePad && (
         <div className="signature-pad-modal">

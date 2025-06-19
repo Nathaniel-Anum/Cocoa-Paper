@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { pdfjs } from 'react-pdf';
 import { Modal } from 'antd';
 import useStore from '../../store/store';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+// Import CSS
+import 'react-pdf/dist/cjs/Page/AnnotationLayer.css';
+import 'react-pdf/dist/cjs/Page/TextLayer.css';
+// Import configured pdfjs
+import '../../utils/pdfjs-worker';
 import './PDFViewer.css';
 import PDFAnnotation from './PDFAnnotation';
 
-// Set up the worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Set up PDF.js worker source
+
 
 const PDFViewerContent = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
   const [numPages, setNumPages] = useState(null);
