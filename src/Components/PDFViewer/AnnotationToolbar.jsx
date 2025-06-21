@@ -5,14 +5,14 @@ import {
   FaPen,
   FaHighlighter,
   FaEraser,
-  FaSignature,
+  FaStamp,
   FaUndo,
   FaRedo,
 } from 'react-icons/fa';
 import { PiSelectionPlusDuotone } from 'react-icons/pi';
 import ColorPicker from './ColorPicker';
 import { Tooltip } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 
 const AnnotationToolbar = ({
   selectedTool,
@@ -20,16 +20,18 @@ const AnnotationToolbar = ({
   onUndo,
   onRedo,
   onSave,
+  onDownload,
   currentColor,
   onColorChange,
   isSaving,
+  isDownloading,
 }) => {
   const tools = [
     { id: 'pen', label: 'Pen', icon: <FaPen /> },
     { id: 'select', label: 'Select', icon: <PiSelectionPlusDuotone /> },
     { id: 'highlighter', label: 'Highlighter', icon: <FaHighlighter /> },
     { id: 'eraser', label: 'Eraser', icon: <FaEraser /> },
-    { id: 'signature', label: 'Signature', icon: <FaSignature /> },
+    { id: 'stamp', label: 'Stamp', icon: <FaStamp /> },
   ];
 
   return (
@@ -40,7 +42,7 @@ const AnnotationToolbar = ({
           title={tool.label}
           mouseEnterDelay={0}
           mouseLeaveDelay={0}
-          placement="right"
+          placement="top"
         >
           <button
             className={`tool-button ${
@@ -58,7 +60,7 @@ const AnnotationToolbar = ({
         title="Undo"
         mouseEnterDelay={0}
         mouseLeaveDelay={0}
-        placement="right"
+        placement="top"
       >
         <button className="tool-button" onClick={onUndo} type="button">
           <FaUndo />
@@ -68,7 +70,7 @@ const AnnotationToolbar = ({
         title="Redo"
         mouseEnterDelay={0}
         mouseLeaveDelay={0}
-        placement="right"
+        placement="top"
       >
         <button className="tool-button" onClick={onRedo} type="button">
           <FaRedo />
@@ -87,9 +89,20 @@ const AnnotationToolbar = ({
         disabled={isSaving}
       >
         {isSaving ? (
-          <LoadingOutlined spin style={{ fontSize: 18, marginRight: 8 }} />
+          <LoadingOutlined spin style={{ fontSize: 18, margintop: 8 }} />
         ) : null}
         {isSaving ? 'Saving...' : 'Save'}
+      </button>
+      <button
+        className="tool-button"
+        onClick={onDownload}
+        type="button"
+        style={{ marginLeft: 8 }}
+        disabled={isDownloading}
+      >
+        {isDownloading ? (
+          <LoadingOutlined spin style={{ fontSize: 18 }} />
+        ) : <DownloadOutlined style={{ fontSize: 18 }}/>}
       </button>
     </div>
   );
@@ -101,9 +114,11 @@ AnnotationToolbar.propTypes = {
   onUndo: PropTypes.func.isRequired,
   onRedo: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
+  onDownload: PropTypes.func.isRequired,
   currentColor: PropTypes.string,
   onColorChange: PropTypes.func,
   isSaving: PropTypes.bool,
+  isDownloading: PropTypes.bool,
 };
 
 export default AnnotationToolbar;

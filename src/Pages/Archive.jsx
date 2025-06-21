@@ -35,7 +35,7 @@ import {
   getAllRolePermissions,
 } from '../../utils/Roles';
 import { useUser } from './CustomHook/useUser';
-import PDFViewer from '../Components/PDFViewer/PDFViewer';
+import PDFViewer from '../Components/PDFViewer/PdfViewer';
 
 const Archive = () => {
   const queryClient = useQueryClient();

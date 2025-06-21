@@ -43,7 +43,7 @@ import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
 import { updateBudgetAmount } from '../http/budget';
 import Loader from '../Components/Loader/Loader';
 import { useGetAllUsers } from '../queryHooks/user';
-import { PDFViewerContent } from '../Components/PDFViewer/PDFViewer';
+import { PDFViewerContent } from '../Components/PDFViewer/PdfViewer';
 
 const { Content } = Layout;
 const { Title } = Typography;
