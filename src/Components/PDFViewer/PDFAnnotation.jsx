@@ -1,17 +1,19 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import PropTypes from "prop-types";
-import { Document, Page } from "react-pdf";
-import "../../utils/pdfjs-worker";
-import * as fabric from "fabric";
 import { message } from "antd";
+import * as fabric from "fabric";
+import PropTypes from "prop-types";
+import { saveAs } from "file-saver";
+import { Document, Page } from "react-pdf";
+import SignaturePad from "react-signature-canvas";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import "../../utils/pdfjs-worker";
+import StampTool from "./StampTool";
 import axiosInstance from "../axiosInstance";
 import AnnotationToolbar from "./AnnotationToolbar";
-import SignaturePad from "react-signature-canvas";
-import "./PDFAnnotation.css";
 import { useUser } from "../../Pages/CustomHook/useUser";
-import { saveAs } from "file-saver";
-import StampTool from "./StampTool";
+
+import "./PDFAnnotation.css";
 
 const PDFAnnotation = ({
   pdfUrl,
@@ -21,24 +23,27 @@ const PDFAnnotation = ({
   onDocumentLoadError,
   documentId,
 }) => {
-  const [selectedTool, setSelectedTool] = useState("pen");
-  const [showSignaturePad, setShowSignaturePad] = useState(false);
-  const [canvas, setCanvas] = useState(null);
-  const [isPageLoaded, setIsPageLoaded] = useState(false);
-  const containerRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [undoStack, setUndoStack] = useState([]);
-  const [redoStack, setRedoStack] = useState([]);
-  const eraserHandlersRef = useRef(null);
-  const [erasedAnnotations, setErasedAnnotations] = useState([]);
-  const [penColor, setPenColor] = useState("#000000");
-  const queryClient = useQueryClient();
   const { user } = useUser();
+
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const eraserHandlersRef = useRef(null);
+  
+  const queryClient = useQueryClient();
+  
+  const [canvas, setCanvas] = useState(null);
+  const [redoStack, setRedoStack] = useState([]);
+  const [undoStack, setUndoStack] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [penColor, setPenColor] = useState("#000000");
+  const [selectedTool, setSelectedTool] = useState("pen");
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [stampToolVisible, setStampToolVisible] = useState(false);
   const [stampPosition, setStampPosition] = useState(null);
   const [localAnnotations, setLocalAnnotations] = useState([]);
+  const [erasedAnnotations, setErasedAnnotations] = useState([]);
+  const [stampToolVisible, setStampToolVisible] = useState(false);
+  const [showSignaturePad, setShowSignaturePad] = useState(false);
 
   // Query to fetch annotations
   const { data: annotations } = useQuery({
