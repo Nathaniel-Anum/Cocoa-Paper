@@ -164,7 +164,7 @@ const PDFAnnotation = ({
   }, [pageNumber, scale, canvas]);
 
   // Load saved annotations when they are fetched
-  useEffect(() => {
+ useEffect(() => {
     if (canvas && annotations) {
       try {
         // Clear existing annotations
