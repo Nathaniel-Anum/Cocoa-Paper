@@ -8,6 +8,7 @@ import {
   FaSignature,
   FaUndo,
   FaRedo,
+  FaStamp,
 } from 'react-icons/fa';
 import { PiSelectionPlusDuotone } from 'react-icons/pi';
 import ColorPicker from './ColorPicker';
@@ -29,7 +30,7 @@ const AnnotationToolbar = ({
     { id: 'select', label: 'Select', icon: <PiSelectionPlusDuotone /> },
     { id: 'highlighter', label: 'Highlighter', icon: <FaHighlighter /> },
     { id: 'eraser', label: 'Eraser', icon: <FaEraser /> },
-    { id: 'signature', label: 'Signature', icon: <FaSignature /> },
+    { id: 'stamp', label: 'Stamp', icon: <FaStamp /> },
   ];
 
   return (
