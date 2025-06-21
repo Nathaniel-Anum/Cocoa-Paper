@@ -170,14 +170,23 @@ const PDFAnnotation = ({
         // Clear existing annotations
         canvas.clear();
 
+        // Log all annotations for debugging
+        console.log("All annotations from backend:", annotations);
+        if (annotations.length > 0) {
+          console.log(
+            "Annotation types:",
+            annotations.map((a) => a.type).filter((b) => b === "stamp")
+          );
+        }
+
         // Filter annotations for current page
         const pageAnnotations = annotations.filter(
           (ann) => ann.pageNumber === pageNumber
         );
 
         // Load each annotation
-        pageAnnotations.forEach((annotation) => {
-          if (annotation.type === 'draw') {
+        pageAnnotations.forEach((annotation, index) => {
+          if (annotation.type === "draw") {
             // Recreate drawing path
             const pathData = annotation.annotationData;
             const path = new fabric.Path(pathData.path, {
@@ -185,9 +194,9 @@ const PDFAnnotation = ({
               strokeWidth: pathData.strokeWidth,
               globalCompositeOperation: pathData.globalCompositeOperation,
               selectable: false,
-              fill: null, // Ensure no fill
-              strokeLineCap: 'round', // Add rounded line caps
-              strokeLineJoin: 'round', // Add rounded line joins
+              fill: null,
+              strokeLineCap: "round",
+              strokeLineJoin: "round",
               strokeMiterLimit: 10,
               perPixelTargetFind: true,
               hasControls: false,
@@ -202,28 +211,69 @@ const PDFAnnotation = ({
               evented: false,
             });
             canvas.add(path);
-          } else if (annotation.type === 'signature') {
-            // Recreate signature image
-            const sigData = annotation.annotationData;
-            Image.fromURL(sigData.dataUrl, (img) => {
-              img.set({
-                left: sigData.x,
-                top: sigData.y,
-                scaleX: sigData.width / img.width,
-                scaleY: sigData.height / img.height,
-                angle: sigData.angle,
-                selectable: true,
-                hasControls: true,
-                hasBorders: true,
+          } else if (annotation.type === "stamp") {
+            const data = annotation.annotationData;
+            if (!data || !data.dataUrl) {
+              console.error("Stamp annotation missing data or dataUrl", annotation);
+              return;
+            }
+            if (!data.dataUrl.startsWith("data:image/")) {
+              console.error("Stamp annotation has invalid dataUrl format:", data.dataUrl.substring(0, 100));
+              return;
+            }
+            if (
+              typeof data.x !== "number" ||
+              typeof data.y !== "number" ||
+              typeof data.width !== "number" ||
+              typeof data.height !== "number"
+            ) {
+              console.error("Stamp annotation has invalid position/dimensions:", data);
+              return;
+            }
+            // Use native Image and fabric.Image constructor
+            const imgElement = new window.Image();
+            imgElement.onload = function () {
+              const scaleX = data.width / imgElement.naturalWidth;
+              const scaleY = data.height / imgElement.naturalHeight;
+              const imgInstance = new fabric.Image(imgElement, {
+                left: data.x,
+                top: data.y,
+                scaleX,
+                scaleY,
+                selectable: false,
+                hasControls: false,
+                hasBorders: false,
+                lockMovementX: true,
+                lockMovementY: true,
+                lockRotation: true,
+                lockScalingX: true,
+                lockScalingY: true,
+                lockUniScaling: true,
+                annotationId: annotation.id,
               });
-              canvas.add(img);
-            });
+              canvas.add(imgInstance);
+              canvas.renderAll();
+              console.log('Stamp annotation: Successfully added to canvas using native Image');
+            };
+            imgElement.onerror = function (e) {
+              console.error('Failed to load image element for stamp annotation', e, data.dataUrl.substring(0, 100));
+            };
+            imgElement.src = data.dataUrl;
+            // imgElement.style
           }
         });
 
-        canvas.renderAll();
+        // Force canvas render after all annotations are processed
+        setTimeout(() => {
+          canvas.renderAll();
+          console.log(
+            `Canvas render complete. Total objects: ${
+              canvas.getObjects().length
+            }`
+          );
+        }, 100);
       } catch (error) {
-        console.error('Error loading annotations:', error);
+        console.error("Error loading annotations:", error);
       }
     }
   }, [canvas, annotations, pageNumber]);

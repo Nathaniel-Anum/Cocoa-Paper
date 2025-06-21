@@ -8,7 +8,7 @@ import { EyeOutlined } from '@ant-design/icons';
 import { Table } from 'antd';
 import { create } from 'lodash';
 import dayjs from 'dayjs';
-import PDFViewer from '../Components/PDFViewer/PDFViewer';
+import PDFViewer from '../Components/PDFViewer/PdfViewer';
 const Attachments = () => {
   const { id: docId } = useParams();
 
