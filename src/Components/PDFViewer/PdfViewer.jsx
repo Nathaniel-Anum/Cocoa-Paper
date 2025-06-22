@@ -1,17 +1,19 @@
+import { Modal } from 'antd';
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Modal } from 'antd';
+
 import useStore from '../../store/store';
+
 // Import CSS
-import 'react-pdf/dist/cjs/Page/AnnotationLayer.css';
+import './PDFViewer.css';
 import 'react-pdf/dist/cjs/Page/TextLayer.css';
+import 'react-pdf/dist/cjs/Page/AnnotationLayer.css';
+
 // Import configured pdfjs
 import '../../utils/pdfjs-worker';
-import './PDFViewer.css';
 import PDFAnnotation from './PDFAnnotation';
 
 // Set up PDF.js worker source
-
 
 const PDFViewerContent = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
   const [numPages, setNumPages] = useState(null);
@@ -55,12 +57,12 @@ const PDFViewerContent = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
       ) : (
         <>
           <PDFAnnotation
+            scale={scale}
             pdfUrl={pdfUrl}
             documentId={documentId}
             pageNumber={pageNumber}
-            scale={scale}
-            onDocumentLoadSuccess={onDocumentLoadSuccess}
             onDocumentLoadError={onDocumentLoadError}
+            onDocumentLoadSuccess={onDocumentLoadSuccess}
           />
           <div className="pdf-controls">
             <button
@@ -90,9 +92,9 @@ const PDFViewerContent = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
               </button>
               <span className="zoom-level">{Math.round(scale * 100)}%</span>
               <button
-                onClick={() => handleZoom(scale + 0.1)}
                 disabled={scale >= 2}
                 className="control-button"
+                onClick={() => handleZoom(scale + 0.1)}
               >
                 +
               </button>

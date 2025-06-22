@@ -1,17 +1,16 @@
-import PropTypes from 'prop-types';
-
-// import './AnnotationToolbar.css';
 import {
   FaPen,
-  FaHighlighter,
-  FaEraser,
-  FaStamp,
   FaUndo,
   FaRedo,
+  FaStamp,
+  FaEraser,
+  FaHighlighter,
 } from 'react-icons/fa';
-import { PiSelectionPlusDuotone } from 'react-icons/pi';
-import ColorPicker from './ColorPicker';
 import { Tooltip } from 'antd';
+import PropTypes from 'prop-types';
+
+import ColorPicker from './ColorPicker';
+import { PiSelectionPlusDuotone } from 'react-icons/pi';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 
 const AnnotationToolbar = ({
@@ -76,6 +75,23 @@ const AnnotationToolbar = ({
           <FaRedo />
         </button>
       </Tooltip>
+      <Tooltip
+         title="Download"
+         mouseEnterDelay={0}
+         mouseLeaveDelay={0}
+         placement="top"
+      >
+      <button
+        className="tool-button"
+        onClick={onDownload}
+        type="button"
+        disabled={isDownloading}
+      >
+        {isDownloading ? (
+          <LoadingOutlined spin style={{ fontSize: 18 }} />
+        ) : <DownloadOutlined style={{ fontSize: 18 }}/>}
+      </button>
+      </Tooltip>
       {selectedTool === 'pen' && (
         <ColorPicker
           currentColor={currentColor}
@@ -93,17 +109,7 @@ const AnnotationToolbar = ({
         ) : null}
         {isSaving ? 'Saving...' : 'Save'}
       </button>
-      <button
-        className="tool-button"
-        onClick={onDownload}
-        type="button"
-        style={{ marginLeft: 8 }}
-        disabled={isDownloading}
-      >
-        {isDownloading ? (
-          <LoadingOutlined spin style={{ fontSize: 18 }} />
-        ) : <DownloadOutlined style={{ fontSize: 18 }}/>}
-      </button>
+      
     </div>
   );
 };

@@ -3,7 +3,6 @@ import * as fabric from "fabric";
 import PropTypes from "prop-types";
 import { saveAs } from "file-saver";
 import { Document, Page } from "react-pdf";
-import SignaturePad from "react-signature-canvas";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -38,12 +37,11 @@ const PDFAnnotation = ({
   const [penColor, setPenColor] = useState("#000000");
   const [selectedTool, setSelectedTool] = useState("pen");
   const [isPageLoaded, setIsPageLoaded] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
   const [stampPosition, setStampPosition] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [localAnnotations, setLocalAnnotations] = useState([]);
   const [erasedAnnotations, setErasedAnnotations] = useState([]);
   const [stampToolVisible, setStampToolVisible] = useState(false);
-  const [showSignaturePad, setShowSignaturePad] = useState(false);
 
   // Query to fetch annotations
   const { data: annotations } = useQuery({
@@ -135,7 +133,7 @@ const PDFAnnotation = ({
       canvasRef.current = null;
       setCanvas(null);
     };
-  }, [isPageLoaded, penColor]);
+  }, [isPageLoaded]);
 
   // Update canvas when page or scale changes
   useEffect(() => {
@@ -198,7 +196,7 @@ const PDFAnnotation = ({
         );
 
         // Load each annotation
-        pageAnnotations.forEach((annotation, index) => {
+        pageAnnotations.forEach((annotation) => {
           if (annotation.type === "draw") {
             // Recreate drawing path
             const pathData = annotation.annotationData;
@@ -272,7 +270,6 @@ const PDFAnnotation = ({
               console.error('Failed to load image element for stamp annotation', e, data.dataUrl.substring(0, 100));
             };
             imgElement.src = data.dataUrl;
-            // imgElement.style
           }
         });
 
@@ -361,9 +358,6 @@ const PDFAnnotation = ({
             obj.lockUniScaling = false;
           });
           canvas.defaultCursor = "default";
-        } else if (tool === "signature") {
-          setShowSignaturePad(true);
-          canvas.defaultCursor = "crosshair";
         } else if (tool === "eraser") {
           canvas.isDrawingMode = false;
           canvas.selection = false;
@@ -468,66 +462,6 @@ const PDFAnnotation = ({
     }
   }, [canvas]);
 
-  const handleSignatureSave = (signatureData) => {
-    if (canvas) {
-      try {
-        // Create fabric image directly from data URL
-        fabric.Image.fromURL(
-          signatureData,
-          (img) => {
-            // Calculate dimensions to maintain aspect ratio
-            const maxWidth = canvas.width / 3; // Limit signature to 1/3 of canvas width
-            const scale = maxWidth / img.width;
-
-            // Set initial position and size
-            img.set({
-              left: canvas.width / 2 - (img.width * scale) / 2, // Center horizontally
-              top: canvas.height / 2 - (img.height * scale) / 2, // Center vertically
-              scaleX: scale,
-              scaleY: scale,
-              selectable: true,
-              hasControls: true,
-              hasBorders: true,
-              lockRotation: false,
-              lockScalingX: false,
-              lockScalingY: false,
-              lockMovementX: false,
-              lockMovementY: false,
-              type: "signature",
-            });
-
-            // Add to canvas and undo stack
-            canvas.add(img);
-            canvas.setActiveObject(img);
-            canvas.renderAll();
-
-            // Add to undo stack
-            setUndoStack((prev) => [
-              ...prev,
-              {
-                type: "signature",
-                object: img.toJSON([
-                  "selectable",
-                  "hasControls",
-                  "hasBorders",
-                  "type",
-                ]),
-              },
-            ]);
-            setRedoStack([]); // Clear redo stack
-          },
-          { crossOrigin: "anonymous" }
-        );
-      } catch (error) {
-        console.error("Error adding signature:", error);
-      }
-    }
-    setShowSignaturePad(false);
-  };
-
-  const handleSignatureClear = () => {
-    setShowSignaturePad(false);
-  };
 
   // Update saveAnnotationMutation to handle erased annotations
   const saveAnnotationMutation = useMutation({
@@ -574,11 +508,18 @@ const PDFAnnotation = ({
           })),
         ...localAnnotations,
       ];
+
+      const canvasDataUrl = canvas.toDataURL({
+        format: 'png',
+        quality: 1,
+      })
+
       // Create form data
       const formData = new FormData();
       formData.append("annotations", JSON.stringify(annotations));
       formData.append("pageNumber", pageNumber);
       formData.append("documentId", documentId);
+      formData.append("pageImage", canvasDataUrl);
       formData.append("scale", scale);
       formData.append("userId", user.userId);
       formData.append("erasedAnnotationIds", JSON.stringify(erasedAnnotations));
@@ -832,13 +773,14 @@ const PDFAnnotation = ({
     }
     setIsDownloading(true);
     try {
-      // Assume the backend expects a file upload (the original PDF) to /annotations/document/:documentId/apply
-      // and returns the annotated PDF as a blob
-      // We'll fetch the original PDF from pdfUrl and send it as FormData
-      const pdfResponse = await fetch(pdfUrl);
-      const pdfBlob = await pdfResponse.blob();
+      const canvasDataUrl = canvas.toDataURL({
+        format: 'png',
+        quality: 1,
+      })
+
       const formData = new FormData();
-      formData.append("file", pdfBlob, "original.pdf");
+      formData.append("pageImage", canvasDataUrl);
+
       // Call the backend endpoint
       const response = await axiosInstance.post(
         `/annotations/document/${documentId}/apply`,
@@ -858,7 +800,7 @@ const PDFAnnotation = ({
       message.success("Annotated PDF downloaded successfully");
     } catch (error) {
       console.error("Error downloading annotated PDF:", error);
-      message.error("Failed to download annotated PDF");
+      message.error("Failed to download annotated PDF",);
     } finally {
       setIsDownloading(false);
     }
@@ -956,22 +898,11 @@ const PDFAnnotation = ({
         onRedo={handleRedo}
         onSave={handleSave}
         onDownload={handleDownload}
-        onClear={handleSignatureClear}
         currentColor={penColor}
         onColorChange={setPenColor}
         isSaving={isSaving}
         isDownloading={isDownloading}
       />
-      {showSignaturePad && (
-        <div className="signature-pad-modal">
-          <div className="signature-pad-content">
-            <SignaturePad
-              onSave={handleSignatureSave}
-              onClear={handleSignatureClear}
-            />
-          </div>
-        </div>
-      )}
       {/* StampTool modal for uploading and inserting a stamp */}
       <StampTool
         visible={stampToolVisible}

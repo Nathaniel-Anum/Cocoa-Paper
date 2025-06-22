@@ -1,6 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import { Popover } from 'antd';
+import PropTypes from 'prop-types';
 import { BgColorsOutlined } from '@ant-design/icons';
 
 const ColorPicker = ({ currentColor, onColorChange }) => {

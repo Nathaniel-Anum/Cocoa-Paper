@@ -1,36 +1,34 @@
-import React, { useEffect, useState, useCallback } from 'react';
 import {
-  Button,
-  Form,
-  Select,
-  Input,
-  Card,
-  Layout,
-  Typography,
-  Avatar,
-  Table,
-  Tooltip,
-  Modal,
-  InputNumber,
   Spin,
+  Form,
+  Card,
+  Table,
+  Modal,
+  Button,
+  Select,
+  Avatar,
+  Layout,
+  Upload,
+  Tooltip,
   message,
   Checkbox,
   Mentions,
-  Upload,
+  Typography,
+  InputNumber
 } from 'antd';
-import { LuArchive, LuMessageSquare, LuSend, LuUser } from 'react-icons/lu';
-import { FaHandshake } from 'react-icons/fa';
-import { BiEdit } from 'react-icons/bi';
-import { EditOutlined, UploadOutlined } from '@ant-design/icons';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import { FaHandshake } from 'react-icons/fa';
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { EditOutlined, UploadOutlined } from '@ant-design/icons';
+import { LuArchive, LuMessageSquare, LuSend, LuUser } from 'react-icons/lu';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import pdf from '../assets/pdf.svg';
 import { useViewDocument } from '../queryHooks/document';
 import axiosInstance from '../Components/axiosInstance';
 import { useUser } from './CustomHook/useUser';
-import { capitalize, formatMoney } from '../../utils/typography';
+import { formatMoney } from '../../utils/typography';
 import useStore from '../store/store';
 
 import { approveDocument, uploadFile } from '../http/addDocument';
@@ -42,7 +40,6 @@ import {
 import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
 import { updateBudgetAmount } from '../http/budget';
 import Loader from '../Components/Loader/Loader';
-import { useGetAllUsers } from '../queryHooks/user';
 import { PDFViewerContent } from '../Components/PDFViewer/PdfViewer';
 
 const { Content } = Layout;
@@ -58,16 +55,15 @@ function ViewDocument() {
 
   // State management
   const openFileViewer = useStore((state) => state.openFileViewer);
-  const setOpenFileViewer = useStore((state) => state.setOpenFileViewer);
+
   const [fileUrl, setFileUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [newComment, setNewComment] = useState('');
-  const [selectedDivision, setSelectedDivision] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [showArchiveModal, setShowArchiveModal] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedBudgetItem, setSelectedBudgetItem] = useState(null);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selectedBudgetItem, setSelectedBudgetItem] = useState(null);
 
   // Data fetching
   const { data: document, refetch } = useViewDocument(docId);
@@ -148,8 +144,6 @@ function ViewDocument() {
       message.error(error.response?.data?.error || 'Failed to update amount');
     },
   });
-
-  console.log({ selectedBudgetItem });
 
   useEffect(() => {
     if (selectedBudgetItem) {
@@ -727,9 +721,9 @@ function ViewDocument() {
       {showArchiveModal && (
         <ArchiveFiles
           show={showArchiveModal}
-          record={document.data.document}
-          setShow={setShowArchiveModal}
           sender={authUser?.userId}
+          setShow={setShowArchiveModal}
+          record={document.data.document}
         />
       )}
     </div>
