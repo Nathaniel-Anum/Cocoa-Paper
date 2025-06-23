@@ -291,6 +291,34 @@ const PDFAnnotation = ({
               );
             };
             imgElement.src = data.dataUrl;
+          } else if (annotation.type === "text") {
+            const data = annotation.data || annotation.annotationData;
+            const textbox = new fabric.Textbox(data.text || '', {
+              left: data.left,
+              top: data.top,
+              width: data.width,
+              height: data.height,
+              fontSize: data.fontSize || 18,
+              fill: data.fill || '#000',
+              fontFamily: data.fontFamily || 'Times New Roman',
+              fontWeight: data.fontWeight || 'normal',
+              fontStyle: data.fontStyle || 'normal',
+              underline: data.underline || false,
+              linethrough: data.linethrough || false,
+              textAlign: data.textAlign || 'left',
+              angle: data.angle || 0,
+              scaleX: data.scaleX || 1,
+              scaleY: data.scaleY || 1,
+              selectable: false,
+              hasControls: false,
+              hasBorders: false,
+              lockRotation: true,
+              lockScalingY: false,
+              lockUniScaling: false,
+              minWidth: 50,
+              minHeight: 20,
+            });
+            canvas.add(textbox);
           }
         });
 
@@ -526,6 +554,13 @@ const PDFAnnotation = ({
             data: obj.toJSON(["selectable", "hasControls", "hasBorders"]),
             pageNumber,
           })),
+        ...objects
+          .filter((obj) => obj.type === "textbox")
+          .map((obj) => ({
+            type: "text",
+            data: obj.toJSON(["left", "top", "width", "height", "fontSize", "fill", "text", "fontFamily", "fontWeight", "fontStyle", "underline", "linethrough", "textAlign", "angle", "scaleX", "scaleY", "selectable", "hasControls", "hasBorders"]),
+            pageNumber,
+          })),
         ...localAnnotations,
       ];
 
@@ -667,6 +702,41 @@ const PDFAnnotation = ({
         canvas.remove(lastObject);
         canvas.renderAll();
       }
+    } else if (lastAction.type === "text") {
+      // Remove the last drawn textbox
+      const objects = canvas.getObjects();
+      const lastObject = objects[objects.length - 1];
+      if (lastObject) {
+        setRedoStack((prev) => [
+          ...prev,
+          {
+            type: "text",
+            object: lastObject.toJSON([
+              "left",
+              "top",
+              "width",
+              "height",
+              "fontSize",
+              "fill",
+              "text",
+              "fontFamily",
+              "fontWeight",
+              "fontStyle",
+              "underline",
+              "linethrough",
+              "textAlign",
+              "angle",
+              "scaleX",
+              "scaleY",
+              "selectable",
+              "hasControls",
+              "hasBorders",
+            ]),
+          },
+        ]);
+        canvas.remove(lastObject);
+        canvas.renderAll();
+      }
     }
   };
 
@@ -734,6 +804,37 @@ const PDFAnnotation = ({
           },
         ]);
       }
+    } else if (lastAction.type === "text") {
+      // Restore the last drawn textbox
+      const textbox = new fabric.Textbox(lastAction.object.text || '', {
+        left: lastAction.object.left,
+        top: lastAction.object.top,
+        width: lastAction.object.width,
+        height: lastAction.object.height,
+        fontSize: lastAction.object.fontSize || 18,
+        fill: lastAction.object.fill || '#000',
+        fontFamily: lastAction.object.fontFamily || 'Times New Roman',
+        fontWeight: lastAction.object.fontWeight || 'normal',
+        fontStyle: lastAction.object.fontStyle || 'normal',
+        underline: lastAction.object.underline || false,
+        linethrough: lastAction.object.linethrough || false,
+        textAlign: lastAction.object.textAlign || 'left',
+        angle: lastAction.object.angle || 0,
+        scaleX: lastAction.object.scaleX || 1,
+        scaleY: lastAction.object.scaleY || 1,
+        selectable: false,
+        hasControls: false,
+        hasBorders: false,
+        lockRotation: true,
+        lockScalingY: false,
+        lockUniScaling: false,
+        minWidth: 50,
+        minHeight: 20,
+      });
+      canvas.add(textbox);
+      canvas.setActiveObject(textbox);
+      textbox.enterEditing && textbox.enterEditing();
+      canvas.renderAll();
     }
   };
 
@@ -882,15 +983,38 @@ const PDFAnnotation = ({
         const pointer = canvas.getPointer(opt.e);
         setStampPosition({ x: pointer.x, y: pointer.y, pageNumber });
         setStampToolVisible(true);
+      } else if (selectedTool === "text") {
+        const pointer = canvas.getPointer(opt.e);
+        // Create a new Fabric.Textbox
+        const textbox = new fabric.Textbox('Enter text', {
+          left: pointer.x,
+          top: pointer.y,
+          fontSize: 18,
+          fill: penColor,
+          width: 150,
+          editable: true,
+          hasControls: true,
+          hasBorders: true,
+          selectable: true,
+          lockRotation: true,
+          lockScalingY: false,
+          lockUniScaling: false,
+          minWidth: 50,
+          minHeight: 20,
+        });
+        canvas.add(textbox);
+        canvas.setActiveObject(textbox);
+        textbox.enterEditing && textbox.enterEditing();
+        canvas.renderAll();
       }
     };
-    if (selectedTool === "stamp") {
+    if (selectedTool === "stamp" || selectedTool === "text") {
       canvas.on("mouse:down", handleCanvasClick);
     }
     return () => {
       canvas.off("mouse:down", handleCanvasClick);
     };
-  }, [canvas, selectedTool, pageNumber]);
+  }, [canvas, selectedTool, pageNumber, penColor]);
 
   // Handle annotation from StampTool
   const handleStampAnnotation = (annotation) => {
