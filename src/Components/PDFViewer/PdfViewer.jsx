@@ -123,7 +123,7 @@ const PDFViewer = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
       open={openFileViewer}
       onCancel={() => setOpenFileViewer()}
       footer={null}
-      width={1000}
+      width={700}
       className="!top-9"
     >
       <PDFViewerContent

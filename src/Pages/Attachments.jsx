@@ -1,14 +1,15 @@
-import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { useViewDocument } from '../queryHooks/document';
-import pdf from '../assets/pdf.svg';
+import React, { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { useViewDocument } from "../queryHooks/document";
+import pdf from "../assets/pdf.svg";
 
-import useStore from '../store/store';
-import { EyeOutlined } from '@ant-design/icons';
-import { Table } from 'antd';
-import { create } from 'lodash';
-import dayjs from 'dayjs';
-import PDFViewer from "../Components/PDFViewer/PdfViewer"
+import useStore from "../store/store";
+import { EyeOutlined } from "@ant-design/icons";
+import { Table } from "antd";
+import { create } from "lodash";
+import dayjs from "dayjs";
+import PDFViewer, { PDFViewerContent } from "../Components/PDFViewer/PdfViewer";
+import axiosInstance from "../Components/axiosInstance";
 
 const Attachments = () => {
   const { id: docId } = useParams();
@@ -18,6 +19,7 @@ const Attachments = () => {
   const openFileViewer = useStore((state) => state.openFileViewer);
   const setOpenFileViewer = useStore((state) => state.setOpenFileViewer);
 
+  const [fileUrl, setFileUrl] = React.useState("");
   const [selectedFile, setSelectedFile] = React.useState(null);
 
   useEffect(() => {
@@ -28,41 +30,41 @@ const Attachments = () => {
 
   const columns = [
     {
-      title: 'File Name',
-      dataIndex: 'fileName',
-      key: 'fileName',
+      title: "File Name",
+      dataIndex: "fileName",
+      key: "fileName",
     },
     {
-      title: 'Uploaded By',
-      dataIndex: ['user', 'name'],
-      key: 'user',
-    },
-
-    {
-      title: 'Department',
-      dataIndex: ['user', 'department', 'departmentName'],
-      key: 'department',
-    },
-    {
-      title: 'Division',
-      dataIndex: ['user', 'division', 'divisionName'],
-      key: 'division',
-    },
-    {
-      title: 'Timestamp',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (value) => dayjs(value).format('YYYY-MM-DD HH:mm').toString(),
+      title: "Uploaded By",
+      dataIndex: ["user", "name"],
+      key: "user",
     },
 
     {
-      title: 'Action',
-      dataIndex: 'id',
-      key: 'id',
+      title: "Department",
+      dataIndex: ["user", "department", "departmentName"],
+      key: "department",
+    },
+    {
+      title: "Division",
+      dataIndex: ["user", "division", "divisionName"],
+      key: "division",
+    },
+    {
+      title: "Timestamp",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (value) => dayjs(value).format("YYYY-MM-DD HH:mm").toString(),
+    },
+
+    {
+      title: "Action",
+      dataIndex: "id",
+      key: "id",
       render: (value, record) => {
         return (
           <EyeOutlined
-            onClick={() => setSelectedFile(record)}
+            onClick={() => handleAttachmentSelect(record)}
             color="blue"
             className="cursor-pointer"
           />
@@ -71,10 +73,22 @@ const Attachments = () => {
     },
   ];
 
+  async function handleAttachmentSelect(record){
+    setSelectedFile(record)
+
+    const response = await axiosInstance.get(
+      `/archive/file/${record.fileId}`,
+      { responseType: 'blob' }
+    );
+    const fileUrl = URL.createObjectURL(response.data);
+    setFileUrl(fileUrl);
+  }
+
   return (
     <div className="mt-8 w-[95%] mx-auto">
       {openFileViewer && (
         <PDFViewer
+          pdfUrl={fileUrl}
           fileId={selectedFile?.fileId}
           fileName={selectedFile.fileName}
           documentId={selectedFile?.fileId}

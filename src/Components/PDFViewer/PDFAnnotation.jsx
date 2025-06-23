@@ -5,6 +5,8 @@ import { saveAs } from "file-saver";
 import { Document, Page } from "react-pdf";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import JSZip from "jszip";
+import { jsPDF } from "jspdf";
 
 import "../../utils/pdfjs-worker";
 import StampTool from "./StampTool";
@@ -27,9 +29,9 @@ const PDFAnnotation = ({
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const eraserHandlersRef = useRef(null);
-  
+
   const queryClient = useQueryClient();
-  
+
   const [canvas, setCanvas] = useState(null);
   const [redoStack, setRedoStack] = useState([]);
   const [undoStack, setUndoStack] = useState([]);
@@ -55,7 +57,11 @@ const PDFAnnotation = ({
     enabled: !!documentId && !!pageNumber,
   });
 
-  console.log(annotations?.length > 0 ? "Annotations fetched successfully" : "No annotations found");
+  console.log(
+    annotations?.length > 0
+      ? "Annotations fetched successfully"
+      : "No annotations found"
+  );
 
   // Initialize canvas when page is loaded
   useEffect(() => {
@@ -225,11 +231,17 @@ const PDFAnnotation = ({
           } else if (annotation.type === "stamp") {
             const data = annotation.annotationData;
             if (!data || !data.dataUrl) {
-              console.error("Stamp annotation missing data or dataUrl", annotation);
+              console.error(
+                "Stamp annotation missing data or dataUrl",
+                annotation
+              );
               return;
             }
             if (!data.dataUrl.startsWith("data:image/")) {
-              console.error("Stamp annotation has invalid dataUrl format:", data.dataUrl.substring(0, 100));
+              console.error(
+                "Stamp annotation has invalid dataUrl format:",
+                data.dataUrl.substring(0, 100)
+              );
               return;
             }
             if (
@@ -238,7 +250,10 @@ const PDFAnnotation = ({
               typeof data.width !== "number" ||
               typeof data.height !== "number"
             ) {
-              console.error("Stamp annotation has invalid position/dimensions:", data);
+              console.error(
+                "Stamp annotation has invalid position/dimensions:",
+                data
+              );
               return;
             }
             // Use native Image and fabric.Image constructor
@@ -264,10 +279,16 @@ const PDFAnnotation = ({
               });
               canvas.add(imgInstance);
               canvas.renderAll();
-              console.log('Stamp annotation: Successfully added to canvas using native Image');
+              console.log(
+                "Stamp annotation: Successfully added to canvas using native Image"
+              );
             };
             imgElement.onerror = function (e) {
-              console.error('Failed to load image element for stamp annotation', e, data.dataUrl.substring(0, 100));
+              console.error(
+                "Failed to load image element for stamp annotation",
+                e,
+                data.dataUrl.substring(0, 100)
+              );
             };
             imgElement.src = data.dataUrl;
           }
@@ -462,7 +483,6 @@ const PDFAnnotation = ({
     }
   }, [canvas]);
 
-
   // Update saveAnnotationMutation to handle erased annotations
   const saveAnnotationMutation = useMutation({
     mutationFn: async (formData) => {
@@ -510,9 +530,9 @@ const PDFAnnotation = ({
       ];
 
       const canvasDataUrl = canvas.toDataURL({
-        format: 'png',
+        format: "png",
         quality: 1,
-      })
+      });
 
       // Create form data
       const formData = new FormData();
@@ -773,15 +793,13 @@ const PDFAnnotation = ({
     }
     setIsDownloading(true);
     try {
+      // 1. Download the annotated PDF as before
       const canvasDataUrl = canvas.toDataURL({
-        format: 'png',
+        format: "png",
         quality: 1,
-      })
-
+      });
       const formData = new FormData();
       formData.append("pageImage", canvasDataUrl);
-
-      // Call the backend endpoint
       const response = await axiosInstance.post(
         `/annotations/document/${documentId}/apply`,
         formData,
@@ -792,15 +810,65 @@ const PDFAnnotation = ({
           },
         }
       );
-      // Trigger download
-      const downloadBlob = new Blob([response.data], {
+      const annotatedPdfBlob = new Blob([response.data], {
         type: "application/pdf",
       });
-      saveAs(downloadBlob, `annotated-${documentId}.pdf`);
-      message.success("Annotated PDF downloaded successfully");
+
+      // 2. Fetch comments for the document
+      let comments = [];
+      const commentsRes = await axiosInstance.get(`/document/${documentId}`);
+      const docData = commentsRes?.data?.document;
+
+      console.log({ docData, commentsRes });
+      if (docData && Array.isArray(docData.comments)) {
+        comments = docData.comments;
+      }
+
+      // 3. Generate a PDF from comments using jsPDF
+      const doc = new jsPDF();
+      doc.setFontSize(14);
+      doc.text("Document Comments", 10, 15);
+      let y = 25;
+      if (comments.length === 0) {
+        doc.setFontSize(12);
+        doc.text("No comments available.", 10, y);
+      } else {
+        comments.forEach((comment, idx) => {
+          if (!comment.isPrivate) {
+            const user = comment.user?.name || "Unknown User";
+            const date = comment.createdAt
+              ? new Date(comment.createdAt).toLocaleString()
+              : "";
+            const body = comment.body || "";
+            doc.setFontSize(12);
+            doc.text(`${idx + 1}. ${user} (${date})`, 10, y);
+            y += 7;
+            doc.setFontSize(11);
+            const lines = doc.splitTextToSize(body, 180);
+            doc.text(lines, 15, y);
+            y += lines.length * 6 + 4;
+            if (y > 270) {
+              doc.addPage();
+              y = 20;
+            }
+          }
+        });
+      }
+      const commentsPdfBlob = doc.output("blob");
+
+      // 4. Zip the annotated PDF and comments PDF using JSZip
+      const zip = new JSZip();
+      zip.file(`annotated-${documentId}.pdf`, annotatedPdfBlob);
+      zip.file(`comments-${documentId}.pdf`, commentsPdfBlob);
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+
+      // 5. Trigger download of the zip
+      saveAs(zipBlob, `${docData.file?.fileName}-with-comments.zip`);
+      message.success(
+        "Annotated PDF and comments downloaded as zip successfully"
+      );
     } catch (error) {
-      console.error("Error downloading annotated PDF:", error);
-      message.error("Failed to download annotated PDF",);
+      message.error("Failed to download annotated PDF and comments as zip");
     } finally {
       setIsDownloading(false);
     }
@@ -827,36 +895,65 @@ const PDFAnnotation = ({
   // Handle annotation from StampTool
   const handleStampAnnotation = (annotation) => {
     if (annotation && annotation.type === "stamp") {
-      // Store the annotation in localAnnotations
       setLocalAnnotations((prev) => [...prev, annotation]);
-      // Draw a placeholder rectangle with 'Stamp' label for visual feedback
       if (canvas) {
-        const rect = new fabric.Rect({
-          left: annotation.data.x,
-          top: annotation.data.y,
-          width: annotation.data.width,
-          height: annotation.data.height,
-          fill: "rgba(200, 200, 200, 0.3)",
-          stroke: "#582F08",
-          strokeWidth: 2,
-          selectable: false,
-          hasControls: false,
-          hasBorders: false,
-        });
-        const text = new fabric.Text("Stamp", {
-          left: annotation.data.x + annotation.data.width / 2,
-          top: annotation.data.y + annotation.data.height / 2,
-          fontSize: 14,
-          fill: "#582F08",
-          originX: "center",
-          originY: "center",
-          selectable: false,
-          hasControls: false,
-          hasBorders: false,
-        });
-        canvas.add(rect);
-        canvas.add(text);
-        canvas.renderAll();
+        const data = annotation.data;
+        if (!data || !data.dataUrl) {
+          console.error("Stamp annotation missing data or dataUrl", annotation);
+          return;
+        }
+        if (!data.dataUrl.startsWith("data:image/")) {
+          console.error(
+            "Stamp annotation has invalid dataUrl format:",
+            data.dataUrl.substring(0, 100)
+          );
+          return;
+        }
+        if (
+          typeof data.x !== "number" ||
+          typeof data.y !== "number" ||
+          typeof data.width !== "number" ||
+          typeof data.height !== "number"
+        ) {
+          console.error(
+            "Stamp annotation has invalid position/dimensions:",
+            data
+          );
+          return;
+        }
+        // Use native Image and fabric.Image constructor
+        const imgElement = new window.Image();
+        imgElement.onload = function () {
+          const scaleX = data.width / imgElement.naturalWidth;
+          const scaleY = data.height / imgElement.naturalHeight;
+          const imgInstance = new fabric.Image(imgElement, {
+            left: data.x,
+            top: data.y,
+            scaleX,
+            scaleY,
+            selectable: false,
+            hasControls: false,
+            hasBorders: false,
+            lockMovementX: true,
+            lockMovementY: true,
+            lockRotation: true,
+            lockScalingX: true,
+            lockScalingY: true,
+            lockUniScaling: true,
+          });
+          canvas.add(imgInstance);
+          canvas.renderAll();
+          console.log(
+            "Stamp annotation: Successfully added to canvas using native Image"
+          );
+        };
+        imgElement.onerror = function (e) {
+          message.error(
+            "Failed to load image element for stamp annotation" + e,
+            data.dataUrl.substring(0, 100)
+          );
+        };
+        imgElement.src = data.dataUrl;
       }
     }
   };
