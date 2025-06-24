@@ -5,6 +5,7 @@ import {
   FaStamp,
   FaEraser,
   FaHighlighter,
+  FaRegEdit,
 } from 'react-icons/fa';
 import { Tooltip } from 'antd';
 import PropTypes from 'prop-types';
@@ -31,6 +32,7 @@ const AnnotationToolbar = ({
     { id: 'highlighter', label: 'Highlighter', icon: <FaHighlighter /> },
     { id: 'eraser', label: 'Eraser', icon: <FaEraser /> },
     { id: 'stamp', label: 'Stamp', icon: <FaStamp /> },
+    { id: 'text', label: 'Text', icon: <>T</> },
   ];
 
   return (
