@@ -7,7 +7,9 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
 
-  const [selectedDivision, setSelectedDivision] = useState('');
+  const [selectedDivision, setSelectedDivision] = useState(
+    staffDetail?.division?.divisionId
+  );
   const [isDepartment, setIsDepartment] = useState(false);
   const [isMainSecretariat, setIsMainSecretariat] = useState(false);
 
@@ -46,7 +48,10 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
         staffNumber: staffDetail.staff?.staffNumber,
         email: staffDetail.email,
         divisionId: staffDetail?.division?.divisionId,
-        departmentId: staffDetail?.department?.departmentId,
+        departmentId: {
+          label: staffDetail?.department?.departmentName,
+          value: staffDetail?.department?.departmentId,
+        },
         roleId: staffDetail?.role?.map((role) => role.roleId),
       });
       setIsDepartment(staffDetail?.staff?.isDepartment);

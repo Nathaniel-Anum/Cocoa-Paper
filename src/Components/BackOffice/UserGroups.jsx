@@ -206,7 +206,8 @@ const UserGroups = () => {
       >
         <Title level={2}>User Groups</Title>
         <Button
-          type="primary"
+          type="primary "
+          className="bg-[#582f08]"
           icon={<PlusOutlined />}
           onClick={() => showModal()}
         >
@@ -225,6 +226,7 @@ const UserGroups = () => {
       <Modal
         title={editingGroup ? 'Edit User Group' : 'Add New User Group'}
         open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
         cancelText="Cancel"
         confirmLoading={
           createGroupMutation.isPending || updateGroupMutation.isPending

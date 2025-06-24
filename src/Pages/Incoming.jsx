@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Table,
   Modal,
@@ -75,6 +75,7 @@ const Incoming = () => {
   const [selected, setSelected] = useState('');
 
   const setChosenRecord = useStore((state) => state.setChosenRecord);
+  const setLocation = useStore((state) => state.setLocation);
 
   const { user: authUser } = useUser();
 
@@ -301,7 +302,14 @@ const Incoming = () => {
     return [
       {
         label: (
-          <span onClick={() => handleViewDocument(selectedRecord)}>View</span>
+          <span
+            onClick={() => {
+              setLocation('incoming');
+              handleViewDocument(selectedRecord);
+            }}
+          >
+            View
+          </span>
         ),
         key: 0,
       },
@@ -345,6 +353,11 @@ const Incoming = () => {
       title: 'Sender',
       dataIndex: ['sender', 'name'],
       key: 'receiver',
+    },
+    {
+      title: 'Intended Receipients',
+      dataIndex: ['userIntendedFor', 'name'],
+      key: 'userIntendedFor',
     },
 
     {
@@ -419,6 +432,24 @@ const Incoming = () => {
       }
     },
   };
+
+  const prevDocIds = useRef([]);
+
+  useEffect(() => {
+    if (trails && Array.isArray(trails)) {
+      const currentIds = trails.map((t) => t.docID);
+      // Find new docs
+      const newDocs = trails.filter((t) => !prevDocIds.current.includes(t.docID));
+      if (newDocs.length > 0 && Notification.permission === "granted") {
+        newDocs.forEach((doc) => {
+          new Notification("New Document Received", {
+            body: `From: ${doc.sender?.name || "Unknown"}\nSubject: ${doc.subject || "No subject"}`,
+          });
+        });
+      }
+      prevDocIds.current = currentIds;
+    }
+  }, [trails]);
 
   return (
     <div className="mt-8">

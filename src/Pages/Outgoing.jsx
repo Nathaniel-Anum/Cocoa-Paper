@@ -25,12 +25,15 @@ import { useUser } from './CustomHook/useUser';
 import { IoIosLocate } from 'react-icons/io';
 import { IoLocationOutline } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
+import useStore from '../store/store';
 
 const Outgoing = () => {
   const { trails, isLoading } = useTrail('outgoing');
   const [trailId, setTrailId] = useState('');
   const [open, SetOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  const setLocation = useStore((state) => state.setLocation);
 
   const { user } = useUser();
   const allRolePermissions = getAllRolePermissions(user);
@@ -145,9 +148,10 @@ const Outgoing = () => {
             }
           >
             <button
-              onClick={() =>
-                navigate(`/view-document/${selectedRecord?.docID}`)
-              }
+              onClick={() => {
+                setLocation('outgoing');
+                navigate(`/view-document/${selectedRecord?.docID}`);
+              }}
             >
               <FaRegEye className="text-[20px] " />
             </button>

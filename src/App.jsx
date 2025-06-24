@@ -41,6 +41,7 @@ import AuditTrail from './Components/BackOffice/AuditTrail';
 import Attachments from './Pages/Attachments';
 import Configuration from './Components/BackOffice/Configuration';
 import UserGroups from './Components/BackOffice/UserGroups';
+import Stamp from './Components/BackOffice/Stamp';
 
 function App() {
   // API call for the users.
@@ -61,6 +62,12 @@ function App() {
         .finally(() => setIsLoading(false));
     };
     fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (window.Notification && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
   }, []);
 
   const allRolePermissions = getAllRolePermissions(user);
@@ -379,6 +386,21 @@ function App() {
                   ])}
                 >
                   <UserGroups />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/backoffice/stamps"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(allRolePermissions, [
+                    requiredPermissions.CREATE_STAFF,
+                    requiredPermissions.READ_STAFF,
+                    requiredPermissions.DELETE_STAFF,
+                    requiredPermissions.UPDATE_STAFF,
+                  ])}
+                >
+                  <Stamp />
                 </ProtectedRoutes>
               }
             />

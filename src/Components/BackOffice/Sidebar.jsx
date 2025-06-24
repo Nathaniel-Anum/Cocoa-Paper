@@ -1,11 +1,12 @@
 import '../../Pages/Home.css';
 import { Link } from 'react-router-dom';
 import { FaUser } from 'react-icons/fa';
-import { LuCalendar } from 'react-icons/lu';
+import { LuCalendar, LuStamp } from 'react-icons/lu';
 import { CalendarFilled } from '@ant-design/icons';
 import { GiTrail, GiWheelbarrow } from 'react-icons/gi';
 import { HiOutlineWrenchScrewdriver } from 'react-icons/hi2';
 import { FaUserGroup } from 'react-icons/fa6';
+import { AiFillSignature } from 'react-icons/ai';
 
 const BackOfficeSideBar = () => {
   return (
@@ -74,6 +75,12 @@ const BackOfficeSideBar = () => {
                   alt=""
                 />
                 <p className="text-[15px]">Role Management </p>
+              </li>
+            </Link>
+            <Link to="/backoffice/stamps">
+              <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">
+                <LuStamp className="text-[#E3BC97] text-lg" />
+                <p className="text-[15px]">Stamps </p>
               </li>
             </Link>
             <Link to="/backoffice/auditTrail">
