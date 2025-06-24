@@ -33,6 +33,7 @@ import {
   requiredPermissions,
   getAllRolePermissions,
 } from '../../utils/Roles';
+import { socket } from '../utils/socket';
 
 const Incoming = () => {
   const { trails, isLoading } = useTrail('incoming');
@@ -433,23 +434,44 @@ const Incoming = () => {
     },
   };
 
-  const prevDocIds = useRef([]);
+  // const prevDocIds = useRef([]);
+
+  // useEffect(() => {
+  //   if (trails && Array.isArray(trails)) {
+  //     const currentIds = trails.map((t) => t.docID);
+  //     // Find new docs
+  //     const newDocs = trails.filter(
+  //       (t) => !prevDocIds.current.includes(t.docID)
+  //     );
+  //     if (newDocs.length > 0 && Notification.permission === 'granted') {
+  //       newDocs.forEach((doc) => {
+  //         new Notification('New Document Received', {
+  //           body: `From: ${doc.sender?.name || 'Unknown'}\nSubject: ${
+  //             doc.subject || 'No subject'
+  //           }`,
+  //         });
+  //       });
+  //     }
+  //     prevDocIds.current = currentIds;
+  //   }
+  // }, [trails]);
 
   useEffect(() => {
-    if (trails && Array.isArray(trails)) {
-      const currentIds = trails.map((t) => t.docID);
-      // Find new docs
-      const newDocs = trails.filter((t) => !prevDocIds.current.includes(t.docID));
-      if (newDocs.length > 0 && Notification.permission === "granted") {
-        newDocs.forEach((doc) => {
-          new Notification("New Document Received", {
-            body: `From: ${doc.sender?.name || "Unknown"}\nSubject: ${doc.subject || "No subject"}`,
-          });
+    function handleDocumentSent(data) {
+      console.log('New Doc');
+      if (window.Notification && Notification.permission === 'granted') {
+        new Notification('New Document Received', {
+          body: `From: ${data.sender?.name || 'Unknown'}\nSubject: ${
+            data.subject || 'No subject'
+          }`,
         });
       }
-      prevDocIds.current = currentIds;
     }
-  }, [trails]);
+    socket.on('document-sent', handleDocumentSent);
+    return () => {
+      socket.off('document-sent', handleDocumentSent);
+    };
+  }, []);
 
   return (
     <div className="mt-8">

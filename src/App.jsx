@@ -65,7 +65,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (window.Notification && Notification.permission !== "granted") {
+    if (window.Notification && Notification.permission !== 'granted') {
       Notification.requestPermission();
     }
   }, []);

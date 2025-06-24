@@ -6,17 +6,19 @@ const ColorPicker = ({ currentColor, onColorChange }) => {
   const colors = [
     { name: 'Red', value: '#FF0000' },
     { name: 'Blue', value: '#0000FF' },
-    { name: 'Black', value: '#000000' }
+    { name: 'Black', value: '#000000' },
   ];
 
   const content = (
     <div className="color-picker-content" style={{ padding: '8px' }}>
-      <div style={{ 
-        display: 'flex', 
-        gap: '8px',
-        flexWrap: 'wrap',
-        width: '120px'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'wrap',
+          width: '120px',
+        }}
+      >
         {colors.map((color) => (
           <button
             key={color.value}
@@ -25,19 +27,24 @@ const ColorPicker = ({ currentColor, onColorChange }) => {
               width: '32px',
               height: '32px',
               borderRadius: '4px',
-              border: currentColor === color.value ? '2px solid #666' : '1px solid #ddd',
+              border:
+                currentColor === color.value
+                  ? '2px solid #666'
+                  : '1px solid #ddd',
               backgroundColor: color.value,
               cursor: 'pointer',
               padding: 0,
               margin: 0,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
             }}
             title={color.name}
           >
             {currentColor === color.value && (
-              <span style={{ color: '#fff', textShadow: '0 0 2px #000' }}>✓</span>
+              <span style={{ color: '#fff', textShadow: '0 0 2px #000' }}>
+                ✓
+              </span>
             )}
           </button>
         ))}
@@ -46,9 +53,9 @@ const ColorPicker = ({ currentColor, onColorChange }) => {
   );
 
   return (
-    <Popover 
-      content={content} 
-      trigger="click" 
+    <Popover
+      content={content}
+      trigger="click"
       placement="right"
       title="Select Color"
     >
@@ -63,7 +70,7 @@ const ColorPicker = ({ currentColor, onColorChange }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          position: 'relative'
+          position: 'relative',
         }}
       >
         <BgColorsOutlined style={{ color: currentColor }} />
@@ -74,7 +81,7 @@ const ColorPicker = ({ currentColor, onColorChange }) => {
             width: '16px',
             height: '4px',
             backgroundColor: currentColor,
-            borderRadius: '2px'
+            borderRadius: '2px',
           }}
         />
       </button>
@@ -84,7 +91,7 @@ const ColorPicker = ({ currentColor, onColorChange }) => {
 
 ColorPicker.propTypes = {
   currentColor: PropTypes.string.isRequired,
-  onColorChange: PropTypes.func.isRequired
+  onColorChange: PropTypes.func.isRequired,
 };
 
 export default ColorPicker;

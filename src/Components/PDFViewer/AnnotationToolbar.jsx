@@ -76,21 +76,23 @@ const AnnotationToolbar = ({
         </button>
       </Tooltip>
       <Tooltip
-         title="Download"
-         mouseEnterDelay={0}
-         mouseLeaveDelay={0}
-         placement="top"
+        title="Download"
+        mouseEnterDelay={0}
+        mouseLeaveDelay={0}
+        placement="top"
       >
-      <button
-        className="tool-button"
-        onClick={onDownload}
-        type="button"
-        disabled={isDownloading}
-      >
-        {isDownloading ? (
-          <LoadingOutlined spin style={{ fontSize: 18 }} />
-        ) : <DownloadOutlined style={{ fontSize: 18 }}/>}
-      </button>
+        <button
+          className="tool-button"
+          onClick={onDownload}
+          type="button"
+          disabled={isDownloading}
+        >
+          {isDownloading ? (
+            <LoadingOutlined spin style={{ fontSize: 18 }} />
+          ) : (
+            <DownloadOutlined style={{ fontSize: 18 }} />
+          )}
+        </button>
       </Tooltip>
       {selectedTool === 'pen' && (
         <ColorPicker
@@ -109,7 +111,6 @@ const AnnotationToolbar = ({
         ) : null}
         {isSaving ? 'Saving...' : 'Save'}
       </button>
-      
     </div>
   );
 };
