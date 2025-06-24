@@ -3,11 +3,12 @@ import {
   EditOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Form,
   Input,
+  message,
   Modal,
   Popconfirm,
   Select,
@@ -19,6 +20,7 @@ import React, { useEffect, useState } from 'react';
 import axiosInstance from '../axiosInstance';
 import { uploadFile } from '../../http/addDocument';
 import { addStamp } from '../../http/stamp';
+import { useGetStamps } from '../../queryHooks/stamp';
 
 const Stamp = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -30,15 +32,20 @@ const Stamp = () => {
   const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
 
+  const { data: stamps } = useGetStamps();
+
   const columns = [
     {
       title: 'Signature',
-      dataIndex: 'signature',
-      key: 'signature',
+      dataIndex: 'stamp',
+      key: 'stamp',
+      render: (value) => {
+        return <img src={value?.path} alt="" />;
+      },
     },
     {
       title: 'User',
-      dataIndex: 'user',
+      dataIndex: ['user', 'name'],
       key: 'user',
     },
     {
@@ -72,16 +79,35 @@ const Stamp = () => {
     },
   });
 
+  const qClient = useQueryClient();
+
   const { mutate } = useMutation({
     mutationKey: 'addStamp',
     mutationFn: (values) => {
       return uploadFile(values);
     },
-    onSuccess: (fileId) => {
+    onSuccess: (res) => {
+      // console.log(res);
       const values = form.getFieldsValue();
-      addStamp({ fileId, ...values });
+      addStamp({
+        stampId: res.data.newFile.fileId,
+        name: values.name,
+        userId: values.userId,
+      })
+        .then(() => {
+          qClient.invalidateQueries({ queryKey: ['stamps'] });
+          setOpenModal(false);
+          form.resetFields();
+          message.success('Stamp added successfully!');
+        })
+        .catch((err) => {
+          message.error(err?.response?.data?.error);
+        });
     },
-    onError: () => {},
+    onError: (error) => {
+      console.log(error);
+      message.error(error?.response?.data?.error);
+    },
   });
 
   const updateStampMutation = useMutation({
@@ -104,7 +130,11 @@ const Stamp = () => {
     if (editMode && editingStamp) {
       updateStampMutation.mutate(values);
     } else {
-      mutate(values);
+      const formData = new FormData();
+      formData.append('file', values.file.file);
+      formData.append('ref', '');
+      formData.append('subject', '');
+      mutate(formData);
     }
   };
 
@@ -165,7 +195,7 @@ const Stamp = () => {
     onChange(info) {
       console.log('Main file selected:', info.file.name);
     },
-    accept: '.pdf',
+    accept: '.jpg, .jpeg, .png',
   };
 
   return (
@@ -182,7 +212,7 @@ const Stamp = () => {
         title={editMode ? 'EDIT STAMP' : 'ADD STAMP'}
       >
         <Form layout="vertical" onFinish={handleSubmit} form={form}>
-          <Form.Item label="Stamp" name="signature" required>
+          <Form.Item label="Stamp" name="name" required>
             <Input placeholder="Enter Stamp name" />
           </Form.Item>
           <Form.Item
@@ -261,7 +291,7 @@ const Stamp = () => {
               // onChange={handleUserChange}
             />
           </Form.Item>
-          <Form.Item name="signature" label="Stamp File">
+          <Form.Item name="file" label="Stamp File">
             <Upload
               {...uploadProps}
               listType="text"
@@ -299,7 +329,13 @@ const Stamp = () => {
           Add Stamp
         </Button>
       </div>
-      <Table columns={columns} dataSource={[]} />
+      <Table
+        columns={columns}
+        dataSource={
+          stamps &&
+          stamps?.data.map((stamp) => ({ ...stamp, key: stamp?.stampId }))
+        }
+      />
     </div>
   );
 };

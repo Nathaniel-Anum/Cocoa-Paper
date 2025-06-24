@@ -432,6 +432,7 @@ const Incoming = () => {
         message.error(`${info.file.name} upload failed.`);
       }
     },
+    accept: '.png, .jpg, .jpeg, .pdf',
   };
 
   // const prevDocIds = useRef([]);
