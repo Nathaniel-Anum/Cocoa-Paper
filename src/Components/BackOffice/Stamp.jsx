@@ -40,7 +40,14 @@ const Stamp = () => {
       dataIndex: 'stamp',
       key: 'stamp',
       render: (value) => {
-        return <img src={value?.path} alt="" />;
+        return (
+          <img
+            src={`${import.meta.env.VITE_BASE_URL}/uploads/${value.uniqueName}`}
+            width={'150'}
+            height={'150'}
+            alt=""
+          />
+        );
       },
     },
     {
