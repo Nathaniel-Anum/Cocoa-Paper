@@ -39,7 +39,7 @@ const PDFAnnotation = ({
   const [undoStack, setUndoStack] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const [penColor, setPenColor] = useState('#000000');
-  const [selectedTool, setSelectedTool] = useState('pen');
+  const [selectedTool, setSelectedTool] = useState('');
   const [isPageLoaded, setIsPageLoaded] = useState(false);
   const [stampPosition, setStampPosition] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -597,6 +597,7 @@ const PDFAnnotation = ({
       const canvasDataUrl = canvas.toDataURL({
         format: 'png',
         quality: 1,
+        multiplier: 4,
       });
 
       // Create form data
@@ -928,6 +929,7 @@ const PDFAnnotation = ({
       const canvasDataUrl = canvas.toDataURL({
         format: 'png',
         quality: 1,
+        multiplier: 4,
       });
       const formData = new FormData();
       formData.append('pageImage', canvasDataUrl);
@@ -1009,13 +1011,69 @@ const PDFAnnotation = ({
   useEffect(() => {
     if (!canvas) return;
     const handleCanvasClick = (opt) => {
-      if (selectedTool === 'stamp') {
-        const pointer = canvas.getPointer(opt.e);
+      const pointer = canvas.getPointer(opt.e);
+      if (selectedTool === 'cast') {
+        const text = new fabric.Text('C', {
+          left: pointer.x,
+          top: pointer.y,
+          fontSize: 16,
+          fill: 'red',
+          // fontWeight: 'bold',
+          fontFamily: 'Arial',
+          selectable: false,
+          hasControls: false,
+          hasBorders: false,
+          lockRotation: true,
+          lockScalingY: false,
+          lockUniScaling: false,
+          minWidth: 20,
+          minHeight: 20,
+        });
+        canvas.add(text);
+        canvas.renderAll();
+      } else if (selectedTool === 'trace') {
+        const text = new fabric.Text('7', {
+          left: pointer.x,
+          top: pointer.y,
+          fontSize: 16,
+          fill: 'red',
+          // fontWeight: 'bold',
+          fontFamily: 'Arial',
+          angle: -20,
+          selectable: false,
+          hasControls: false,
+          hasBorders: false,
+          lockRotation: true,
+          lockScalingY: false,
+          lockUniScaling: false,
+          minWidth: 20,
+          minHeight: 20,
+        });
+        canvas.add(text);
+        canvas.renderAll();
+      } else if (selectedTool === 'tick') {
+        const text = new fabric.Text('✓', {
+          left: pointer.x,
+          top: pointer.y,
+          fontSize: 16,
+          fill: 'red',
+          // fontWeight: 'bold',
+          fontFamily: 'Arial',
+          selectable: false,
+          hasControls: false,
+          hasBorders: false,
+          lockRotation: true,
+          lockScalingY: false,
+          lockUniScaling: false,
+          minWidth: 20,
+          minHeight: 20,
+        });
+        canvas.add(text);
+        canvas.renderAll();
+      } else if (selectedTool === 'stamp') {
         setStampPosition({ x: pointer.x, y: pointer.y, pageNumber });
         setStampToolVisible(true);
       } else if (selectedTool === 'text') {
-        const pointer = canvas.getPointer(opt.e);
-        // Create a new Fabric.Textbox
         const textbox = new fabric.Textbox('Enter text', {
           left: pointer.x,
           top: pointer.y,
@@ -1038,13 +1096,11 @@ const PDFAnnotation = ({
         canvas.renderAll();
       }
     };
-    if (selectedTool === 'stamp' || selectedTool === 'text') {
-      canvas.on('mouse:down', handleCanvasClick);
-    }
+    canvas.on('mouse:down', handleCanvasClick);
     return () => {
       canvas.off('mouse:down', handleCanvasClick);
     };
-  }, [canvas, selectedTool, pageNumber, penColor]);
+  }, [canvas, selectedTool, penColor, pageNumber]);
 
   // Handle annotation from StampTool
   const handleStampAnnotation = (annotation) => {

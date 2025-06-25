@@ -51,6 +51,11 @@ const Stamp = () => {
       },
     },
     {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
       title: 'User',
       dataIndex: ['user', 'name'],
       key: 'user',
