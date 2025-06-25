@@ -50,6 +50,7 @@ const Stamp = () => {
         );
       },
     },
+
     {
       title: 'Name',
       dataIndex: 'name',
