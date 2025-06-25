@@ -329,6 +329,27 @@ const PDFAnnotation = ({
               minHeight: 20,
             });
             canvas.add(textbox);
+          } else if (annotation.type === 'audit') {
+            // Render audit annotation (fabric.Text)
+            const data = annotation.data || annotation.annotationData;
+            if (!data || !['C', '7', '✓'].includes(data.text)) return;
+            const text = new fabric.Text(data.text, {
+              left: data.left,
+              top: data.top,
+              fontSize: data.fontSize || 16,
+              fill: data.fill || 'red',
+              fontFamily: data.fontFamily || 'Arial',
+              angle: data.angle || 0,
+              selectable: false,
+              hasControls: false,
+              hasBorders: false,
+              lockRotation: true,
+              lockScalingY: false,
+              lockUniScaling: false,
+              minWidth: 20,
+              minHeight: 20,
+            });
+            canvas.add(text);
           }
         });
 
@@ -450,6 +471,26 @@ const PDFAnnotation = ({
                   pointer.y >= obj.top &&
                   pointer.y <= obj.top + obj.height * obj.scaleY
                 );
+              } else if (
+                obj.type === 'text' &&
+                (obj.constructor.name === 'Text' ||
+                  obj.class === '_Eo' ||
+                  (obj.text &&
+                    ['C', '7', '✓'].includes(obj.text) &&
+                    obj.fill === 'red' &&
+                    obj.fontFamily === 'Arial')) &&
+                ['C', '7', '✓'].includes(obj.text) &&
+                obj.fill === 'red' &&
+                obj.fontFamily === 'Arial'
+              ) {
+                // For audit annotations, check bounding box
+                return (
+                  pointer.x >= obj.left &&
+                  pointer.x <=
+                    obj.left + (obj.width || 20) * (obj.scaleX || 1) &&
+                  pointer.y >= obj.top &&
+                  pointer.y <= obj.top + (obj.height || 20) * (obj.scaleY || 1)
+                );
               }
               return false;
             });
@@ -555,6 +596,16 @@ const PDFAnnotation = ({
       setIsSaving(true);
       // Get canvas objects
       const objects = canvas.getObjects();
+      console.log(
+        'All canvas objects:',
+        objects.map((obj) => ({
+          type: obj.type,
+          class: obj.constructor.name,
+          text: obj.text,
+          fill: obj.fill,
+          fontFamily: obj.fontFamily,
+        }))
+      );
       // Prepare annotations data
       const annotations = [
         ...objects
@@ -591,8 +642,45 @@ const PDFAnnotation = ({
             ]),
             pageNumber,
           })),
+        // Add audit annotations (fabric.Text, not Textbox) as type 'audit'
+        ...objects
+          .filter(
+            (obj) =>
+              obj.type === 'text' &&
+              (obj.constructor.name === 'Text' ||
+                obj.class === '_Eo' ||
+                (obj.text &&
+                  ['C', '7', '✓'].includes(obj.text) &&
+                  obj.fill === 'red' &&
+                  obj.fontFamily === 'Arial')) &&
+              ['C', '7', '✓'].includes(obj.text) &&
+              obj.fill === 'red' &&
+              obj.fontFamily === 'Arial'
+          )
+          .map((obj) => ({
+            type: 'audit',
+            data: obj.toJSON([
+              'left',
+              'top',
+              'fontSize',
+              'fill',
+              'text',
+              'fontFamily',
+              'angle',
+              'selectable',
+              'hasControls',
+              'hasBorders',
+              'lockRotation',
+              'lockScalingY',
+              'lockUniScaling',
+              'minWidth',
+              'minHeight',
+            ]),
+            pageNumber,
+          })),
         ...localAnnotations,
       ];
+      console.log('Annotations to be saved:', annotations);
 
       const canvasDataUrl = canvas.toDataURL({
         format: 'png',
@@ -767,6 +855,37 @@ const PDFAnnotation = ({
         ]);
         canvas.remove(lastObject);
         canvas.renderAll();
+      } else if (lastAction.type === 'audit') {
+        // Remove the last drawn audit annotation
+        const objects = canvas.getObjects();
+        const lastObject = objects[objects.length - 1];
+        if (lastObject) {
+          setRedoStack((prev) => [
+            ...prev,
+            {
+              type: 'audit',
+              object: lastObject.toJSON([
+                'left',
+                'top',
+                'fontSize',
+                'fill',
+                'text',
+                'fontFamily',
+                'angle',
+                'selectable',
+                'hasControls',
+                'hasBorders',
+                'lockRotation',
+                'lockScalingY',
+                'lockUniScaling',
+                'minWidth',
+                'minHeight',
+              ]),
+            },
+          ]);
+          canvas.remove(lastObject);
+          canvas.renderAll();
+        }
       }
     }
   };
@@ -865,6 +984,26 @@ const PDFAnnotation = ({
       canvas.add(textbox);
       canvas.setActiveObject(textbox);
       textbox.enterEditing && textbox.enterEditing();
+      canvas.renderAll();
+    } else if (lastAction.type === 'audit') {
+      // Restore the last drawn audit annotation
+      const text = new fabric.Text(lastAction.object.text || '', {
+        left: lastAction.object.left,
+        top: lastAction.object.top,
+        fontSize: lastAction.object.fontSize || 16,
+        fill: lastAction.object.fill || 'red',
+        fontFamily: lastAction.object.fontFamily || 'Arial',
+        angle: lastAction.object.angle || 0,
+        selectable: false,
+        hasControls: false,
+        hasBorders: false,
+        lockRotation: true,
+        lockScalingY: false,
+        lockUniScaling: false,
+        minWidth: 20,
+        minHeight: 20,
+      });
+      canvas.add(text);
       canvas.renderAll();
     }
   };
@@ -1018,7 +1157,6 @@ const PDFAnnotation = ({
           top: pointer.y,
           fontSize: 16,
           fill: 'red',
-          // fontWeight: 'bold',
           fontFamily: 'Arial',
           selectable: false,
           hasControls: false,
@@ -1030,6 +1168,30 @@ const PDFAnnotation = ({
           minHeight: 20,
         });
         canvas.add(text);
+        setUndoStack((prev) => [
+          ...prev,
+          {
+            type: 'audit',
+            object: text.toJSON([
+              'left',
+              'top',
+              'fontSize',
+              'fill',
+              'text',
+              'fontFamily',
+              'angle',
+              'selectable',
+              'hasControls',
+              'hasBorders',
+              'lockRotation',
+              'lockScalingY',
+              'lockUniScaling',
+              'minWidth',
+              'minHeight',
+            ]),
+          },
+        ]);
+        setRedoStack([]);
         canvas.renderAll();
       } else if (selectedTool === 'trace') {
         const text = new fabric.Text('7', {
@@ -1037,7 +1199,6 @@ const PDFAnnotation = ({
           top: pointer.y,
           fontSize: 16,
           fill: 'red',
-          // fontWeight: 'bold',
           fontFamily: 'Arial',
           angle: -20,
           selectable: false,
@@ -1050,6 +1211,30 @@ const PDFAnnotation = ({
           minHeight: 20,
         });
         canvas.add(text);
+        setUndoStack((prev) => [
+          ...prev,
+          {
+            type: 'audit',
+            object: text.toJSON([
+              'left',
+              'top',
+              'fontSize',
+              'fill',
+              'text',
+              'fontFamily',
+              'angle',
+              'selectable',
+              'hasControls',
+              'hasBorders',
+              'lockRotation',
+              'lockScalingY',
+              'lockUniScaling',
+              'minWidth',
+              'minHeight',
+            ]),
+          },
+        ]);
+        setRedoStack([]);
         canvas.renderAll();
       } else if (selectedTool === 'tick') {
         const text = new fabric.Text('✓', {
@@ -1057,7 +1242,6 @@ const PDFAnnotation = ({
           top: pointer.y,
           fontSize: 16,
           fill: 'red',
-          // fontWeight: 'bold',
           fontFamily: 'Arial',
           selectable: false,
           hasControls: false,
@@ -1069,31 +1253,91 @@ const PDFAnnotation = ({
           minHeight: 20,
         });
         canvas.add(text);
+        setUndoStack((prev) => [
+          ...prev,
+          {
+            type: 'audit',
+            object: text.toJSON([
+              'left',
+              'top',
+              'fontSize',
+              'fill',
+              'text',
+              'fontFamily',
+              'angle',
+              'selectable',
+              'hasControls',
+              'hasBorders',
+              'lockRotation',
+              'lockScalingY',
+              'lockUniScaling',
+              'minWidth',
+              'minHeight',
+            ]),
+          },
+        ]);
+        setRedoStack([]);
         canvas.renderAll();
       } else if (selectedTool === 'stamp') {
         setStampPosition({ x: pointer.x, y: pointer.y, pageNumber });
         setStampToolVisible(true);
       } else if (selectedTool === 'text') {
-        const textbox = new fabric.Textbox('Enter text', {
-          left: pointer.x,
-          top: pointer.y,
-          fontSize: 18,
-          fill: penColor,
-          width: 150,
-          editable: true,
-          hasControls: true,
-          hasBorders: true,
-          selectable: true,
-          lockRotation: true,
-          lockScalingY: false,
-          lockUniScaling: false,
-          minWidth: 50,
-          minHeight: 20,
-        });
-        canvas.add(textbox);
-        canvas.setActiveObject(textbox);
-        textbox.enterEditing && textbox.enterEditing();
-        canvas.renderAll();
+        // Only create a textbox if there is not already one being edited
+        const editingTextbox = canvas
+          .getObjects()
+          .find((obj) => obj.type === 'textbox' && obj.isEditing);
+        if (!editingTextbox) {
+          const textbox = new fabric.Textbox('Enter text', {
+            left: pointer.x,
+            top: pointer.y,
+            fontSize: 18,
+            fill: penColor,
+            width: 150,
+            editable: true,
+            hasControls: true,
+            hasBorders: true,
+            selectable: true,
+            lockRotation: true,
+            lockScalingY: false,
+            lockUniScaling: false,
+            minWidth: 50,
+            minHeight: 20,
+          });
+          canvas.add(textbox);
+          setUndoStack((prev) => [
+            ...prev,
+            {
+              type: 'text',
+              object: textbox.toJSON([
+                'left',
+                'top',
+                'width',
+                'height',
+                'fontSize',
+                'fill',
+                'text',
+                'fontFamily',
+                'fontWeight',
+                'fontStyle',
+                'underline',
+                'linethrough',
+                'textAlign',
+                'angle',
+                'scaleX',
+                'scaleY',
+                'selectable',
+                'hasControls',
+                'hasBorders',
+              ]),
+            },
+          ]);
+          setRedoStack([]);
+          canvas.setActiveObject(textbox);
+          textbox.enterEditing && textbox.enterEditing();
+          canvas.renderAll();
+          // Switch tool to none so a new textbox is not created until reselected
+          setSelectedTool('');
+        }
       }
     };
     canvas.on('mouse:down', handleCanvasClick);
