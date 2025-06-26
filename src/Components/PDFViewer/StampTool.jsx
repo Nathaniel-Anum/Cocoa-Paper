@@ -24,18 +24,16 @@ import { useUser } from "../../Pages/CustomHook/useUser";
 
 const { Title, Text } = Typography;
 
-// Enhanced utility to convert image URL to base64 with better error handling
+
 async function imageUrlToBase64(imageUrl) {
   try {
     const response = await axiosInstance.get(imageUrl, {
       responseType: 'arraybuffer',
-      timeout: 10000, // 10 second timeout
+      timeout: 10000,
     });
     
-    // Detect image type from URL or response headers
     const contentType = response.headers['content-type'] || 'image/png';
     
-    // Convert arraybuffer to base64
     const base64String = btoa(
       new Uint8Array(response.data).reduce(
         (data, byte) => data + String.fromCharCode(byte),
