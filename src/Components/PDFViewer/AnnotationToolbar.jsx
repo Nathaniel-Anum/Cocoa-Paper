@@ -6,7 +6,7 @@ import {
   FaEraser,
   FaHighlighter,
 } from 'react-icons/fa';
-import { Tooltip, Popover } from 'antd';
+import { Tooltip, Popover, Popconfirm } from 'antd';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 
@@ -27,6 +27,7 @@ const AnnotationToolbar = ({
   isDownloading,
 }) => {
   const [presetsVisible, setPresetsVisible] = useState(false);
+
   const auditPresets = [
     {
       id: 'cast',
@@ -183,17 +184,23 @@ const AnnotationToolbar = ({
           onColorChange={onColorChange}
         />
       )}
-      <button
-        className="save-button"
-        onClick={onSave}
-        type="button"
-        disabled={isSaving}
+      <Popconfirm
+        title="Are you sure you want to save annotations?"
+        onConfirm={onSave}
+        okText="Yes"
+        cancelText="No"
       >
-        {isSaving ? (
-          <LoadingOutlined spin style={{ fontSize: 18, margintop: 8 }} />
-        ) : null}
-        {isSaving ? 'Saving...' : 'Save'}
-      </button>
+        <button
+          className="save-button"
+          type="button"
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <LoadingOutlined spin style={{ fontSize: 18, margintop: 8 }} />
+          ) : null}
+          {isSaving ? 'Saving...' : 'Save'}
+        </button>
+      </Popconfirm>
     </div>
   );
 };
