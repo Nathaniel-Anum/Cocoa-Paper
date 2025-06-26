@@ -352,7 +352,7 @@ const PDFAnnotation = ({
           );
         }, 100);
       } catch (error) {
-        console.error('Error loading annotations:', error);
+        message.error('Error loading annotations:', error);
       }
     }
   }, [canvas, annotations, pageNumber]);
@@ -555,7 +555,6 @@ const PDFAnnotation = ({
   const saveAnnotationMutation = useMutation({
     mutationFn: async (formData) => {
       try {
-        // Backend will handle deletion of erased annotations
         if (formData.get('annotations')) {
           const response = await axiosInstance.post('/annotations', formData, {
             headers: {
@@ -571,7 +570,7 @@ const PDFAnnotation = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['annotations', documentId]);
-      setErasedAnnotations([]); // Clear erased annotations after successful save
+      setErasedAnnotations([]);
     },
   });
 
@@ -583,10 +582,8 @@ const PDFAnnotation = ({
     }
     try {
       setIsSaving(true);
-      // Get canvas objects
       const objects = canvas.getObjects();
 
-      // Prepare annotations data
       const annotations = [
         ...objects
           .filter((obj) => obj.type === 'path')
@@ -622,7 +619,6 @@ const PDFAnnotation = ({
             ]),
             pageNumber,
           })),
-        // Add audit annotations (fabric.Text, not Textbox) as type 'audit'
         ...objects
           .filter(
             (obj) =>
@@ -664,11 +660,9 @@ const PDFAnnotation = ({
 
       const canvasDataUrl = canvas.toDataURL({
         format: 'png',
-        quality: 1,
         multiplier: 4,
       });
 
-      // Create form data
       const formData = new FormData();
       formData.append('annotations', JSON.stringify(annotations));
       formData.append('pageNumber', pageNumber);
@@ -677,10 +671,10 @@ const PDFAnnotation = ({
       formData.append('scale', scale);
       formData.append('userId', user.userId);
       formData.append('erasedAnnotationIds', JSON.stringify(erasedAnnotations));
-      // Send to backend for PDF modification
+
       await saveAnnotationMutation.mutateAsync(formData);
       message.success('Annotations saved and embedded in PDF successfully');
-      setLocalAnnotations([]); // Clear local stamp annotations after save
+      setLocalAnnotations([]);
     } catch (error) {
       console.error('Error saving annotations:', error);
       message.error('Failed to save annotations');
@@ -1315,7 +1309,6 @@ const PDFAnnotation = ({
           canvas.setActiveObject(textbox);
           textbox.enterEditing && textbox.enterEditing();
           canvas.renderAll();
-          // Switch tool to none so a new textbox is not created until reselected
           setSelectedTool('');
         }
       }
