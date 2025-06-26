@@ -34,7 +34,7 @@ export function useQueuedPdfDownload() {
       const canvasDataUrl = canvas.toDataURL({
         format: 'png',
         quality: 1,
-        multiplier: 4,
+        // multiplier: 4,
       });
       const formData = new FormData();
       formData.append('pageImage', canvasDataUrl);
@@ -823,7 +823,7 @@ const PDFAnnotation = ({
       const canvasDataUrl = canvas.toDataURL({
         format: 'png',
         quality: 1,
-        multiplier: 4,
+        // multiplier: 4,
       });
 
       // Create form data
@@ -1209,7 +1209,7 @@ const PDFAnnotation = ({
       const canvasDataUrl = canvas.toDataURL({
         format: 'png',
         quality: 1,
-        multiplier: 4,
+        // multiplier: 4,
       });
       const formData = new FormData();
       formData.append('pageImage', canvasDataUrl);
