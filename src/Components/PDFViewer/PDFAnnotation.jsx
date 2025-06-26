@@ -1,3 +1,5 @@
+import JSZip from 'jszip';
+import { jsPDF } from 'jspdf';
 import { message } from 'antd';
 import * as fabric from 'fabric';
 import PropTypes from 'prop-types';
@@ -5,8 +7,6 @@ import { saveAs } from 'file-saver';
 import { Document, Page } from 'react-pdf';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import JSZip from 'jszip';
-import { jsPDF } from 'jspdf';
 
 import '../../utils/pdfjs-worker';
 import StampTool from './StampTool';
@@ -15,7 +15,6 @@ import AnnotationToolbar from './AnnotationToolbar';
 import { useUser } from '../../Pages/CustomHook/useUser';
 
 import './PDFAnnotation.css';
-import { useLocation } from 'react-router-dom';
 import useStore from '../../store/store';
 
 const PDFAnnotation = ({
@@ -49,8 +48,6 @@ const PDFAnnotation = ({
 
   const location = useStore((state) => state.location);
 
-  console.log(location);
-
   // Query to fetch annotations
   const { data: annotations } = useQuery({
     queryKey: ['annotations', documentId, pageNumber],
@@ -63,15 +60,7 @@ const PDFAnnotation = ({
     enabled: !!documentId && !!pageNumber,
   });
 
-  console.log(
-    annotations?.length > 0
-      ? 'Annotations fetched successfully'
-      : 'No annotations found'
-  );
 
-  const { pathname } = useLocation();
-
-  console.log(pathname);
 
   // Initialize canvas when page is loaded
   useEffect(() => {
@@ -596,16 +585,7 @@ const PDFAnnotation = ({
       setIsSaving(true);
       // Get canvas objects
       const objects = canvas.getObjects();
-      console.log(
-        'All canvas objects:',
-        objects.map((obj) => ({
-          type: obj.type,
-          class: obj.constructor.name,
-          text: obj.text,
-          fill: obj.fill,
-          fontFamily: obj.fontFamily,
-        }))
-      );
+
       // Prepare annotations data
       const annotations = [
         ...objects
