@@ -14,7 +14,7 @@ import {
   Checkbox,
   Mentions,
   Typography,
-  InputNumber
+  InputNumber,
 } from 'antd';
 import dayjs from 'dayjs';
 import { FaHandshake } from 'react-icons/fa';
@@ -64,6 +64,7 @@ function ViewDocument() {
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedBudgetItem, setSelectedBudgetItem] = useState(null);
+  const setLocation = useStore((state) => state.setLocation);
 
   // Data fetching
   const { data: document, refetch } = useViewDocument(docId);
@@ -438,7 +439,10 @@ function ViewDocument() {
               {document.data.document.attachments?.length > 0 && (
                 <span
                   className="text-blue-400 cursor-pointer underline"
-                  onClick={() => navigate(`/view-attachment/${docId}`)}
+                  onClick={() => {
+                    setLocation('attachments');
+                    navigate(`/view-attachment/${docId}`);
+                  }}
                 >
                   View Attachments
                 </span>

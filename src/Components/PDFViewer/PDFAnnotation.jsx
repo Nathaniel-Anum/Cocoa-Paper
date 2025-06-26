@@ -18,6 +18,138 @@ import './PDFAnnotation.css';
 import { useLocation } from 'react-router-dom';
 import useStore from '../../store/store';
 
+export function useQueuedPdfDownload() {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [progress, setProgress] = useState('');
+
+  const downloadQueuedPdf = async ({ documentId, canvas }) => {
+    if (!documentId) {
+      message.error('Document ID is missing.');
+      return;
+    }
+    setIsDownloading(true);
+    setProgress('Starting PDF annotation job...');
+    try {
+      // 1. POST to enqueue the job
+      const canvasDataUrl = canvas.toDataURL({
+        format: 'png',
+        quality: 1,
+        multiplier: 4,
+      });
+      const formData = new FormData();
+      formData.append('pageImage', canvasDataUrl);
+      const applyRes = await axiosInstance.post(
+        `/annotations/document/${documentId}/apply`,
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
+      const jobId = applyRes.data.jobId;
+      if (!jobId) throw new Error('No jobId returned from server');
+      setProgress('PDF annotation job started. Waiting for completion...');
+
+      // 2. Poll for job status
+      let status = 'waiting';
+      let pollCount = 0;
+      while (status !== 'completed' && pollCount < 60) {
+        // up to 2 minutes
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const statusRes = await axiosInstance.get(
+          `/annotations/job/${jobId}/status`
+        );
+        status = statusRes.data.status;
+        pollCount++;
+        setProgress(`Job status: ${status} (${pollCount * 2}s elapsed)`);
+        if (status === 'failed') throw new Error('PDF annotation job failed');
+      }
+      if (status !== 'completed')
+        throw new Error('PDF annotation job timed out');
+      setProgress('PDF annotation complete. Downloading...');
+
+      // 3. Download the annotated PDF
+      const pdfRes = await axiosInstance.get(
+        `/annotations/job/${jobId}/download`,
+        {
+          responseType: 'blob',
+        }
+      );
+      const annotatedPdfBlob = new Blob([pdfRes.data], {
+        type: 'application/pdf',
+      });
+
+      // 4. Fetch comments for the document
+      let comments = [];
+      const commentsRes = await axiosInstance.get(`/document/${documentId}`);
+      const docData = commentsRes?.data?.document;
+      if (docData && Array.isArray(docData.comments)) {
+        comments = docData.comments;
+      }
+
+      // 5. Generate a PDF from comments using jsPDF
+      const doc = new jsPDF();
+      doc.setFontSize(14);
+      doc.text('Document Comments', 10, 15);
+      let y = 25;
+      if (comments.length === 0) {
+        doc.setFontSize(12);
+        doc.text('No comments available.', 10, y);
+      } else {
+        comments.forEach((comment, idx) => {
+          if (!comment.isPrivate) {
+            const user = comment.user?.name || 'Unknown User';
+            const date = comment.createdAt
+              ? new Date(comment.createdAt).toLocaleString()
+              : '';
+            const body = comment.body || '';
+            doc.setFontSize(12);
+            doc.text(`${idx + 1}. ${user} (${date})`, 10, y);
+            y += 7;
+            doc.setFontSize(11);
+            const lines = doc.splitTextToSize(body, 180);
+            doc.text(lines, 15, y);
+            y += lines.length * 6 + 4;
+            if (y > 270) {
+              doc.addPage();
+              y = 20;
+            }
+          }
+        });
+      }
+      const commentsPdfBlob = doc.output('blob');
+
+      // 6. Zip the annotated PDF and comments PDF using JSZip
+      const zip = new JSZip();
+      zip.file(`annotated-${documentId}.pdf`, annotatedPdfBlob);
+      zip.file(`comments-${documentId}.pdf`, commentsPdfBlob);
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+      // 7. Trigger download of the zip
+      saveAs(
+        zipBlob,
+        `${docData.file?.fileName || documentId}-with-comments.zip`
+      );
+      setProgress('Annotated PDF and comments downloaded as zip successfully');
+      message.success(
+        'Annotated PDF and comments downloaded as zip successfully'
+      );
+    } catch (error) {
+      setProgress(
+        'Failed to download annotated PDF and comments as zip: ' +
+          (error.message || error)
+      );
+      message.error(
+        'Failed to download annotated PDF and comments as zip: ' +
+          (error.message || error)
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  return { downloadQueuedPdf, isDownloading, progress };
+}
+
 const PDFAnnotation = ({
   pdfUrl,
   pageNumber,
@@ -46,6 +178,8 @@ const PDFAnnotation = ({
   const [localAnnotations, setLocalAnnotations] = useState([]);
   const [erasedAnnotations, setErasedAnnotations] = useState([]);
   const [stampToolVisible, setStampToolVisible] = useState(false);
+  const [isPresetsPopoverOpen, setIsPresetsPopoverOpen] = useState(false);
+  const presetsButtonRef = useRef(null);
 
   const location = useStore((state) => state.location);
 
@@ -336,14 +470,17 @@ const PDFAnnotation = ({
             const text = new fabric.Text(data.text, {
               left: data.left,
               top: data.top,
-              fontSize: data.fontSize || 16,
+              fontSize: data.fontSize || 32,
               fill: data.fill || 'red',
-              fontFamily: data.fontFamily || 'Arial',
+              fontFamily: data.fontFamily || 'Noto Sans Symbols',
               angle: data.angle || 0,
-              selectable: false,
-              hasControls: false,
-              hasBorders: false,
-              lockRotation: true,
+              selectable: true,
+              hasControls: true,
+              hasBorders: true,
+              lockMovementX: false,
+              lockMovementY: false,
+              lockRotation: false,
+              lockScalingX: false,
               lockScalingY: false,
               lockUniScaling: false,
               minWidth: 20,
@@ -651,31 +788,32 @@ const PDFAnnotation = ({
                 obj.class === '_Eo' ||
                 (obj.text &&
                   ['C', '7', '✓'].includes(obj.text) &&
-                  obj.fill === 'red' &&
-                  obj.fontFamily === 'Arial')) &&
+                  obj.fill === 'red')) &&
               ['C', '7', '✓'].includes(obj.text) &&
-              obj.fill === 'red' &&
-              obj.fontFamily === 'Arial'
+              obj.fill === 'red'
           )
           .map((obj) => ({
             type: 'audit',
-            data: obj.toJSON([
-              'left',
-              'top',
-              'fontSize',
-              'fill',
-              'text',
-              'fontFamily',
-              'angle',
-              'selectable',
-              'hasControls',
-              'hasBorders',
-              'lockRotation',
-              'lockScalingY',
-              'lockUniScaling',
-              'minWidth',
-              'minHeight',
-            ]),
+            data: {
+              ...obj.toJSON([
+                'left',
+                'top',
+                'fontSize',
+                'fill',
+                'text',
+                'fontFamily',
+                'angle',
+                'selectable',
+                'hasControls',
+                'hasBorders',
+                'lockRotation',
+                'lockScalingY',
+                'lockUniScaling',
+                'minWidth',
+                'minHeight',
+              ]),
+              fontFamily: 'Noto Sans Symbols', // Force font for audit marks
+            },
             pageNumber,
           })),
         ...localAnnotations,
@@ -990,14 +1128,17 @@ const PDFAnnotation = ({
       const text = new fabric.Text(lastAction.object.text || '', {
         left: lastAction.object.left,
         top: lastAction.object.top,
-        fontSize: lastAction.object.fontSize || 16,
+        fontSize: lastAction.object.fontSize || 32,
         fill: lastAction.object.fill || 'red',
-        fontFamily: lastAction.object.fontFamily || 'Arial',
+        fontFamily: lastAction.object.fontFamily || 'Noto Sans Symbols',
         angle: lastAction.object.angle || 0,
-        selectable: false,
-        hasControls: false,
-        hasBorders: false,
-        lockRotation: true,
+        selectable: true,
+        hasControls: true,
+        hasBorders: true,
+        lockMovementX: false,
+        lockMovementY: false,
+        lockRotation: false,
+        lockScalingX: false,
         lockScalingY: false,
         lockUniScaling: false,
         minWidth: 20,
@@ -1064,7 +1205,7 @@ const PDFAnnotation = ({
     }
     setIsDownloading(true);
     try {
-      // 1. Download the annotated PDF as before
+      // 1. POST to enqueue the job
       const canvasDataUrl = canvas.toDataURL({
         format: 'png',
         quality: 1,
@@ -1072,31 +1213,54 @@ const PDFAnnotation = ({
       });
       const formData = new FormData();
       formData.append('pageImage', canvasDataUrl);
-      const response = await axiosInstance.post(
+      const applyRes = await axiosInstance.post(
         `/annotations/document/${documentId}/apply`,
         formData,
         {
-          responseType: 'blob',
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+          headers: { 'Content-Type': 'multipart/form-data' },
         }
       );
-      const annotatedPdfBlob = new Blob([response.data], {
+      const jobId = applyRes.data.jobId;
+      if (!jobId) throw new Error('No jobId returned from server');
+      message.info('PDF annotation job started. Waiting for completion...');
+
+      // 2. Poll for job status
+      let status = 'waiting';
+      let pollCount = 0;
+      while (status !== 'completed' && pollCount < 60) {
+        // up to 2 minutes
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const statusRes = await axiosInstance.get(
+          `/annotations/job/${jobId}/status`
+        );
+        status = statusRes.data.status;
+        pollCount++;
+        if (status === 'failed') throw new Error('PDF annotation job failed');
+      }
+      if (status !== 'completed')
+        throw new Error('PDF annotation job timed out');
+      message.success('PDF annotation complete. Downloading...');
+
+      // 3. Download the annotated PDF
+      const pdfRes = await axiosInstance.get(
+        `/annotations/job/${jobId}/download`,
+        {
+          responseType: 'blob',
+        }
+      );
+      const annotatedPdfBlob = new Blob([pdfRes.data], {
         type: 'application/pdf',
       });
 
-      // 2. Fetch comments for the document
+      // 4. Fetch comments for the document
       let comments = [];
       const commentsRes = await axiosInstance.get(`/document/${documentId}`);
       const docData = commentsRes?.data?.document;
-
-      console.log({ docData, commentsRes });
       if (docData && Array.isArray(docData.comments)) {
         comments = docData.comments;
       }
 
-      // 3. Generate a PDF from comments using jsPDF
+      // 5. Generate a PDF from comments using jsPDF
       const doc = new jsPDF();
       doc.setFontSize(14);
       doc.text('Document Comments', 10, 15);
@@ -1128,19 +1292,25 @@ const PDFAnnotation = ({
       }
       const commentsPdfBlob = doc.output('blob');
 
-      // 4. Zip the annotated PDF and comments PDF using JSZip
+      // 6. Zip the annotated PDF and comments PDF using JSZip
       const zip = new JSZip();
       zip.file(`annotated-${documentId}.pdf`, annotatedPdfBlob);
       zip.file(`comments-${documentId}.pdf`, commentsPdfBlob);
       const zipBlob = await zip.generateAsync({ type: 'blob' });
 
-      // 5. Trigger download of the zip
-      saveAs(zipBlob, `${docData.file?.fileName}-with-comments.zip`);
+      // 7. Trigger download of the zip
+      saveAs(
+        zipBlob,
+        `${docData.file?.fileName || documentId}-with-comments.zip`
+      );
       message.success(
         'Annotated PDF and comments downloaded as zip successfully'
       );
     } catch (error) {
-      message.error('Failed to download annotated PDF and comments as zip');
+      message.error(
+        'Failed to download annotated PDF and comments as zip: ' +
+          (error.message || error)
+      );
     } finally {
       setIsDownloading(false);
     }
@@ -1412,6 +1582,46 @@ const PDFAnnotation = ({
     }
   };
 
+  const togglePresetsPopover = () => {
+    setIsPresetsPopoverOpen(!isPresetsPopoverOpen);
+  };
+
+  const handlePresetClick = (preset) => {
+    if (!canvas) return;
+
+    // Ensure pen mode is off before adding audit mark
+    canvas.isDrawingMode = false;
+    canvas.selection = true;
+
+    const text = new fabric.Text(preset, {
+      left: canvas.getCenter().left,
+      top: canvas.getCenter().top,
+      fontSize: 32, // Consistent with backend for quality
+      fill: 'red',
+      fontFamily: "'Noto Sans Symbols', sans-serif", // Use the loaded web font
+      selectable: true,
+      hasControls: true,
+      hasBorders: true,
+      lockMovementX: false,
+      lockMovementY: false,
+      lockRotation: false,
+      lockScalingX: false,
+      lockScalingY: false,
+      lockUniScaling: false,
+      minWidth: 1,
+      minHeight: 1,
+      class: 'audit', // a class to identify audit objects
+    });
+
+    canvas.add(text);
+    canvas.setActiveObject(text);
+    canvas.renderAll();
+    togglePresetsPopover();
+    setSelectedTool('select');
+  };
+
+  const presets = ['C', '7', '✓'];
+
   return (
     <div className="pdf-annotation-container" ref={containerRef}>
       <div className="pdf-container">
@@ -1465,6 +1675,35 @@ const PDFAnnotation = ({
         onClose={() => setStampToolVisible(false)}
         onStampAnnotation={handleStampAnnotation}
       />
+
+      {/* Presets Button */}
+      <div ref={presetsButtonRef}>
+        {/* <button
+          onClick={togglePresetsPopover}
+          className="p-2 text-lg font-bold text-red-600 hover:bg-gray-200 rounded"
+        >
+          Presets
+        </button> */}
+
+        {isPresetsPopoverOpen && (
+          <div
+            className="absolute bottom-full mb-2 w-max p-2 bg-white border border-gray-300 rounded-lg shadow-lg"
+            style={{ left: '50%', transform: 'translateX(-50%)' }}
+          >
+            <div className="flex space-x-2">
+              {presets.map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => handlePresetClick(preset)}
+                  className="p-2 text-lg font-bold text-red-600 hover:bg-gray-200 rounded"
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
