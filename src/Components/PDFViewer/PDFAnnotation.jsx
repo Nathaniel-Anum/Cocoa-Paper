@@ -316,7 +316,7 @@ const PDFAnnotation = ({
           } else if (annotation.type === 'audit') {
             // Render audit annotation (fabric.Text)
             const data = annotation.data || annotation.annotationData;
-            if (!data || !['C', '7', '✓'].includes(data.text)) return;
+            if (!data || !['C', '7', 'T'].includes(data.text)) return;
             const text = new fabric.Text(data.text, {
               left: data.left,
               top: data.top,
@@ -458,10 +458,10 @@ const PDFAnnotation = ({
                 (obj.constructor.name === 'Text' ||
                   obj.class === '_Eo' ||
                   (obj.text &&
-                    ['C', '7', '✓'].includes(obj.text) &&
+                    ['C', '7', 'T'].includes(obj.text) &&
                     obj.fill === 'red' &&
                     obj.fontFamily === 'Arial')) &&
-                ['C', '7', '✓'].includes(obj.text) &&
+                ['C', '7', 'T'].includes(obj.text) &&
                 obj.fill === 'red' &&
                 obj.fontFamily === 'Arial'
               ) {
@@ -613,10 +613,10 @@ const PDFAnnotation = ({
               (obj.constructor.name === 'Text' ||
                 obj.class === '_Eo' ||
                 (obj.text &&
-                  ['C', '7', '✓'].includes(obj.text) &&
+                  ['C', '7', 'T'].includes(obj.text) &&
                   obj.fill === 'red' &&
                   obj.fontFamily === 'Arial')) &&
-              ['C', '7', '✓'].includes(obj.text) &&
+              ['C', '7', 'T'].includes(obj.text) &&
               obj.fill === 'red' &&
               obj.fontFamily === 'Arial'
           )
@@ -1022,8 +1022,8 @@ const PDFAnnotation = ({
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const imgWidth = 500; 
-      const imgHeight = 500;
+      const imgWidth = 300; 
+      const imgHeight = 300;
       const imgX = (pageWidth - imgWidth) / 2;
       const imgY = (pageHeight - imgHeight) / 2;
       const watermarkOpacity = 0.15;
@@ -1132,7 +1132,7 @@ const PDFAnnotation = ({
         ]);
         setRedoStack([]);
         canvas.renderAll();
-      } else if (selectedTool === 'trace') {
+      } else if (selectedTool === 'tick') {
         const text = new fabric.Text('7', {
           left: pointer.x,
           top: pointer.y,
@@ -1175,11 +1175,11 @@ const PDFAnnotation = ({
         ]);
         setRedoStack([]);
         canvas.renderAll();
-      } else if (selectedTool === 'tick') {
-        const text = new fabric.Text('✓', {
+      } else if (selectedTool === 'trace') {
+        const text = new fabric.Text('T', {
           left: pointer.x,
           top: pointer.y,
-          fontSize: 16,
+          fontSize: 20,
           fill: 'red',
           fontFamily: 'Arial',
           selectable: false,
