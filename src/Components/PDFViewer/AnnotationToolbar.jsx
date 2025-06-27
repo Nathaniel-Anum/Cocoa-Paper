@@ -35,8 +35,8 @@ const AnnotationToolbar = ({
       icon: <span>C</span>,
     },
     {
-      id: 'trace',
-      label: 'Trace',
+      id: 'tick',
+      label: 'Tick',
       icon: (
         <span
           style={{
@@ -49,9 +49,9 @@ const AnnotationToolbar = ({
       ),
     },
     {
-      id: 'tick',
-      label: 'Tick',
-      icon: <span> &#10003;</span>,
+      id: 'trace',
+      label: 'Trace',
+      icon: <span>T</span>,
     },
   ];
 
