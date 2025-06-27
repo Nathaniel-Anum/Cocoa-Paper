@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Table,
@@ -11,15 +11,12 @@ import {
   Typography,
   message,
   Popconfirm,
-  Spin,
 } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import axiosInstance from '../axiosInstance';
 import { useGetAllUsers } from '../../queryHooks/user';
 
 const { Title } = Typography;
-const { Option } = Select;
-const { TextArea } = Input;
 
 const UserGroups = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);

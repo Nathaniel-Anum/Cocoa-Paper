@@ -457,22 +457,7 @@ const Incoming = () => {
   //   }
   // }, [trails]);
 
-  useEffect(() => {
-    function handleDocumentSent(data) {
-      console.log('New Doc');
-      if (window.Notification && Notification.permission === 'granted') {
-        new Notification('New Document Received', {
-          body: `From: ${data.sender?.name || 'Unknown'}\nSubject: ${
-            data.subject || 'No subject'
-          }`,
-        });
-      }
-    }
-    socket.on('document-sent', handleDocumentSent);
-    return () => {
-      socket.off('document-sent', handleDocumentSent);
-    };
-  }, []);
+
 
   return (
     <div className="mt-8">
