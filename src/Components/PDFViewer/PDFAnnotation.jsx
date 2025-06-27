@@ -713,12 +713,9 @@ const PDFAnnotation = ({
       e.preventDefault();
       e.stopPropagation();
     }
-
     if (undoStack.length === 0) return;
-
     const lastAction = undoStack[undoStack.length - 1];
     setUndoStack((prev) => prev.slice(0, -1));
-
     if (lastAction.type === 'erase') {
       // Restore erased object
       fabric.util.enlivenObjects([lastAction.object], ([restoredObject]) => {
@@ -726,9 +723,22 @@ const PDFAnnotation = ({
           restoredObject.annotationId = lastAction.annotationId;
           canvas.add(restoredObject);
           canvas.renderAll();
+          setRedoStack((prev) => [
+            ...prev,
+            {
+              type: 'erase',
+              object: restoredObject.toJSON([
+                'selectable',
+                'hasControls',
+                'hasBorders',
+                'annotationId',
+              ]),
+              annotationId: restoredObject.annotationId,
+            },
+          ]);
         }
       });
-    } else if (lastAction.type === 'draw') {
+    } else if (lastAction.type === 'draw' || lastAction.type === 'text' || lastAction.type === 'audit') {
       // Remove the last drawn object
       const objects = canvas.getObjects();
       const lastObject = objects[objects.length - 1];
@@ -736,28 +746,12 @@ const PDFAnnotation = ({
         setRedoStack((prev) => [
           ...prev,
           {
-            type: 'draw',
+            type: lastAction.type,
             object: lastObject.toJSON([
               'selectable',
               'hasControls',
               'hasBorders',
               'annotationId',
-            ]),
-          },
-        ]);
-        canvas.remove(lastObject);
-        canvas.renderAll();
-      }
-    } else if (lastAction.type === 'text') {
-      // Remove the last drawn textbox
-      const objects = canvas.getObjects();
-      const lastObject = objects[objects.length - 1];
-      if (lastObject) {
-        setRedoStack((prev) => [
-          ...prev,
-          {
-            type: 'text',
-            object: lastObject.toJSON([
               'left',
               'top',
               'width',
@@ -774,45 +768,16 @@ const PDFAnnotation = ({
               'angle',
               'scaleX',
               'scaleY',
-              'selectable',
-              'hasControls',
-              'hasBorders',
+              'lockRotation',
+              'lockScalingY',
+              'lockUniScaling',
+              'minWidth',
+              'minHeight',
             ]),
           },
         ]);
         canvas.remove(lastObject);
         canvas.renderAll();
-      } else if (lastAction.type === 'audit') {
-        // Remove the last drawn audit annotation
-        const objects = canvas.getObjects();
-        const lastObject = objects[objects.length - 1];
-        if (lastObject) {
-          setRedoStack((prev) => [
-            ...prev,
-            {
-              type: 'audit',
-              object: lastObject.toJSON([
-                'left',
-                'top',
-                'fontSize',
-                'fill',
-                'text',
-                'fontFamily',
-                'angle',
-                'selectable',
-                'hasControls',
-                'hasBorders',
-                'lockRotation',
-                'lockScalingY',
-                'lockUniScaling',
-                'minWidth',
-                'minHeight',
-              ]),
-            },
-          ]);
-          canvas.remove(lastObject);
-          canvas.renderAll();
-        }
       }
     }
   };
@@ -826,18 +791,16 @@ const PDFAnnotation = ({
     if (redoStack.length === 0) return;
     const lastAction = redoStack[redoStack.length - 1];
     setRedoStack((prev) => prev.slice(0, -1));
-    if (lastAction.type === 'draw' || lastAction.type === 'signature') {
+
+    if (lastAction.type === 'draw' || lastAction.type === 'text' || lastAction.type === 'audit') {
       fabric.util.enlivenObjects([lastAction.object], ([restoredObject]) => {
         if (restoredObject) {
-          if (lastAction.type === 'signature') {
-            restoredObject.selectable = true;
-            restoredObject.hasControls = true;
-            restoredObject.hasBorders = true;
-          } else {
-            restoredObject.selectable = false;
-            restoredObject.hasControls = false;
-            restoredObject.hasBorders = false;
-          }
+          // Restore all properties and annotationId
+          Object.keys(lastAction.object).forEach((key) => {
+            if (key !== 'type' && key !== 'version') {
+              restoredObject[key] = lastAction.object[key];
+            }
+          });
           canvas.add(restoredObject);
           canvas.renderAll();
           setUndoStack((prev) => [
@@ -849,12 +812,34 @@ const PDFAnnotation = ({
                 'hasControls',
                 'hasBorders',
                 'annotationId',
+                'left',
+                'top',
+                'width',
+                'height',
+                'fontSize',
+                'fill',
+                'text',
+                'fontFamily',
+                'fontWeight',
+                'fontStyle',
+                'underline',
+                'linethrough',
+                'textAlign',
+                'angle',
+                'scaleX',
+                'scaleY',
+                'lockRotation',
+                'lockScalingY',
+                'lockUniScaling',
+                'minWidth',
+                'minHeight',
               ]),
             },
           ]);
         }
       });
     } else if (lastAction.type === 'erase') {
+      // Redo of an undo-erase means re-erasing (removing) the object again
       const objects = canvas.getObjects();
       const objectToErase = objects.find(
         (obj) => obj.annotationId === lastAction.annotationId
@@ -876,57 +861,6 @@ const PDFAnnotation = ({
           },
         ]);
       }
-    } else if (lastAction.type === 'text') {
-      // Restore the last drawn textbox
-      const textbox = new fabric.Textbox(lastAction.object.text || '', {
-        left: lastAction.object.left,
-        top: lastAction.object.top,
-        width: lastAction.object.width,
-        height: lastAction.object.height,
-        fontSize: lastAction.object.fontSize || 18,
-        fill: lastAction.object.fill || '#000',
-        fontFamily: lastAction.object.fontFamily || 'Times New Roman',
-        fontWeight: lastAction.object.fontWeight || 'normal',
-        fontStyle: lastAction.object.fontStyle || 'normal',
-        underline: lastAction.object.underline || false,
-        linethrough: lastAction.object.linethrough || false,
-        textAlign: lastAction.object.textAlign || 'left',
-        angle: lastAction.object.angle || 0,
-        scaleX: lastAction.object.scaleX || 1,
-        scaleY: lastAction.object.scaleY || 1,
-        selectable: false,
-        hasControls: false,
-        hasBorders: false,
-        lockRotation: true,
-        lockScalingY: false,
-        lockUniScaling: false,
-        minWidth: 50,
-        minHeight: 20,
-      });
-      canvas.add(textbox);
-      canvas.setActiveObject(textbox);
-      textbox.enterEditing && textbox.enterEditing();
-      canvas.renderAll();
-    } else if (lastAction.type === 'audit') {
-      // Restore the last drawn audit annotation
-      const text = new fabric.Text(lastAction.object.text || '', {
-        left: lastAction.object.left,
-        top: lastAction.object.top,
-        fontSize: lastAction.object.fontSize || 16,
-        fill: lastAction.object.fill || 'red',
-        fontFamily: lastAction.object.fontFamily || 'Arial',
-        angle: lastAction.object.angle || 0,
-        selectable: false,
-        hasControls: false,
-        hasBorders: false,
-        lockRotation: true,
-        lockScalingY: false,
-        lockUniScaling: false,
-        minWidth: 20,
-        minHeight: 20,
-      });
-      canvas.add(text);
-      canvas.renderAll();
     }
   };
 

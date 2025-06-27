@@ -42,6 +42,7 @@ import Attachments from './Pages/Attachments';
 import Configuration from './Components/BackOffice/Configuration';
 import UserGroups from './Components/BackOffice/UserGroups';
 import Stamp from './Components/BackOffice/Stamp';
+import { socket } from './utils/socket';
 
 function App() {
   // API call for the users.
@@ -68,6 +69,25 @@ function App() {
     if (window.Notification && Notification.permission !== 'granted') {
       Notification.requestPermission();
     }
+  }, []);
+
+  useEffect(() => {
+    function handleDocumentSent(data) {
+      console.log('New doc received ...');
+      if (window.Notification && Notification.permission === 'granted') {
+        new Notification('New Document Received', {
+          body: `From: ${data.sender?.name || 'Unknown'}\nSubject: ${
+            data.subject || 'No subject'
+          }`,
+        });
+      }
+    }
+    console.log("document-sent listening....");
+
+    socket.emit('document-sent', handleDocumentSent);
+    return () => {
+      socket.off('document-sent', handleDocumentSent);
+    };
   }, []);
 
   const allRolePermissions = getAllRolePermissions(user);
