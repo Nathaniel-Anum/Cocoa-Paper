@@ -1113,7 +1113,7 @@ const PDFAnnotation = ({
         const text = new fabric.Text('T', {
           left: pointer.x,
           top: pointer.y,
-          fontSize: 20,
+          fontSize: 28,
           fill: 'red',
           fontFamily: 'Arial',
           selectable: false,
