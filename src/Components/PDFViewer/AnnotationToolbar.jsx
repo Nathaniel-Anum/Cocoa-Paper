@@ -6,9 +6,9 @@ import {
   FaEraser,
   FaHighlighter,
 } from 'react-icons/fa';
-import { Tooltip, Popover, Popconfirm } from 'antd';
-import PropTypes from 'prop-types';
 import { useState } from 'react';
+import PropTypes from 'prop-types';
+import { Tooltip, Popover, Popconfirm } from 'antd';
 
 import ColorPicker from './ColorPicker';
 import { PiSelectionPlusDuotone } from 'react-icons/pi';
@@ -27,18 +27,18 @@ const AnnotationToolbar = ({
   isDownloading,
 }) => {
   const [presetsVisible, setPresetsVisible] = useState(false);
+
   const auditPresets = [
     {
       id: 'cast',
       label: 'Cast',
-      icon: <span className="tool-button">C</span>,
+      icon: <span>C</span>,
     },
     {
       id: 'trace',
       label: 'Trace',
       icon: (
         <span
-          // className="tool-button"
           style={{
             display: 'inline-block',
             transform: 'rotate(-20deg)',
@@ -51,7 +51,7 @@ const AnnotationToolbar = ({
     {
       id: 'tick',
       label: 'Tick',
-      icon: <span className="tool-button"> &#10003;</span>,
+      icon: <span> &#10003;</span>,
     },
   ];
 
@@ -70,53 +70,63 @@ const AnnotationToolbar = ({
   ];
 
   return (
-    <div className="annotation-toolbar overflow-auto ">
+    <div className="annotation-toolbar overflow-auto border no-scrollbar">
       {tools.map((tool) =>
         tool.id === 'presets' ? (
-          <Popover
+          <Tooltip
             key={tool.id}
-            content={
-              <div style={{ display: 'flex', gap: 12 }}>
-                {auditPresets.map((preset) => (
-                  <Tooltip key={preset.id} title={preset.label} placement="top">
-                    <button
-                      className={`tool-button${
-                        selectedTool === preset.id ? ' active' : ''
-                      }`}
-                      style={{
-                        border: '1px solid #d1d5db',
-                        background: 'white',
-                        fontSize: 18,
-                      }}
-                      onClick={() => {
-                        onToolSelect(preset.id);
-                        setPresetsVisible(false);
-                      }}
-                    >
-                      {preset.icon}
-                    </button>
-                  </Tooltip>
-                ))}
-              </div>
-            }
-            trigger="click"
-            open={presetsVisible}
-            onOpenChange={setPresetsVisible}
+            title="Presets"
+            mouseEnterDelay={0}
+            mouseLeaveDelay={0}
             placement="top"
           >
-            <button
-              className={`tool-button${
-                selectedTool === 'cast' ||
-                selectedTool === 'trace' ||
-                selectedTool === 'tick'
-                  ? ' active'
-                  : ''
-              }`}
-              type="button"
+            <Popover
+              key={tool.id}
+              content={
+                <div style={{ display: 'flex', gap: 12 }}>
+                  {auditPresets.map((preset) => (
+                    <Tooltip key={preset.id} title={preset.label} placement="top">
+                      <button
+                        className={`tool-button${
+                          selectedTool === preset.id ? ' active' : ''
+                        }`}
+                        style={{
+                          border: '1px solid #d1d5db',
+                          background: selectedTool === preset.id ? '#582f08' : 'white',
+                          borderColor: selectedTool === preset.id ? '#582f08' : '#d1d5db',
+                          color: selectedTool === preset.id ? 'white' : 'inherit',
+                          fontSize: 18,
+                        }}
+                        onClick={() => {
+                          onToolSelect(preset.id);
+                          setPresetsVisible(false);
+                        }}
+                      >
+                        {preset.icon}
+                      </button>
+                    </Tooltip>
+                  ))}
+                </div>
+              }
+              trigger="click"
+              open={presetsVisible}
+              onOpenChange={setPresetsVisible}
+              placement="top"
             >
-              {tool.icon}
-            </button>
-          </Popover>
+              <button
+                className={`tool-button${
+                  selectedTool === 'cast' ||
+                  selectedTool === 'trace' ||
+                  selectedTool === 'tick'
+                    ? ' active'
+                    : ''
+                }`}
+                type="button"
+              >
+                {tool.icon}
+              </button>
+            </Popover>
+          </Tooltip>
         ) : (
           <Tooltip
             key={tool.id}
@@ -183,8 +193,20 @@ const AnnotationToolbar = ({
           onColorChange={onColorChange}
         />
       )}
-      <Popconfirm onConfirm={onSave} title="Confirm saving edits">
-        <button className="save-button" type="button" disabled={isSaving}>
+      <Popconfirm
+        title="Are you sure you want to save annotations?"
+        onConfirm={onSave}
+        okText="Yes"
+        cancelText="No"
+      >
+        <button
+          className="save-button"
+          type="button"
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <LoadingOutlined spin style={{ fontSize: 18, margintop: 8 }} />
+          ) : null}
           {isSaving ? 'Saving...' : 'Save'}
         </button>
       </Popconfirm>

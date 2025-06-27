@@ -1,12 +1,12 @@
+import JSZip from 'jszip';
+import { jsPDF } from 'jspdf';
 import { message } from 'antd';
 import * as fabric from 'fabric';
 import PropTypes from 'prop-types';
 import { saveAs } from 'file-saver';
 import { Document, Page } from 'react-pdf';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import JSZip from 'jszip';
-import { jsPDF } from 'jspdf';
 
 import '../../utils/pdfjs-worker';
 import StampTool from './StampTool';
@@ -15,8 +15,8 @@ import AnnotationToolbar from './AnnotationToolbar';
 import { useUser } from '../../Pages/CustomHook/useUser';
 
 import './PDFAnnotation.css';
-import { useLocation } from 'react-router-dom';
 import useStore from '../../store/store';
+import logo from '../../assets/logo.9a18109e1c16584832d5.png';
 
 export function useQueuedPdfDownload() {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -164,8 +164,6 @@ const PDFAnnotation = ({
   const containerRef = useRef(null);
   const eraserHandlersRef = useRef(null);
 
-  const queryClient = useQueryClient();
-
   const [canvas, setCanvas] = useState(null);
   const [redoStack, setRedoStack] = useState([]);
   const [undoStack, setUndoStack] = useState([]);
@@ -176,14 +174,11 @@ const PDFAnnotation = ({
   const [stampPosition, setStampPosition] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [localAnnotations, setLocalAnnotations] = useState([]);
-  const [erasedAnnotations, setErasedAnnotations] = useState([]);
   const [stampToolVisible, setStampToolVisible] = useState(false);
   const [isPresetsPopoverOpen, setIsPresetsPopoverOpen] = useState(false);
   const presetsButtonRef = useRef(null);
 
   const location = useStore((state) => state.location);
-
-  console.log(location);
 
   // Query to fetch annotations
   const { data: annotations } = useQuery({
@@ -196,16 +191,6 @@ const PDFAnnotation = ({
     },
     enabled: !!documentId && !!pageNumber,
   });
-
-  console.log(
-    annotations?.length > 0
-      ? 'Annotations fetched successfully'
-      : 'No annotations found'
-  );
-
-  const { pathname } = useLocation();
-
-  console.log(pathname);
 
   // Initialize canvas when page is loaded
   useEffect(() => {
@@ -249,7 +234,6 @@ const PDFAnnotation = ({
     };
 
     if (isPageLoaded) {
-      // Small delay to ensure PDF page is fully rendered
       setTimeout(initializeCanvas, 100);
     }
 
@@ -500,7 +484,7 @@ const PDFAnnotation = ({
           );
         }, 100);
       } catch (error) {
-        console.error('Error loading annotations:', error);
+        message.error('Error loading annotations:', error);
       }
     }
   }, [canvas, annotations, pageNumber]);
@@ -526,7 +510,6 @@ const PDFAnnotation = ({
     if (canvas) {
       try {
         cleanupEraserHandlers();
-        // Reset all objects to locked state by default
         canvas.forEachObject((obj) => {
           obj.selectable = false;
           obj.hasControls = false;
@@ -589,7 +572,7 @@ const PDFAnnotation = ({
             if (!isErasing) return;
             const pointer = canvas.getPointer(e.e);
             const objects = canvas.getObjects();
-            // Find objects that intersect with the eraser path (paths or images)
+
             const objectsToErase = objects.filter((obj) => {
               if (obj.type === 'path') {
                 const path = obj.path;
@@ -601,7 +584,6 @@ const PDFAnnotation = ({
                   return distance < 10;
                 });
               } else if (obj.type === 'image') {
-                // For images (signatures), check bounding box
                 return (
                   pointer.x >= obj.left &&
                   pointer.x <= obj.left + obj.width * obj.scaleX &&
@@ -633,22 +615,21 @@ const PDFAnnotation = ({
             });
             objectsToErase.forEach((obj) => {
               if (obj.annotationId) {
-                setErasedAnnotations((prev) => [...prev, obj.annotationId]);
+                setUndoStack((prev) => [
+                  ...prev,
+                  {
+                    type: 'erase',
+                    object: obj.toJSON([
+                      'selectable',
+                      'hasControls',
+                      'hasBorders',
+                      'annotationId',
+                    ]),
+                    annotationId: obj.annotationId,
+                  },
+                ]);
+                canvas.remove(obj);
               }
-              setUndoStack((prev) => [
-                ...prev,
-                {
-                  type: 'erase',
-                  object: obj.toJSON([
-                    'selectable',
-                    'hasControls',
-                    'hasBorders',
-                    'annotationId',
-                  ]),
-                  annotationId: obj.annotationId,
-                },
-              ]);
-              canvas.remove(obj);
             });
             canvas.renderAll();
           };
@@ -681,7 +662,6 @@ const PDFAnnotation = ({
         path.hasControls = false;
         path.hasBorders = false;
 
-        // Store the path in the undo stack
         setUndoStack((prev) => [
           ...prev,
           {
@@ -689,7 +669,7 @@ const PDFAnnotation = ({
             object: path.toJSON(['selectable', 'hasControls', 'hasBorders']),
           },
         ]);
-        setRedoStack([]); // Clear redo stack when new action is performed
+        setRedoStack([]);
       };
 
       canvas.on('path:created', handlePathCreated);
@@ -703,7 +683,6 @@ const PDFAnnotation = ({
   const saveAnnotationMutation = useMutation({
     mutationFn: async (formData) => {
       try {
-        // Backend will handle deletion of erased annotations
         if (formData.get('annotations')) {
           const response = await axiosInstance.post('/annotations', formData, {
             headers: {
@@ -717,10 +696,6 @@ const PDFAnnotation = ({
         throw error;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['annotations', documentId]);
-      setErasedAnnotations([]); // Clear erased annotations after successful save
-    },
   });
 
   const handleSave = async () => {
@@ -731,19 +706,8 @@ const PDFAnnotation = ({
     }
     try {
       setIsSaving(true);
-      // Get canvas objects
       const objects = canvas.getObjects();
-      console.log(
-        'All canvas objects:',
-        objects.map((obj) => ({
-          type: obj.type,
-          class: obj.constructor.name,
-          text: obj.text,
-          fill: obj.fill,
-          fontFamily: obj.fontFamily,
-        }))
-      );
-      // Prepare annotations data
+
       const annotations = [
         ...objects
           .filter((obj) => obj.type === 'path')
@@ -779,7 +743,6 @@ const PDFAnnotation = ({
             ]),
             pageNumber,
           })),
-        // Add audit annotations (fabric.Text, not Textbox) as type 'audit'
         ...objects
           .filter(
             (obj) =>
@@ -818,15 +781,12 @@ const PDFAnnotation = ({
           })),
         ...localAnnotations,
       ];
-      console.log('Annotations to be saved:', annotations);
 
       const canvasDataUrl = canvas.toDataURL({
         format: 'png',
-        quality: 1,
-        // multiplier: 4,
+        multiplier: 4,
       });
 
-      // Create form data
       const formData = new FormData();
       formData.append('annotations', JSON.stringify(annotations));
       formData.append('pageNumber', pageNumber);
@@ -834,40 +794,16 @@ const PDFAnnotation = ({
       formData.append('pageImage', canvasDataUrl);
       formData.append('scale', scale);
       formData.append('userId', user.userId);
-      formData.append('erasedAnnotationIds', JSON.stringify(erasedAnnotations));
-      // Send to backend for PDF modification
+
       await saveAnnotationMutation.mutateAsync(formData);
       message.success('Annotations saved and embedded in PDF successfully');
-      setLocalAnnotations([]); // Clear local stamp annotations after save
+      setLocalAnnotations([]);
     } catch (error) {
-      console.error('Error saving annotations:', error);
       message.error('Failed to save annotations');
     } finally {
       setIsSaving(false);
     }
   };
-
-  // Add a function to save erased annotations to localStorage with timestamp
-  const saveErasedAnnotations = useCallback(
-    (pageNum, annotations) => {
-      const key = `erased_annotations_${documentId}_page_${pageNum}`;
-      const data = {
-        annotations,
-        timestamp: new Date().getTime(),
-        documentId,
-        pageNumber: pageNum,
-      };
-      localStorage.setItem(key, JSON.stringify(data));
-
-      // Also save to global erased annotations
-      const globalKey = `erased_annotations_${documentId}`;
-      const existingGlobal = localStorage.getItem(globalKey);
-      const globalData = existingGlobal ? JSON.parse(existingGlobal) : {};
-      globalData[pageNum] = data;
-      localStorage.setItem(globalKey, JSON.stringify(globalData));
-    },
-    [documentId]
-  );
 
   // Add a function to load erased annotations from localStorage
   const loadErasedAnnotations = useCallback(
@@ -897,11 +833,8 @@ const PDFAnnotation = ({
   // Update the useEffect for page changes
   useEffect(() => {
     if (canvas) {
-      // Load erased annotations for the current page
       const savedErasedAnnotations = loadErasedAnnotations(pageNumber);
-      setErasedAnnotations(savedErasedAnnotations);
 
-      // Remove any objects that were previously erased
       const objects = canvas.getObjects();
       objects.forEach((obj) => {
         if (savedErasedAnnotations.includes(obj.annotationId)) {
@@ -932,12 +865,6 @@ const PDFAnnotation = ({
           canvas.add(restoredObject);
           canvas.renderAll();
         }
-      });
-      // Remove from erased annotations and update localStorage
-      setErasedAnnotations((prev) => {
-        const newErased = prev.filter((id) => id !== lastAction.annotationId);
-        saveErasedAnnotations(pageNumber, newErased);
-        return newErased;
       });
     } else if (lastAction.type === 'draw') {
       // Remove the last drawn object
@@ -1071,11 +998,6 @@ const PDFAnnotation = ({
         (obj) => obj.annotationId === lastAction.annotationId
       );
       if (objectToErase) {
-        setErasedAnnotations((prev) => {
-          const newErased = [...prev, objectToErase.annotationId];
-          saveErasedAnnotations(pageNumber, newErased);
-          return newErased;
-        });
         canvas.remove(objectToErase);
         canvas.renderAll();
         setUndoStack((prev) => [
@@ -1205,11 +1127,10 @@ const PDFAnnotation = ({
     }
     setIsDownloading(true);
     try {
-      // 1. POST to enqueue the job
+      // Download the annotated PDF as before
       const canvasDataUrl = canvas.toDataURL({
         format: 'png',
-        quality: 1,
-        // multiplier: 4,
+        multiplier: 4,
       });
       const formData = new FormData();
       formData.append('pageImage', canvasDataUrl);
@@ -1252,7 +1173,7 @@ const PDFAnnotation = ({
         type: 'application/pdf',
       });
 
-      // 4. Fetch comments for the document
+      // Fetch comments for the document
       let comments = [];
       const commentsRes = await axiosInstance.get(`/document/${documentId}`);
       const docData = commentsRes?.data?.document;
@@ -1260,9 +1181,23 @@ const PDFAnnotation = ({
         comments = docData.comments;
       }
 
-      // 5. Generate a PDF from comments using jsPDF
+      // Generate a PDF from comments using jsPDF
       const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const imgWidth = 500; 
+      const imgHeight = 500;
+      const imgX = (pageWidth - imgWidth) / 2;
+      const imgY = (pageHeight - imgHeight) / 2;
+      const watermarkOpacity = 0.15;
+      const addLogoWatermark = () => {
+        doc.setGState(new doc.GState({ opacity: watermarkOpacity }));
+        doc.addImage(logo, 'PNG', imgX, imgY, imgWidth, imgHeight);
+        doc.setGState(new doc.GState({ opacity: 1 }));
+      };
+      addLogoWatermark();
       doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
       doc.text('Document Comments', 10, 15);
       let y = 25;
       if (comments.length === 0) {
@@ -1285,6 +1220,9 @@ const PDFAnnotation = ({
             y += lines.length * 6 + 4;
             if (y > 270) {
               doc.addPage();
+              addLogoWatermark();
+              doc.setFontSize(12);
+              doc.setTextColor(0, 0, 0);
               y = 20;
             }
           }
@@ -1292,17 +1230,14 @@ const PDFAnnotation = ({
       }
       const commentsPdfBlob = doc.output('blob');
 
-      // 6. Zip the annotated PDF and comments PDF using JSZip
+      // Zip the annotated PDF and comments PDF using JSZip
       const zip = new JSZip();
       zip.file(`annotated-${documentId}.pdf`, annotatedPdfBlob);
       zip.file(`comments-${documentId}.pdf`, commentsPdfBlob);
       const zipBlob = await zip.generateAsync({ type: 'blob' });
 
-      // 7. Trigger download of the zip
-      saveAs(
-        zipBlob,
-        `${docData.file?.fileName || documentId}-with-comments.zip`
-      );
+      // Trigger download of the zip
+      saveAs(zipBlob, `${docData.file?.fileName}-with-comments.zip`);
       message.success(
         'Annotated PDF and comments downloaded as zip successfully'
       );
@@ -1505,7 +1440,6 @@ const PDFAnnotation = ({
           canvas.setActiveObject(textbox);
           textbox.enterEditing && textbox.enterEditing();
           canvas.renderAll();
-          // Switch tool to none so a new textbox is not created until reselected
           setSelectedTool('');
         }
       }
