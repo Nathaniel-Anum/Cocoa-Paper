@@ -44,7 +44,7 @@ const PDFAnnotation = ({
   const [localAnnotations, setLocalAnnotations] = useState([]);
   const [stampToolVisible, setStampToolVisible] = useState(false);
 
-  const location = useStore((state) => state.location);
+  const showToolbar = useStore((state) => state.showToolbar);
 
   // Query to fetch annotations
   const { data: annotations } = useQuery({
@@ -738,7 +738,11 @@ const PDFAnnotation = ({
           ]);
         }
       });
-    } else if (lastAction.type === 'draw' || lastAction.type === 'text' || lastAction.type === 'audit') {
+    } else if (
+      lastAction.type === 'draw' ||
+      lastAction.type === 'text' ||
+      lastAction.type === 'audit'
+    ) {
       // Remove the last drawn object
       const objects = canvas.getObjects();
       const lastObject = objects[objects.length - 1];
@@ -792,7 +796,11 @@ const PDFAnnotation = ({
     const lastAction = redoStack[redoStack.length - 1];
     setRedoStack((prev) => prev.slice(0, -1));
 
-    if (lastAction.type === 'draw' || lastAction.type === 'text' || lastAction.type === 'audit') {
+    if (
+      lastAction.type === 'draw' ||
+      lastAction.type === 'text' ||
+      lastAction.type === 'audit'
+    ) {
       fabric.util.enlivenObjects([lastAction.object], ([restoredObject]) => {
         if (restoredObject) {
           // Restore all properties and annotationId
@@ -956,7 +964,7 @@ const PDFAnnotation = ({
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const imgWidth = 300; 
+      const imgWidth = 300;
       const imgHeight = 300;
       const imgX = (pageWidth - imgWidth) / 2;
       const imgY = (pageHeight - imgHeight) / 2;
@@ -1315,7 +1323,7 @@ const PDFAnnotation = ({
         />
       </div>
 
-      {location !== 'outgoing' && (
+      {showToolbar && (
         <AnnotationToolbar
           selectedTool={selectedTool}
           onToolSelect={handleToolSelect}

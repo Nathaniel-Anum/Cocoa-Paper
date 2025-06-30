@@ -33,7 +33,7 @@ const Outgoing = () => {
   const [open, SetOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const setLocation = useStore((state) => state.setLocation);
+  const setShowToolbar = useStore((state) => state.setShowToolbar);
 
   const { user } = useUser();
   const allRolePermissions = getAllRolePermissions(user);
@@ -149,7 +149,7 @@ const Outgoing = () => {
           >
             <button
               onClick={() => {
-                setLocation('outgoing');
+                setShowToolbar(false);
                 navigate(`/view-document/${selectedRecord?.docID}`);
               }}
             >

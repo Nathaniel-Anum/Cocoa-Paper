@@ -1,13 +1,23 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
-const useStore = create((set) => ({
-  location: null,
-  setLocation: (value) => set({ location: value }),
-  chosenRecord: null,
-  setChosenRecord: (value) => set({ chosenRecord: value }),
-  openFileViewer: false,
-  setOpenFileViewer: () =>
-    set((state) => ({ openFileViewer: !state.openFileViewer })),
-}));
+const useStore = create(
+  persist(
+    (set) => ({
+      showToolbar: true,
+      setShowToolbar: (value) => set({ showToolbar: value }),
+      chosenRecord: null,
+      setChosenRecord: (value) => set({ chosenRecord: value }),
+      openFileViewer: false,
+      setOpenFileViewer: () =>
+        set((state) => ({ openFileViewer: !state.openFileViewer })),
+    }),
+    {
+      name: 'document-location',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ showToolbar: state.showToolbar }),
+    }
+  )
+);
 
 export default useStore;

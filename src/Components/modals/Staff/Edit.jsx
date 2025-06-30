@@ -11,12 +11,21 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
     staffDetail?.division?.divisionId
   );
   const [isDepartment, setIsDepartment] = useState(false);
-  const [isMainSecretariat, setIsMainSecretariat] = useState(false);
+  const [isSecretariat, setIssecretariat] = useState(false);
+
+  const divisionId = selectedDivision;
 
   const handleDivisionChange = (value) => {
-    // console.log(`selected Division: ${value}`);
     setSelectedDivision(value);
+    form.setFieldsValue({ departmentId: undefined }); // Clear department when division changes
   };
+
+  // useQuery to get departments, only enabled if selectedDivision is defined
+  const { data: departments } = useQuery({
+    queryKey: ['options', selectedDivision],
+    queryFn: () => axiosInstance.get(`/department/${selectedDivision}`),
+    enabled: !!selectedDivision, // Only fetch when division is selected
+  });
 
   const dontShowPopup = () => {
     setPopup(false);
@@ -24,22 +33,6 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
   const handleChange = (value) => {
     // console.log(`selected: ${value}`);
   };
-
-  // axiosInstance.get("/department").then((res) => console.log(res));
-
-  // useQuery to get departments
-  const { data: departments, refetch } = useQuery({
-    queryKey: ['options'],
-    queryFn: () => {
-      return axiosInstance.get(`/department/${selectedDivision}`);
-    },
-  });
-  // console.log(departments);
-  useEffect(() => {
-    if (selectedDivision) {
-      refetch();
-    }
-  }, [selectedDivision]);
 
   useEffect(() => {
     if (staffDetail) {
@@ -52,7 +45,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
         roleId: staffDetail?.role?.map((role) => role.roleId),
       });
       setIsDepartment(staffDetail?.staff?.isDepartment);
-      setIsMainSecretariat(staffDetail?.staff?.isMainSecretariat);
+      setIssecretariat(staffDetail?.staff?.isSecretariat);
     }
   }, [staffDetail]);
 
@@ -64,8 +57,8 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
       return axiosInstance.patch(`/staff/${staffDetail?.staff?.staffId}`, {
         ...values,
         isDepartment,
-      }); //This way or
-      // addUser(data);  //This way
+        isSecretariat,
+      });
     },
     onSuccess: () => {
       setPopup(false);
@@ -74,7 +67,7 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
       queryClient.invalidateQueries({ mutationKey: 'staff' });
     },
     onError: (error) => {
-      console.log(error);
+      message.error(error?.response?.data?.error);
     },
   });
   const handleUpdate = (values) => {
@@ -164,12 +157,14 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
           <Select
             placeholder="Please choose your Department"
             allowClear
-            options={departments?.data?.data?.map((department, index) => {
-              return {
-                label: department?.departmentName,
-                value: department?.departmentId,
-              };
-            })}
+            options={
+              departments?.data?.data?.map((department, index) => {
+                return {
+                  label: department?.departmentName,
+                  value: department?.departmentId,
+                };
+              }) || []
+            }
             onChange={handleChange}
           />
         </Form.Item>
@@ -178,15 +173,15 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
             onChange={(e) => setIsDepartment(e.target.checked)}
             checked={isDepartment}
           >
-            Setup as Secretariat
+            Setup as Main Secretariat
           </Checkbox>
         </Form.Item>
         <Form.Item label="">
           <Checkbox
-            onChange={(e) => setIsMainSecretariat(e.target.checked)}
-            checked={isMainSecretariat}
+            onChange={(e) => setIssecretariat(e.target.checked)}
+            checked={isSecretariat}
           >
-            Setup as Main Secretariat
+            Setup as Secretariat
           </Checkbox>
         </Form.Item>
 

@@ -11,42 +11,43 @@ import {
   Mentions,
   Checkbox,
   Tag,
-} from "antd";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { UploadOutlined } from "@ant-design/icons";
-import { SlOptionsVertical } from "react-icons/sl";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+} from 'antd';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { UploadOutlined } from '@ant-design/icons';
+import { SlOptionsVertical } from 'react-icons/sl';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 
-import { useTrail } from "./CustomHook/useTrail";
-import axiosInstance from "../Components/axiosInstance";
-import ArchiveFiles from "../Components/modals/Archive/ArchiveFiles";
+import { useTrail } from './CustomHook/useTrail';
+import axiosInstance from '../Components/axiosInstance';
+import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
 
 import {
   hasPermission,
   requiredPermissions,
   getAllRolePermissions,
-} from "../../utils/Roles";
-import useStore from "../store/store";
-import { useUser } from "./CustomHook/useUser";
-import { uploadFile } from "../http/addDocument";
+} from '../../utils/Roles';
+import useStore from '../store/store';
+import { useUser } from './CustomHook/useUser';
+import { uploadFile } from '../http/addDocument';
+import { set } from 'lodash';
 
 const Incoming = () => {
   const navigate = useNavigate();
-  const { trails, isLoading } = useTrail("incoming");
+  const { trails, isLoading } = useTrail('incoming');
 
   const [show, setShow] = useState(false);
   const [open, SetOpen] = useState(false);
   const [record, setRecord] = useState({});
-  const [trailId, setTrailId] = useState("");
-  const [selected, setSelected] = useState("");
+  const [trailId, setTrailId] = useState('');
+  const [selected, setSelected] = useState('');
   const [loading, setLoading] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDivision, setSelectedDivision] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
 
-  const setLocation = useStore((state) => state.setLocation);
+  const setShowToolbar = useStore((state) => state.setShowToolbar);
   const setChosenRecord = useStore((state) => state.setChosenRecord);
 
   const { user: authUser } = useUser();
@@ -71,15 +72,15 @@ const Incoming = () => {
 
   // useQuery for getting all  divisions
   const { data: divisions } = useQuery({
-    queryKey: ["divisions"],
+    queryKey: ['divisions'],
     queryFn: () => {
-      return axiosInstance.get("/division");
+      return axiosInstance.get('/division');
     },
   });
 
   // useQuery for getting all departments in a selected Division
   const { data: departments, refetch } = useQuery({
-    queryKey: ["options"],
+    queryKey: ['options'],
     queryFn: () => {
       return axiosInstance.get(`/department/${selectedDivision}`);
     },
@@ -88,7 +89,7 @@ const Incoming = () => {
 
   // useQuery for getting all users in a selected Department
   const { data: users, refetch: fetchUsers } = useQuery({
-    queryKey: ["users"],
+    queryKey: ['users'],
     queryFn: () => {
       return axiosInstance.get(`/all-users/${selectedDepartment}`);
     },
@@ -97,16 +98,16 @@ const Incoming = () => {
 
   // useMutation to forward Document
   const { mutate: forwardDocument } = useMutation({
-    mutationKey: "forwardDocument",
+    mutationKey: 'forwardDocument',
     mutationFn: (values) => {
       return axiosInstance.patch(`/trail/${selected}`, values);
     },
     onSuccess: () => {
       setLoading(false);
       setIsModalOpen(false);
-      message.success("Document has been successfully forwarded!");
+      message.success('Document has been successfully forwarded!');
       form.resetFields();
-      queryClient.invalidateQueries({ queryKey: ["trail"] });
+      queryClient.invalidateQueries({ queryKey: ['trail'] });
     },
     onError: (error) => {
       setLoading(false);
@@ -130,7 +131,7 @@ const Incoming = () => {
 
   //useQUery to fetch trail associated to doc ID
   const { data: trailData } = useQuery({
-    queryKey: ["trailData", trailId],
+    queryKey: ['trailData', trailId],
     queryFn: async () => {
       return axiosInstance.get(`/trail/${trailId}`);
     },
@@ -139,16 +140,16 @@ const Incoming = () => {
 
   const { mutate: uploadMultipleFiles, isPending: isMultipleUploading } =
     useMutation({
-      mutationKey: ["uploadMultiple"],
+      mutationKey: ['uploadMultiple'],
       mutationFn: async ({ files, subject, ref }) => {
-        console.log("Uploading multiple files...");
+        console.log('Uploading multiple files...');
 
         // Create an array of promises for each file upload
         const uploadPromises = files.map((file) => {
           const formData = new FormData();
-          formData.append("file", file);
-          formData.append("subject", subject);
-          formData.append("ref", ref);
+          formData.append('file', file);
+          formData.append('subject', subject);
+          formData.append('ref', ref);
 
           return uploadFile(formData).then((response) => {
             if (!response?.data?.newFile?.fileId) {
@@ -164,13 +165,13 @@ const Incoming = () => {
         return Promise.all(uploadPromises);
       },
       onSuccess: (fileIds) => {
-        console.log("All files uploaded successfully with IDs:", fileIds);
+        console.log('All files uploaded successfully with IDs:', fileIds);
 
         // Get form values and add file IDs
         const values = form.getFieldsValue();
         forwardDocument({
           ...values,
-          status: "Forwarded",
+          status: 'Forwarded',
           isPrivate,
           attachmentIds: fileIds,
         });
@@ -200,7 +201,7 @@ const Incoming = () => {
     const attachmentFiles = values.attachments?.fileList;
 
     if (!attachmentFiles || attachmentFiles.length === 0) {
-      forwardDocument({ ...values, status: "Forwarded", isPrivate });
+      forwardDocument({ ...values, status: 'Forwarded', isPrivate });
     } else {
       const attachmentFilesArray = attachmentFiles.map(
         (fileItem) => fileItem.originFileObj
@@ -209,8 +210,8 @@ const Incoming = () => {
       // Upload all attachments with reference to main file
       uploadMultipleFiles({
         files: attachmentFilesArray,
-        subject: "",
-        ref: "",
+        subject: '',
+        ref: '',
       });
     }
   };
@@ -227,18 +228,18 @@ const Incoming = () => {
   };
 
   const attachmentUploadProps = {
-    name: "file", // The name of the file input field, not the form field name
+    name: 'file', // The name of the file input field, not the form field name
     multiple: true,
     beforeUpload: () => false, // Prevent auto upload
     onChange(info) {
       console.log(
-        "Attachment files selected:",
+        'Attachment files selected:',
         info.fileList.map((f) => f.name)
       );
       // The fileList will be stored in the form
       form.setFieldsValue({ attachments: { fileList: info.fileList } });
     },
-    accept: ".pdf",
+    accept: '.pdf',
   };
 
   const getItems = (selectedRecord) => {
@@ -247,7 +248,9 @@ const Incoming = () => {
         label: (
           <span
             onClick={() => {
-              setLocation("incoming");
+              selectedRecord.isCarbonCopy
+                ? setShowToolbar(false)
+                : setShowToolbar(true);
               handleViewDocument(selectedRecord);
             }}
           >
@@ -256,17 +259,20 @@ const Incoming = () => {
         ),
         key: 0,
       },
-      {
+      !selectedRecord.isCarbonCopy && {
         label: <span onClick={() => handleClick(selectedRecord)}>Forward</span>,
         key: 1,
       },
       hasPermission(allRolePermissions, [
         requiredPermissions.ARCHIVE_DOCUMENT,
-      ]) && {
-        label: <span onClick={() => handleFile(selectedRecord)}>Archive</span>,
-        key: 2,
-      },
-      {
+      ]) &&
+        !selectedRecord.isCarbonCopy && {
+          label: (
+            <span onClick={() => handleFile(selectedRecord)}>Archive</span>
+          ),
+          key: 2,
+        },
+      !selectedRecord.isCarbonCopy && {
         label: <span onClick={() => handleView(selectedRecord)}>Trail</span>,
         key: 3,
       },
@@ -275,90 +281,92 @@ const Incoming = () => {
 
   const columns = [
     {
-      title: "Subject",
-      key: "subject",
+      title: 'Subject',
+      key: 'subject',
       render: (data) => {
         return (
           <div className="flex items-start">
-            {data.document.subject}{" "}
+            {data.document.subject}{' '}
             {data.isCarbonCopy ? (
               <span>
                 <Tag color="warning">CC</Tag>
               </span>
             ) : (
-              ""
+              ''
             )}
           </div>
         );
       },
     },
     {
-      title: "Reference",
-      dataIndex: "document",
-      key: "ref",
+      title: 'Reference',
+      dataIndex: 'document',
+      key: 'ref',
       render: (document) => {
         return <div>{document.ref}</div>;
       },
     },
 
     {
-      title: "Sender",
-      dataIndex: ["sender", "name"],
-      key: "receiver",
+      title: 'Sender',
+      dataIndex: ['sender', 'name'],
+      key: 'receiver',
     },
     {
-      title: "Intended Receipients",
-      dataIndex: ["userIntendedFor", "name"],
-      key: "userIntendedFor",
+      title: 'Intended Receipients',
+      dataIndex: ['userIntendedFor', 'name'],
+      key: 'userIntendedFor',
     },
 
     {
-      title: "Division",
-      key: "division",
+      title: 'Division',
+      key: 'division',
       render: (document) => {
         return <div>{document.document.division.divisionName}</div>;
       },
     },
 
     {
-      title: "Department",
-      key: "department",
+      title: 'Department',
+      key: 'department',
       render: (document) => {
         return <div>{document.document.department.departmentName}</div>;
       },
     },
     {
-      title: "Date",
-      key: "action",
-      dataIndex: "createdAt",
+      title: 'Date',
+      key: 'action',
+      dataIndex: 'createdAt',
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         return <div>{dateTime.toDateString()}</div>;
       },
     },
     {
-      title: "Time",
-      key: "time",
-      dataIndex: "createdAt",
+      title: 'Time',
+      key: 'time',
+      dataIndex: 'createdAt',
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         return <div>{dateTime.toLocaleTimeString()}</div>;
       },
     },
     {
-      title: "Actions",
-      key: "action",
+      title: 'Actions',
+      key: 'action',
 
-      render: (selectedRecord) => (
-        <Dropdown
-          menu={{ items: getItems(selectedRecord) }}
-          trigger={["click"]}
-        >
-          <a onClick={(e) => e.preventDefault()}>
-            <SlOptionsVertical />
-          </a>
-        </Dropdown>
-      ),
+      render: (selectedRecord) => {
+        return (
+          <Dropdown
+            menu={{ items: getItems(selectedRecord) }}
+            trigger={['click']}
+          >
+            <a onClick={(e) => e.preventDefault()}>
+              <SlOptionsVertical />
+            </a>
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -390,7 +398,7 @@ const Incoming = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Please choose your Division!",
+                    message: 'Please choose your Division!',
                   },
                 ]}
               >
@@ -413,7 +421,7 @@ const Incoming = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Please choose your Department!",
+                    message: 'Please choose your Department!',
                   },
                 ]}
               >
@@ -436,7 +444,7 @@ const Incoming = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Please select a User!",
+                    message: 'Please select a User!',
                   },
                 ]}
               >
@@ -502,7 +510,7 @@ const Incoming = () => {
                   Forward
                 </Button>
               </Form.Item>
-            </Form>{" "}
+            </Form>{' '}
           </div>
         </Modal>
       )}
@@ -512,7 +520,7 @@ const Incoming = () => {
         onCancel={handleClose}
         footer={null}
         centered="true"
-        width={"60%"}
+        width={'60%'}
       >
         <div className="py-6">
           <Steps
@@ -523,7 +531,7 @@ const Incoming = () => {
               if (index === 0) {
                 return [
                   {
-                    title: "Sent",
+                    title: 'Sent',
                     description: trail.sender.name,
                   },
                   {
