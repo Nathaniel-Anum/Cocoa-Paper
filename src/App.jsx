@@ -73,10 +73,10 @@ function App() {
 
   useEffect(() => {
     function handleDocumentSent(data) {
-      console.log('New doc received ...');
+      console.log('New doc received ...', data);
       if (window.Notification && Notification.permission === 'granted') {
         new Notification('New Document Received', {
-          body: `From: ${data.sender?.name || 'Unknown'}\nSubject: ${
+          body: `From: ${data.sentBy || 'Unknown'}\nSubject: ${
             data.subject || 'No subject'
           }`,
         });
@@ -84,7 +84,7 @@ function App() {
     }
     console.log("document-sent listening....");
 
-    socket.emit('document-sent', handleDocumentSent);
+    socket.on('document-sent', handleDocumentSent);
     return () => {
       socket.off('document-sent', handleDocumentSent);
     };
