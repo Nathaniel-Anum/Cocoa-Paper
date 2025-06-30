@@ -1,66 +1,64 @@
-import React, { useState, useEffect, useRef } from 'react';
 import {
   Table,
   Modal,
   Form,
   Select,
-  message,
-  Popover,
-  Button,
   Steps,
-  Dropdown,
+  Button,
   Upload,
-  notification,
+  message,
+  Dropdown,
   Mentions,
   Checkbox,
-} from 'antd';
-import { useTrail } from './CustomHook/useTrail';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import axiosInstance from '../Components/axiosInstance';
-import { UploadOutlined } from '@ant-design/icons';
+  Tag,
+} from "antd";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { UploadOutlined } from "@ant-design/icons";
+import { SlOptionsVertical } from "react-icons/sl";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 
-import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
+import { useTrail } from "./CustomHook/useTrail";
+import axiosInstance from "../Components/axiosInstance";
+import ArchiveFiles from "../Components/modals/Archive/ArchiveFiles";
 
-import { useNavigate } from 'react-router-dom';
-
-import useStore from '../store/store';
-import { SlOptionsVertical } from 'react-icons/sl';
-import TextArea from 'antd/es/input/TextArea';
-import { useUser } from './CustomHook/useUser';
-import { uploadFile } from '../http/addDocument';
 import {
   hasPermission,
   requiredPermissions,
   getAllRolePermissions,
-} from '../../utils/Roles';
-import { socket } from '../utils/socket';
+} from "../../utils/Roles";
+import useStore from "../store/store";
+import { useUser } from "./CustomHook/useUser";
+import { uploadFile } from "../http/addDocument";
 
 const Incoming = () => {
-  const { trails, isLoading } = useTrail('incoming');
-  const [show, setShow] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [record, setRecord] = useState({});
-  const [trailId, setTrailId] = useState('');
-  const [open, SetOpen] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
-
-  const [senderId, setSenderId] = useState('');
-
-  const { user } = useUser();
-  const allRolePermissions = getAllRolePermissions(user);
   const navigate = useNavigate();
+  const { trails, isLoading } = useTrail("incoming");
+
+  const [show, setShow] = useState(false);
+  const [open, SetOpen] = useState(false);
+  const [record, setRecord] = useState({});
+  const [trailId, setTrailId] = useState("");
+  const [selected, setSelected] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDivision, setSelectedDivision] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+
+  const setLocation = useStore((state) => state.setLocation);
+  const setChosenRecord = useStore((state) => state.setChosenRecord);
+
+  const { user: authUser } = useUser();
+  const allRolePermissions = getAllRolePermissions(authUser);
 
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
 
   function handleFile(selectedRecord) {
     setShow(true);
-    setSenderId(selectedRecord);
     setRecord(selectedRecord?.document);
   }
-
-  // console.log(trails);
 
   const handleCancel = () => {
     form.resetFields();
@@ -71,37 +69,26 @@ const Incoming = () => {
     SetOpen(false);
   };
 
-  const [selectedDivision, setSelectedDivision] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [selected, setSelected] = useState('');
-
-  const setChosenRecord = useStore((state) => state.setChosenRecord);
-  const setLocation = useStore((state) => state.setLocation);
-
-  const { user: authUser } = useUser();
-
   // useQuery for getting all  divisions
   const { data: divisions } = useQuery({
-    queryKey: ['divisions'],
+    queryKey: ["divisions"],
     queryFn: () => {
-      return axiosInstance.get('/division');
+      return axiosInstance.get("/division");
     },
   });
-  // console.log(divisions?.data);
 
   // useQuery for getting all departments in a selected Division
   const { data: departments, refetch } = useQuery({
-    queryKey: ['options'],
+    queryKey: ["options"],
     queryFn: () => {
       return axiosInstance.get(`/department/${selectedDivision}`);
     },
     enabled: false,
   });
-  // console.log(departments?.data?.data);
 
   // useQuery for getting all users in a selected Department
   const { data: users, refetch: fetchUsers } = useQuery({
-    queryKey: ['users'],
+    queryKey: ["users"],
     queryFn: () => {
       return axiosInstance.get(`/all-users/${selectedDepartment}`);
     },
@@ -110,16 +97,16 @@ const Incoming = () => {
 
   // useMutation to forward Document
   const { mutate: forwardDocument } = useMutation({
-    mutationKey: 'forwardDocument',
+    mutationKey: "forwardDocument",
     mutationFn: (values) => {
       return axiosInstance.patch(`/trail/${selected}`, values);
     },
     onSuccess: () => {
       setLoading(false);
       setIsModalOpen(false);
-      message.success('Document has been successfully forwarded!');
+      message.success("Document has been successfully forwarded!");
       form.resetFields();
-      queryClient.invalidateQueries({ queryKey: ['trail'] });
+      queryClient.invalidateQueries({ queryKey: ["trail"] });
     },
     onError: (error) => {
       setLoading(false);
@@ -141,47 +128,9 @@ const Incoming = () => {
     }
   }, [selectedDepartment]);
 
-  const showErrorNotification = (title, error) => {
-    let description = 'An unexpected error occurred.';
-
-    // Try to extract error message from different formats
-    if (typeof error === 'string') {
-      description = error;
-    } else if (error?.message) {
-      description = error.message;
-    } else if (error?.response?.data?.error) {
-      if (Array.isArray(error.response.data.error)) {
-        description = error.response.data.error
-          .map((e) => e.msg || e)
-          .join(', ');
-      } else {
-        description = error.response.data.error;
-      }
-    } else if (error?.response?.data?.msg) {
-      description = error.response.data.msg;
-    }
-
-    // Log the error for debugging
-    console.error(`${title}:`, error);
-
-    // Show notification
-    notification.error({
-      message: title,
-      description,
-    });
-  };
-
-  // Helper function to show success notification
-  const showSuccessNotification = (title, description) => {
-    notification.success({
-      message: title,
-      description,
-    });
-  };
-
   //useQUery to fetch trail associated to doc ID
   const { data: trailData } = useQuery({
-    queryKey: ['trailData', trailId],
+    queryKey: ["trailData", trailId],
     queryFn: async () => {
       return axiosInstance.get(`/trail/${trailId}`);
     },
@@ -190,16 +139,16 @@ const Incoming = () => {
 
   const { mutate: uploadMultipleFiles, isPending: isMultipleUploading } =
     useMutation({
-      mutationKey: ['uploadMultiple'],
+      mutationKey: ["uploadMultiple"],
       mutationFn: async ({ files, subject, ref }) => {
-        console.log('Uploading multiple files...');
+        console.log("Uploading multiple files...");
 
         // Create an array of promises for each file upload
         const uploadPromises = files.map((file) => {
           const formData = new FormData();
-          formData.append('file', file);
-          formData.append('subject', subject);
-          formData.append('ref', ref);
+          formData.append("file", file);
+          formData.append("subject", subject);
+          formData.append("ref", ref);
 
           return uploadFile(formData).then((response) => {
             if (!response?.data?.newFile?.fileId) {
@@ -215,19 +164,18 @@ const Incoming = () => {
         return Promise.all(uploadPromises);
       },
       onSuccess: (fileIds) => {
-        console.log('All files uploaded successfully with IDs:', fileIds);
+        console.log("All files uploaded successfully with IDs:", fileIds);
 
         // Get form values and add file IDs
         const values = form.getFieldsValue();
         forwardDocument({
           ...values,
-          status: 'Forwarded',
+          status: "Forwarded",
           isPrivate,
           attachmentIds: fileIds,
         });
       },
       onError: (error) => {
-        // showErrorNotification('Attachment Upload Failed', error);
         message.error(error?.response?.data?.error);
       },
     });
@@ -241,10 +189,6 @@ const Incoming = () => {
     setSelectedDepartment(option.value);
   };
 
-  const handleUserChange = (value) => {
-    console.log(`selected User: ${value}`);
-  };
-
   const handleClick = (selectedRecord) => {
     setIsModalOpen(true);
     setSelected(selectedRecord?.docID);
@@ -256,9 +200,7 @@ const Incoming = () => {
     const attachmentFiles = values.attachments?.fileList;
 
     if (!attachmentFiles || attachmentFiles.length === 0) {
-      // No attachments, just upload the main file
-
-      forwardDocument({ ...values, status: 'Forwarded', isPrivate });
+      forwardDocument({ ...values, status: "Forwarded", isPrivate });
     } else {
       const attachmentFilesArray = attachmentFiles.map(
         (fileItem) => fileItem.originFileObj
@@ -267,8 +209,8 @@ const Incoming = () => {
       // Upload all attachments with reference to main file
       uploadMultipleFiles({
         files: attachmentFilesArray,
-        subject: '',
-        ref: '',
+        subject: "",
+        ref: "",
       });
     }
   };
@@ -285,18 +227,18 @@ const Incoming = () => {
   };
 
   const attachmentUploadProps = {
-    name: 'file', // The name of the file input field, not the form field name
+    name: "file", // The name of the file input field, not the form field name
     multiple: true,
     beforeUpload: () => false, // Prevent auto upload
     onChange(info) {
       console.log(
-        'Attachment files selected:',
+        "Attachment files selected:",
         info.fileList.map((f) => f.name)
       );
       // The fileList will be stored in the form
       form.setFieldsValue({ attachments: { fileList: info.fileList } });
     },
-    accept: '.pdf',
+    accept: ".pdf",
   };
 
   const getItems = (selectedRecord) => {
@@ -305,7 +247,7 @@ const Incoming = () => {
         label: (
           <span
             onClick={() => {
-              setLocation('incoming');
+              setLocation("incoming");
               handleViewDocument(selectedRecord);
             }}
           >
@@ -333,81 +275,84 @@ const Incoming = () => {
 
   const columns = [
     {
-      title: 'Subject',
-      dataIndex: 'document',
-      key: 'subject',
-      render: (document) => {
-        //   console.log(document);
-        return <div>{document.subject}</div>;
+      title: "Subject",
+      key: "subject",
+      render: (data) => {
+        return (
+          <div className="flex items-start">
+            {data.document.subject}{" "}
+            {data.isCarbonCopy ? (
+              <span>
+                <Tag color="warning">CC</Tag>
+              </span>
+            ) : (
+              ""
+            )}
+          </div>
+        );
       },
     },
     {
-      title: 'Reference',
-      dataIndex: 'document',
-      key: 'ref',
+      title: "Reference",
+      dataIndex: "document",
+      key: "ref",
       render: (document) => {
         return <div>{document.ref}</div>;
       },
     },
 
     {
-      title: 'Sender',
-      dataIndex: ['sender', 'name'],
-      key: 'receiver',
+      title: "Sender",
+      dataIndex: ["sender", "name"],
+      key: "receiver",
     },
     {
-      title: 'Intended Receipients',
-      dataIndex: ['userIntendedFor', 'name'],
-      key: 'userIntendedFor',
+      title: "Intended Receipients",
+      dataIndex: ["userIntendedFor", "name"],
+      key: "userIntendedFor",
     },
 
     {
-      title: 'Division',
-      key: 'division',
+      title: "Division",
+      key: "division",
       render: (document) => {
         return <div>{document.document.division.divisionName}</div>;
       },
     },
 
     {
-      title: 'Department',
-      key: 'department',
+      title: "Department",
+      key: "department",
       render: (document) => {
         return <div>{document.document.department.departmentName}</div>;
       },
     },
     {
-      title: 'Date',
-      key: 'action',
-      dataIndex: 'createdAt',
+      title: "Date",
+      key: "action",
+      dataIndex: "createdAt",
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
-        //   console.log(dateTime.toDateString());
-        //   const year = dateTime.getFullYear();
-        //   const month = (dateTime.getMonth() + 1).toString();
-        //   const day = dateTime.getDate().toString().padStart(2, "0");
-        //   const readableTime = `${day}-${month}-${year}`;
-        //   console.log(readableTime);
         return <div>{dateTime.toDateString()}</div>;
       },
     },
     {
-      title: 'Time',
-      key: 'time',
-      dataIndex: 'createdAt',
+      title: "Time",
+      key: "time",
+      dataIndex: "createdAt",
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         return <div>{dateTime.toLocaleTimeString()}</div>;
       },
     },
     {
-      title: 'Actions',
-      key: 'action',
+      title: "Actions",
+      key: "action",
 
       render: (selectedRecord) => (
         <Dropdown
           menu={{ items: getItems(selectedRecord) }}
-          trigger={['click']}
+          trigger={["click"]}
         >
           <a onClick={(e) => e.preventDefault()}>
             <SlOptionsVertical />
@@ -421,43 +366,6 @@ const Incoming = () => {
     ...s,
     key: s.docId,
   }));
-
-  const props = {
-    name: 'file',
-    beforeUpload: () => false,
-    onChange(info) {
-      if (info.file.status === 'done') {
-        message.success(`${info.file.name} uploaded successfully`);
-      } else if (info.file.status === 'error') {
-        message.error(`${info.file.name} upload failed.`);
-      }
-    },
-    accept: '.png, .jpg, .jpeg, .pdf',
-  };
-
-  // const prevDocIds = useRef([]);
-
-  // useEffect(() => {
-  //   if (trails && Array.isArray(trails)) {
-  //     const currentIds = trails.map((t) => t.docID);
-  //     // Find new docs
-  //     const newDocs = trails.filter(
-  //       (t) => !prevDocIds.current.includes(t.docID)
-  //     );
-  //     if (newDocs.length > 0 && Notification.permission === 'granted') {
-  //       newDocs.forEach((doc) => {
-  //         new Notification('New Document Received', {
-  //           body: `From: ${doc.sender?.name || 'Unknown'}\nSubject: ${
-  //             doc.subject || 'No subject'
-  //           }`,
-  //         });
-  //       });
-  //     }
-  //     prevDocIds.current = currentIds;
-  //   }
-  // }, [trails]);
-
-
 
   return (
     <div className="mt-8">
@@ -482,7 +390,7 @@ const Incoming = () => {
                 rules={[
                   {
                     required: true,
-                    message: 'Please choose your Division!',
+                    message: "Please choose your Division!",
                   },
                 ]}
               >
@@ -492,12 +400,10 @@ const Incoming = () => {
                   showSearch
                   allowClear
                   labelInValue
-                  options={divisions?.data.map((division, index) => {
-                    return {
-                      label: division?.divisionName,
-                      value: division?.divisionId,
-                    };
-                  })}
+                  options={divisions?.data.map((division) => ({
+                    label: division?.divisionName,
+                    value: division?.divisionId,
+                  }))}
                   onChange={handleDivisionChange}
                 />
               </Form.Item>
@@ -507,7 +413,7 @@ const Incoming = () => {
                 rules={[
                   {
                     required: true,
-                    message: 'Please choose your Department!',
+                    message: "Please choose your Department!",
                   },
                 ]}
               >
@@ -517,12 +423,10 @@ const Incoming = () => {
                   showSearch
                   allowClear
                   labelInValue
-                  options={departments?.data?.data?.map((department, index) => {
-                    return {
-                      label: department?.departmentName,
-                      value: department?.departmentId,
-                    };
-                  })}
+                  options={departments?.data?.data?.map((department) => ({
+                    label: department?.departmentName,
+                    value: department?.departmentId,
+                  }))}
                   onChange={handleDepartmentChange}
                 />
               </Form.Item>
@@ -532,7 +436,7 @@ const Incoming = () => {
                 rules={[
                   {
                     required: true,
-                    message: 'Please select a User!',
+                    message: "Please select a User!",
                   },
                 ]}
               >
@@ -544,14 +448,13 @@ const Incoming = () => {
                   options={
                     (users &&
                       users?.data
-                        .filter((emp) => emp.userId !== user?.userId)
+                        .filter((emp) => emp.userId !== authUser?.userId)
                         .map((user) => ({
                           label: user?.name,
                           value: user?.userId,
                         }))) ||
                     []
                   }
-                  // onChange={handleUserChange}
                 />
               </Form.Item>
               <Form.Item>
@@ -567,7 +470,7 @@ const Incoming = () => {
                   options={
                     (users &&
                       users?.data
-                        ?.filter((emp) => emp.userId !== user?.userId)
+                        ?.filter((emp) => emp.userId !== authUser?.userId)
                         .map((user) => ({
                           label: user?.name,
                           value: user?.name,
@@ -599,7 +502,7 @@ const Incoming = () => {
                   Forward
                 </Button>
               </Form.Item>
-            </Form>{' '}
+            </Form>{" "}
           </div>
         </Modal>
       )}
@@ -609,7 +512,7 @@ const Incoming = () => {
         onCancel={handleClose}
         footer={null}
         centered="true"
-        width={'60%'}
+        width={"60%"}
       >
         <div className="py-6">
           <Steps
@@ -620,7 +523,7 @@ const Incoming = () => {
               if (index === 0) {
                 return [
                   {
-                    title: 'Sent',
+                    title: "Sent",
                     description: trail.sender.name,
                   },
                   {
