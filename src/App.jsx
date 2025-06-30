@@ -79,10 +79,11 @@ function App() {
           body: `From: ${data.sentBy || 'Unknown'}\nSubject: ${
             data.subject || 'No subject'
           }`,
+          requireInteraction: true, // This makes the notification persistent
         });
       }
     }
-    console.log("document-sent listening....");
+    console.log('document-sent listening....');
 
     socket.on('document-sent', handleDocumentSent);
     return () => {
