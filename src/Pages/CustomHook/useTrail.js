@@ -1,16 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
-import { useUser } from './useUser';
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+import { useUser } from './useUser';
 import axiosInstance from '../../Components/axiosInstance';
 
 export const useTrail = (type) => {
   const { user } = useUser();
-  // console.log(user);
 
   const [incoming, setIncoming] = useState([]);
   const [outgoing, setOutgoing] = useState([]);
-  const [physicalDocument, setPhysicalDocument] = useState([]);
   const [allTrails, setAllTrails] = useState([]);
+  const [physicalDocument, setPhysicalDocument] = useState([]);
 
   // useQuery to fetch all trails
   const { data: trails, isLoading } = useQuery({
@@ -19,15 +19,43 @@ export const useTrail = (type) => {
       return axiosInstance.get('/all-Trails');
     },
   });
-  // console.log(trails?.data);
 
   useEffect(() => {
     if (!isLoading && user && trails?.data.length) {
-      const incomingData = trails.data.filter(
-        (i) => i.receiver.userId === user?.userId && i.status === 'Received'
-      );
+      // Normal incoming
+      const incomingData = trails.data
+        .filter((i) => i.receiver.userId === user?.userId && i.status === 'Received')
+        .map((i) => ({ ...i, isCarbonCopy: false }));
 
-      setIncoming(incomingData);
+      // Carbon copy incoming
+      const carbonCopyData = trails.data
+        .flatMap((trail) => {
+          if (Array.isArray(trail.carbonCopies)) {
+            return trail.carbonCopies
+              .filter((cc) => cc.copiedToUserId === user?.userId)
+              .map(() => ({ ...trail, isCarbonCopy: true }));
+          }
+          return [];
+        });
+
+      // Merge, deduplicate, and preserve original order from trails.data
+      const seen = new Set();
+      const orderedIncoming = [];
+      trails.data.forEach((trail) => {
+        const key = trail.docID || trail.trailsId;
+        if (seen.has(key)) return;
+        // Prefer carbon copy if present, else normal
+        const cc = carbonCopyData.find((t) => (t.docID || t.trailsId) === key);
+        const normal = incomingData.find((t) => (t.docID || t.trailsId) === key);
+        if (cc) {
+          orderedIncoming.push(cc);
+          seen.add(key);
+        } else if (normal) {
+          orderedIncoming.push(normal);
+          seen.add(key);
+        }
+      });
+      setIncoming(orderedIncoming);
 
       const outgoingDataRaw = trails.data.filter(
         (i) => i.sender.userId === user?.userId
@@ -38,8 +66,7 @@ export const useTrail = (type) => {
         const ref = trail.document.ref;
         if (
           !uniqueOutgoingMap.has(ref) ||
-          new Date(trail.createdAt) >
-            new Date(uniqueOutgoingMap.get(ref).createdAt)
+          new Date(trail.createdAt) > new Date(uniqueOutgoingMap.get(ref).createdAt)
         ) {
           uniqueOutgoingMap.set(ref, trail);
         }
