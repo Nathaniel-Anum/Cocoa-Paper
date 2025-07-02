@@ -68,7 +68,7 @@ const Locator = () => {
       key: 'subject',
     },
     {
-      title: 'Sent To',
+      title: 'Current Recipient',
       dataIndex: 'receiver',
       key: 'receiver',
       render: (_, record) => {
@@ -133,8 +133,8 @@ const Locator = () => {
       {console.log(trailDisplay && { trailDisplay })}
       {/* Conditional Rendering for Grid or Table View */}
       {isGridView ? (
-        <div className="grid grid-cols-2 ">
-          <div className=" grid grid-cols-2 no-scrollbar h-screen">
+        <div className=" ">
+          <div className=" grid grid-cols-4 no-scrollbar h-screen">
             {isArray(trailDisplay?.data) ? (
               trailDisplay?.data?.map((trail) => (
                 <div className=" flex items-center  p-6 cursor-pointer ">
@@ -221,9 +221,9 @@ const Locator = () => {
           </div>
 
           {/* Lottie Animation on the Right Side (Shown Only in Grid View) */}
-          <div className="flex justify-center items-center fixed bottom-10 right-[5rem]">
+          {/* <div className="flex justify-center items-center fixed bottom-10 right-[5rem]">
             <Lottie options={defaultOptions} height={450} width={650} />
-          </div>
+          </div> */}
         </div>
       ) : (
         // Full-Width Ant Design Table Component for Trail Data (Table View)

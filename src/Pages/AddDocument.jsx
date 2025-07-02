@@ -769,6 +769,16 @@ const AddDocument = () => {
                 </Checkbox>
               </Form.Item>
 
+              {isPrivate && (
+                <Form.Item name="privateComment" label="Private Comment">
+                  <TextArea
+                    rows={4}
+                    placeholder="Enter your private comments..."
+                    className="outline outline-1 outline-red-500 rounded-md p-2"
+                  />
+                </Form.Item>
+              )}
+
               <Form.Item label="Comment" name="comment">
                 <TextArea
                   rows={4}

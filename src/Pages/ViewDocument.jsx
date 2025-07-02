@@ -41,6 +41,7 @@ import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
 import { updateBudgetAmount } from '../http/budget';
 import Loader from '../Components/Loader/Loader';
 import { PDFViewerContent } from '../Components/PDFViewer/PdfViewer';
+import TextArea from 'antd/es/input/TextArea';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -658,6 +659,15 @@ function ViewDocument() {
                       Private Comment?
                     </Checkbox>
                   </Form.Item>
+                  {isPrivate && (
+                    <Form.Item name="privateComment" label="Private Comment">
+                      <TextArea
+                        rows={4}
+                        placeholder="Enter your private comments..."
+                        className="outline outline-1 outline-red-500 rounded-md p-2"
+                      />
+                    </Form.Item>
+                  )}
 
                   <Form.Item label="Comment" name="comment" className="mb-2">
                     <Mentions
