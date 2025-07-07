@@ -1055,7 +1055,10 @@ const PDFAnnotation = ({
       const zipBlob = await zip.generateAsync({ type: 'blob' });
 
       // Trigger download of the zip
-      saveAs(zipBlob, `${docData?.file?.fileName || 'document'}-with-comments.zip`);
+      saveAs(
+        zipBlob,
+        `${docData?.file?.fileName || 'document'}-with-comments.zip`
+      );
       message.success(
         'Annotated PDF and comments downloaded as zip successfully'
       );

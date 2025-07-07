@@ -72,9 +72,18 @@ const PDFViewerContent = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
             return (
               <div
                 key={pg}
-                style={pg === pageNumber
-                  ? { position: 'relative', zIndex: 1 }
-                  : { position: 'absolute', left: '-9999px', top: 0, width: 0, height: 0, overflow: 'hidden' }}
+                style={
+                  pg === pageNumber
+                    ? { position: 'relative', zIndex: 1 }
+                    : {
+                        position: 'absolute',
+                        left: '-9999px',
+                        top: 0,
+                        width: 0,
+                        height: 0,
+                        overflow: 'hidden',
+                      }
+                }
               >
                 <PDFAnnotation
                   scale={scale}
@@ -82,7 +91,9 @@ const PDFViewerContent = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
                   documentId={documentId}
                   pageNumber={pg}
                   onDocumentLoadError={onDocumentLoadError}
-                  onDocumentLoadSuccess={pg === 1 ? onDocumentLoadSuccess : undefined}
+                  onDocumentLoadSuccess={
+                    pg === 1 ? onDocumentLoadSuccess : undefined
+                  }
                   registerCanvas={registerCanvas}
                   getAllPageCanvases={() => pageCanvases.current}
                   numPages={numPages}
