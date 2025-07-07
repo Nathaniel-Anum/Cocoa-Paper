@@ -36,7 +36,7 @@ const Stamp = () => {
 
   const columns = [
     {
-      title: 'Signature',
+      title: 'Artifact Image',
       dataIndex: 'stamp',
       key: 'stamp',
       render: (value) => {
@@ -111,7 +111,7 @@ const Stamp = () => {
           qClient.invalidateQueries({ queryKey: ['stamps'] });
           setOpenModal(false);
           form.resetFields();
-          message.success('Stamp added successfully!');
+          message.success('Artifact added successfully!');
         })
         .catch((err) => {
           message.error(err?.response?.data?.error);
@@ -222,11 +222,11 @@ const Stamp = () => {
           form.resetFields();
         }}
         footer={null}
-        title={editMode ? 'EDIT STAMP' : 'ADD STAMP'}
+        title={editMode ? 'EDIT ARTIFACT' : 'ADD ARTIFACT'}
       >
         <Form layout="vertical" onFinish={handleSubmit} form={form}>
-          <Form.Item label="Stamp" name="name" required>
-            <Input placeholder="Enter Stamp name" />
+          <Form.Item label="Artifact Name" name="name" required>
+            <Input placeholder="Enter artifact name" />
           </Form.Item>
           <Form.Item
             label="Division"
@@ -304,7 +304,7 @@ const Stamp = () => {
               // onChange={handleUserChange}
             />
           </Form.Item>
-          <Form.Item name="file" label="Stamp File">
+          <Form.Item name="file" label="Endorsement File">
             <Upload
               {...uploadProps}
               listType="text"
@@ -316,7 +316,7 @@ const Stamp = () => {
                 icon={<UploadOutlined />}
                 className="w-full cursor-pointer"
               >
-                Upload Stamp
+                Upload Endorsement Artifact
               </Button>
             </Upload>
             {/* <div className="text-gray-500 text-sm mt-1">
@@ -339,7 +339,7 @@ const Stamp = () => {
           className="bg-[#582F08] text-[#edd3bb]"
           onClick={() => setOpenModal(true)}
         >
-          Add Stamp
+          Add Artifact
         </Button>
       </div>
       <Table

@@ -43,22 +43,20 @@ export const requiredPermissions = {
   UPDATE_CONFIGURATION: 'UPDATE_CONFIGURATION',
   DELETE_CONFIGURATION: 'DELETE_CONFIGURATION',
   UPDATE_DOCUMENT_AMOUNT: 'UPDATE_DOCUMENT_AMOUNT',
+  VIEW_AUDIT_TOOLS: 'VIEW_AUDIT_TOOLS',
+  VIEW_ANNOTATION_TOOLS: 'VIEW_ANNOTATION_TOOLS',
+  DOWNLOAD_DOCUMENT: 'DOWNLOAD_DOCUMENT',
+  READ_ANNOTATIONS: 'READ_ANNOTATIONS',
+  READ_ANNOTATION: 'READ_ANNOTATION',
+  CREATE_ANNOTATIONS: 'CREATE_ANNOTATIONS',
+  UPDATE_ANNOTATION: 'UPDATE_ANNOTATION',
+  DELETE_ANNOTATION: 'DELETE_ANNOTATION',
 };
 
 export function getAllRolePermissions(user) {
   if (!user?.role) return [];
   return user.role.flatMap((role) => role.rolePermissions || []);
 }
-
-// export function hasPermission(userRoles, requiredPermissions) {
-//   return requiredPermissions.every((requiredPermission) =>
-//     userRoles?.some((role) =>
-//       role.rolePermission?.some(
-//         (perm) => perm.permission.permission === requiredPermission
-//       )
-//     )
-//   );
-// }
 
 export function hasPermission(userPermissions, requiredPermissions) {
   return !!requiredPermissions.every((permission) =>

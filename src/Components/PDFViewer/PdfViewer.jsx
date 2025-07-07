@@ -15,11 +15,14 @@ import PDFAnnotation from './PDFAnnotation';
 
 // Set up PDF.js worker source
 
+import { useRef } from 'react';
 const PDFViewerContent = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
   const [error, setError] = useState(null);
+  // Store canvases for each page
+  const pageCanvases = useRef({});
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
@@ -50,20 +53,43 @@ const PDFViewerContent = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
     }
   };
 
+  // Register canvas for a page
+  const registerCanvas = (page, canvas) => {
+    if (canvas) {
+      pageCanvases.current[page] = canvas;
+    }
+  };
+
   return (
     <div className="pdf-viewer-content">
       {error ? (
         <div className="error-message">{error}</div>
       ) : (
         <>
-          <PDFAnnotation
-            scale={scale}
-            pdfUrl={pdfUrl}
-            documentId={documentId}
-            pageNumber={pageNumber}
-            onDocumentLoadError={onDocumentLoadError}
-            onDocumentLoadSuccess={onDocumentLoadSuccess}
-          />
+          {/* Render all pages' annotation canvases, only show the current page */}
+          {Array.from({ length: numPages || 1 }, (_, idx) => {
+            const pg = idx + 1;
+            return (
+              <div
+                key={pg}
+                style={pg === pageNumber
+                  ? { position: 'relative', zIndex: 1 }
+                  : { position: 'absolute', left: '-9999px', top: 0, width: 0, height: 0, overflow: 'hidden' }}
+              >
+                <PDFAnnotation
+                  scale={scale}
+                  pdfUrl={pdfUrl}
+                  documentId={documentId}
+                  pageNumber={pg}
+                  onDocumentLoadError={onDocumentLoadError}
+                  onDocumentLoadSuccess={pg === 1 ? onDocumentLoadSuccess : undefined}
+                  registerCanvas={registerCanvas}
+                  getAllPageCanvases={() => pageCanvases.current}
+                  numPages={numPages}
+                />
+              </div>
+            );
+          })}
           <div className="pdf-controls">
             <button
               onClick={() => changePage(-1)}

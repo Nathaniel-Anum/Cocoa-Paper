@@ -13,6 +13,12 @@ import { Tooltip, Popover, Popconfirm } from 'antd';
 import ColorPicker from './ColorPicker';
 import { PiSelectionPlusDuotone } from 'react-icons/pi';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
+import {
+  getAllRolePermissions,
+  hasPermission,
+  requiredPermissions,
+} from '../../../utils/Roles';
+import { useUser } from '../../Pages/CustomHook/useUser';
 
 const AnnotationToolbar = ({
   selectedTool,
@@ -55,19 +61,25 @@ const AnnotationToolbar = ({
     },
   ];
 
+  const { user } = useUser();
+
+  const allRolePermissions = getAllRolePermissions(user);
+
   const tools = [
     { id: 'pen', label: 'Pen', icon: <FaPen /> },
     { id: 'select', label: 'Select', icon: <PiSelectionPlusDuotone /> },
     { id: 'highlighter', label: 'Highlighter', icon: <FaHighlighter /> },
     { id: 'eraser', label: 'Eraser', icon: <FaEraser /> },
-    { id: 'stamp', label: 'Stamp', icon: <FaStamp /> },
+    { id: 'stamp', label: 'Endorsement', icon: <FaStamp /> },
     { id: 'text', label: 'Text', icon: <>T</> },
-    {
+    hasPermission(allRolePermissions, [
+      requiredPermissions.VIEW_AUDIT_TOOLS,
+    ]) && {
       id: 'presets',
       label: 'Presets',
       icon: <span>★</span>,
     },
-  ];
+  ].filter(Boolean);
 
   return (
     <div className="annotation-toolbar overflow-auto border no-scrollbar">
@@ -85,16 +97,23 @@ const AnnotationToolbar = ({
               content={
                 <div style={{ display: 'flex', gap: 12 }}>
                   {auditPresets.map((preset) => (
-                    <Tooltip key={preset.id} title={preset.label} placement="top">
+                    <Tooltip
+                      key={preset.id}
+                      title={preset.label}
+                      placement="top"
+                    >
                       <button
                         className={`tool-button${
                           selectedTool === preset.id ? ' active' : ''
                         }`}
                         style={{
                           border: '1px solid #d1d5db',
-                          background: selectedTool === preset.id ? '#582f08' : 'white',
-                          borderColor: selectedTool === preset.id ? '#582f08' : '#d1d5db',
-                          color: selectedTool === preset.id ? 'white' : 'inherit',
+                          background:
+                            selectedTool === preset.id ? '#582f08' : 'white',
+                          borderColor:
+                            selectedTool === preset.id ? '#582f08' : '#d1d5db',
+                          color:
+                            selectedTool === preset.id ? 'white' : 'inherit',
                           fontSize: 18,
                         }}
                         onClick={() => {
@@ -168,25 +187,30 @@ const AnnotationToolbar = ({
           <FaRedo />
         </button>
       </Tooltip>
-      <Tooltip
-        title="Download"
-        mouseEnterDelay={0}
-        mouseLeaveDelay={0}
-        placement="top"
-      >
-        <button
-          className="tool-button"
-          onClick={onDownload}
-          type="button"
-          disabled={isDownloading}
+      {hasPermission(allRolePermissions, [
+        requiredPermissions.DOWNLOAD_DOCUMENT,
+      ]) && (
+        <Tooltip
+          title="Download"
+          mouseEnterDelay={0}
+          mouseLeaveDelay={0}
+          placement="top"
         >
-          {isDownloading ? (
-            <LoadingOutlined spin style={{ fontSize: 18 }} />
-          ) : (
-            <DownloadOutlined style={{ fontSize: 18 }} />
-          )}
-        </button>
-      </Tooltip>
+          <button
+            className="tool-button"
+            onClick={onDownload}
+            type="button"
+            disabled={isDownloading}
+          >
+            {isDownloading ? (
+              <LoadingOutlined spin style={{ fontSize: 18 }} />
+            ) : (
+              <DownloadOutlined style={{ fontSize: 18 }} />
+            )}
+          </button>
+        </Tooltip>
+      )}
+
       {selectedTool === 'pen' && (
         <ColorPicker
           currentColor={currentColor}
@@ -199,11 +223,7 @@ const AnnotationToolbar = ({
         okText="Yes"
         cancelText="No"
       >
-        <button
-          className="save-button"
-          type="button"
-          disabled={isSaving}
-        >
+        <button className="save-button" type="button" disabled={isSaving}>
           {isSaving ? (
             <LoadingOutlined spin style={{ fontSize: 18, margintop: 8 }} />
           ) : null}

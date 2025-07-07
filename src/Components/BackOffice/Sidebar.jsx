@@ -12,7 +12,7 @@ const BackOfficeSideBar = () => {
   return (
     <div>
       <div className="w-full h-full bg-center ">
-        <div className="w-[201px] h-screen fixed top-0 left-0 px-[15px] py-[19px]  bg-[#582f08]   ">
+        <div className="w-[201px] h-screen fixed top-0 left-0 px-[15px] py-[19px]  bg-[#582f08] overflow-y-auto  ">
           <div>
             <img src="/asset/logo.9a18109e1c16584832d5.png" alt="" />
           </div>

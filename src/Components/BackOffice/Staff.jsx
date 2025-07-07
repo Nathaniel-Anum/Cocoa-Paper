@@ -168,6 +168,9 @@ const Staff = () => {
         return (
           record.name.toLowerCase().includes(searchText.toLowerCase()) ||
           record.email.toLowerCase().includes(searchText.toLowerCase()) ||
+          record.department.departmentName
+            .toLowerCase()
+            .includes(searchText.toLowerCase()) ||
           record.staff.staffNumber
             .toLowerCase()
             .includes(searchText.toLowerCase())

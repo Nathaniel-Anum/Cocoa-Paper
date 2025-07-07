@@ -10,20 +10,19 @@ import {
   Typography,
   Spin,
   Badge,
-} from "antd";
+} from 'antd';
 import {
   PictureOutlined,
   CheckCircleOutlined,
   LoadingOutlined,
   FileImageOutlined,
-} from "@ant-design/icons";
-import PropTypes from "prop-types";
-import { useState, useEffect, useRef } from "react";
-import axiosInstance, { baseURL } from "../axiosInstance";
-import { useUser } from "../../Pages/CustomHook/useUser";
+} from '@ant-design/icons';
+import PropTypes from 'prop-types';
+import { useState, useEffect, useRef } from 'react';
+import axiosInstance, { baseURL } from '../axiosInstance';
+import { useUser } from '../../Pages/CustomHook/useUser';
 
 const { Title, Text } = Typography;
-
 
 async function imageUrlToBase64(imageUrl) {
   try {
@@ -31,16 +30,16 @@ async function imageUrlToBase64(imageUrl) {
       responseType: 'arraybuffer',
       timeout: 10000,
     });
-    
+
     const contentType = response.headers['content-type'] || 'image/png';
-    
+
     const base64String = btoa(
       new Uint8Array(response.data).reduce(
         (data, byte) => data + String.fromCharCode(byte),
         ''
       )
     );
-    
+
     return `data:${contentType};base64,${base64String}`;
   } catch (error) {
     console.error('Error converting image to base64:', error);
@@ -53,7 +52,7 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
   const { user } = useUser();
   const [stamps, setStamps] = useState([]);
   const [base64, setBase64] = useState(null);
-  const [fileName, setFileName] = useState("");
+  const [fileName, setFileName] = useState('');
   const [imageUrl, setImageUrl] = useState(null);
   const [imageError, setImageError] = useState(null);
   const [selectedStamp, setSelectedStamp] = useState(null);
@@ -82,7 +81,7 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
     if (imageUrl) {
       setConvertingImage(true);
       setImageError(null);
-      
+
       imageUrlToBase64(imageUrl)
         .then((b64) => {
           setBase64(b64);
@@ -111,13 +110,13 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
 
   const handleInsert = async () => {
     if (!base64) {
-      message.error("Please select a stamp image first.");
+      message.error('Please select a stamp image first.');
       return;
     }
-    
+
     try {
       const annotation = {
-        type: "stamp",
+        type: 'stamp',
         data: {
           dataUrl: base64,
           x: position.x,
@@ -128,19 +127,19 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
         },
         pageNumber: position.pageNumber,
       };
-      
+
       await onStampAnnotation(annotation);
-      message.success("Stamp inserted successfully!");
+      message.success('Stamp inserted successfully!');
       handleReset();
       onClose();
     } catch (error) {
       console.error('Error inserting stamp:', error);
-      message.error("Failed to insert stamp. Please try again.");
+      message.error('Failed to insert stamp. Please try again.');
     }
   };
 
   const handleReset = () => {
-    setFileName("");
+    setFileName('');
     setBase64(null);
     setImageUrl(null);
     setImageError(null);
@@ -157,30 +156,34 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
     <Modal
       open={visible}
       title={
-        <div style={{ 
-          display: "flex", 
-          alignItems: "center", 
-          gap: "12px",
-          padding: "8px 0"
-        }}>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "40px",
-            height: "40px",
-            borderRadius: "12px",
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            color: "white"
-          }}>
-            <PictureOutlined style={{ fontSize: "20px" }} />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '8px 0',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+            }}
+          >
+            <PictureOutlined style={{ fontSize: '20px' }} />
           </div>
           <div>
-            <Title level={4} style={{ margin: 0, color: "#1f2937" }}>
-              Digital Stamp Tool
+            <Title level={4} style={{ margin: 0, color: '#1f2937' }}>
+              Digital Endorsements
             </Title>
-            <Text type="secondary" style={{ fontSize: "12px" }}>
-              Select and insert your digital stamps
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              Select and insert your endorsement artifact
             </Text>
           </div>
         </div>
@@ -190,78 +193,95 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
       centered
       width={600}
       styles={{
-        body: { padding: "24px" },
-        header: { 
-          borderBottom: "1px solid #f0f0f0",
-          marginBottom: "0"
-        }
+        body: { padding: '24px' },
+        header: {
+          borderBottom: '1px solid #f0f0f0',
+          marginBottom: '0',
+        },
       }}
     >
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* Stamp Selection Section */}
         <Card
           size="small"
           style={{
-            background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
-            border: "1px solid #e2e8f0",
-            borderRadius: "16px",
+            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+            border: '1px solid #e2e8f0',
+            borderRadius: '16px',
             // boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
           }}
         >
-          <div style={{ marginBottom: "16px" }}>
-            <Title level={5} style={{ 
-              marginBottom: "4px", 
-              color: "#374151",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px"
-            }}>
-              <FileImageOutlined style={{ color: "#6366f1" }} />
-              Available Stamps
+          <div style={{ marginBottom: '16px' }}>
+            <Title
+              level={5}
+              style={{
+                marginBottom: '4px',
+                color: '#374151',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <FileImageOutlined style={{ color: '#6366f1' }} />
+              Available Endorsement Artifacts
               {stamps.length > 0 && (
-                <Badge 
-                  count={stamps.length} 
-                  style={{ backgroundColor: "#6366f1" }}
+                <Badge
+                  count={stamps.length}
+                  style={{ backgroundColor: '#6366f1' }}
                 />
               )}
             </Title>
-            <Text type="secondary" style={{ fontSize: "13px" }}>
-              Click on a stamp to select it for insertion
+            <Text type="secondary" style={{ fontSize: '13px' }}>
+              Click on a artifact to select it for insertion
             </Text>
           </div>
-          
+
           {loadingStamps ? (
-            <div style={{ 
-              textAlign: "center", 
-              padding: "40px 20px",
-              color: "#6b7280"
-            }}>
-              <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
-              <div style={{ marginTop: "12px" }}>Loading your stamps...</div>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '40px 20px',
+                color: '#6b7280',
+              }}
+            >
+              <Spin
+                indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+              />
+              <div style={{ marginTop: '12px' }}>Loading your artifacts...</div>
             </div>
           ) : stamps.length === 0 ? (
-            <div style={{ 
-              textAlign: "center", 
-              padding: "40px 20px",
-              background: "#fef3c7",
-              borderRadius: "12px",
-              border: "1px solid #fcd34d"
-            }}>
-              <PictureOutlined style={{ fontSize: "32px", color: "#d97706", marginBottom: "8px" }} />
-              <Text style={{ color: "#92400e", display: "block" }}>
-                No stamps available
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '40px 20px',
+                background: '#fef3c7',
+                borderRadius: '12px',
+                border: '1px solid #fcd34d',
+              }}
+            >
+              <PictureOutlined
+                style={{
+                  fontSize: '32px',
+                  color: '#d97706',
+                  marginBottom: '8px',
+                }}
+              />
+              <Text style={{ color: '#92400e', display: 'block' }}>
+                No endorsement artifacts available
               </Text>
-              <Text type="secondary" style={{ fontSize: "12px" }}>
-                Contact your administrator to add digital stamps
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                Contact your administrator to add endorsement artifacts
               </Text>
             </div>
           ) : (
-            <div style={{ 
-              display: "grid", 
-              gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", 
-              gap: "16px",
-              padding: "8px"
-            }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                gap: '16px',
+                padding: '8px',
+              }}
+            >
               {stamps.map((stamp) => {
                 const isSelected = selectedStamp?.id === stamp.id;
                 return (
@@ -269,83 +289,91 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
                     key={stamp.id}
                     style={{
                       border: isSelected
-                        ? "3px solid #10b981"
-                        : "2px solid #e5e7eb",
-                      borderRadius: "8px",
-                      padding: "12px",
-                      cursor: "pointer",
-                      background: isSelected 
-                        ? "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)" 
-                        : "#ffffff",
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      position: "relative",
-                      boxShadow: isSelected 
-                        ? "0 8px 25px -5px rgba(16, 185, 129, 0.3)" 
-                        : "0 2px 4px -1px rgba(0, 0, 0, 0.1)",
-                      transform: isSelected ? "translateY(-2px)" : "translateY(0)",
+                        ? '3px solid #10b981'
+                        : '2px solid #e5e7eb',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      cursor: 'pointer',
+                      background: isSelected
+                        ? 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
+                        : '#ffffff',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      position: 'relative',
+                      boxShadow: isSelected
+                        ? '0 8px 25px -5px rgba(16, 185, 129, 0.3)'
+                        : '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
+                      transform: isSelected
+                        ? 'translateY(-2px)'
+                        : 'translateY(0)',
                     }}
                     onClick={() => handleSelectStamp(stamp)}
                     onMouseEnter={(e) => {
                       if (!isSelected) {
-                        e.target.style.transform = "translateY(-1px)";
-                        e.target.style.boxShadow = "0 4px 8px -2px rgba(0, 0, 0, 0.15)";
+                        e.target.style.transform = 'translateY(-1px)';
+                        e.target.style.boxShadow =
+                          '0 4px 8px -2px rgba(0, 0, 0, 0.15)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isSelected) {
-                        e.target.style.transform = "translateY(0)";
-                        e.target.style.boxShadow = "0 2px 4px -1px rgba(0, 0, 0, 0.1)";
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow =
+                          '0 2px 4px -1px rgba(0, 0, 0, 0.1)';
                       }
                     }}
                   >
                     {isSelected && (
                       <CheckCircleOutlined
                         style={{
-                          position: "absolute",
-                          top: "-8px",
-                          right: "-8px",
-                          fontSize: "20px",
-                          color: "#10b981",
-                          background: "white",
-                          borderRadius: "50%",
+                          position: 'absolute',
+                          top: '-8px',
+                          right: '-8px',
+                          fontSize: '20px',
+                          color: '#10b981',
+                          background: 'white',
+                          borderRadius: '50%',
                           zIndex: 1,
                         }}
                       />
                     )}
-                    <div style={{ textAlign: "center" }}>
+                    <div style={{ textAlign: 'center' }}>
                       <img
                         src={`${baseURL}/uploads/${stamp.stamp.uniqueName}`}
                         alt={stamp.name}
-                        style={{ 
-                          width: "60px", 
-                          height: "60px", 
-                          objectFit: "contain",
-                          borderRadius: "8px"
+                        style={{
+                          width: '60px',
+                          height: '60px',
+                          objectFit: 'contain',
+                          borderRadius: '8px',
                         }}
                         onError={(e) => {
                           e.target.style.display = 'none';
                           e.target.nextSibling.style.display = 'flex';
                         }}
                       />
-                      <div style={{
-                        display: 'none',
-                        width: "60px", 
-                        height: "60px",
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: '#f3f4f6',
-                        borderRadius: "8px",
-                        color: '#9ca3af'
-                      }}>
+                      <div
+                        style={{
+                          display: 'none',
+                          width: '60px',
+                          height: '60px',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: '#f3f4f6',
+                          borderRadius: '8px',
+                          color: '#9ca3af',
+                        }}
+                      >
                         <PictureOutlined />
                       </div>
-                      <div style={{ 
-                        fontSize: "11px", 
-                        marginTop: "8px",
-                        fontWeight: isSelected ? "600" : "400",
-                        color: isSelected ? "#047857" : "#374151",
-                        lineHeight: "1.3"
-                      }}>
+                      <div
+                        style={{
+                          fontSize: '11px',
+                          marginTop: '8px',
+                          fontWeight: isSelected ? '600' : '400',
+                          color: isSelected ? '#047857' : '#374151',
+                          lineHeight: '1.3',
+                        }}
+                      >
                         {stamp.name}
                       </div>
                     </div>
@@ -361,52 +389,67 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
           <Card
             size="small"
             style={{
-              background: convertingImage 
-                ? "linear-gradient(135deg, #fef7cd 0%, #fef3c7 100%)"
+              background: convertingImage
+                ? 'linear-gradient(135deg, #fef7cd 0%, #fef3c7 100%)'
                 : imageError
-                ? "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)"
-                : "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)",
-              border: convertingImage 
-                ? "1px solid #fcd34d"
+                ? 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)'
+                : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+              border: convertingImage
+                ? '1px solid #fcd34d'
                 : imageError
-                ? "1px solid #f87171"
-                : "1px solid #10b981",
-              borderRadius: "8px",
-              transition: "all 0.3s ease",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                ? '1px solid #f87171'
+                : '1px solid #10b981',
+              borderRadius: '8px',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
             }}
           >
-            <div style={{ textAlign: "center" }}>
+            <div style={{ textAlign: 'center' }}>
               <Space direction="vertical" size="middle">
-                <div style={{ position: "relative", display: "inline-block" }}>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
                   {convertingImage ? (
-                    <div style={{
-                      width: "120px",
-                      height: "120px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: "#ffffff",
-                      borderRadius: "8px",
-                      border: "2px solid #fbbf24"
-                    }}>
-                      <Spin indicator={<LoadingOutlined style={{ fontSize: 24, color: "#d97706" }} spin />} />
+                    <div
+                      style={{
+                        width: '120px',
+                        height: '120px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#ffffff',
+                        borderRadius: '8px',
+                        border: '2px solid #fbbf24',
+                      }}
+                    >
+                      <Spin
+                        indicator={
+                          <LoadingOutlined
+                            style={{ fontSize: 24, color: '#d97706' }}
+                            spin
+                          />
+                        }
+                      />
                     </div>
                   ) : imageError ? (
-                    <div style={{
-                      width: "120px",
-                      height: "120px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexDirection: "column",
-                      background: "#ffffff",
-                      borderRadius: "12px",
-                      border: "2px solid #f87171",
-                      gap: "8px"
-                    }}>
-                      <PictureOutlined style={{ fontSize: "32px", color: "#dc2626" }} />
-                      <Text style={{ fontSize: "10px", color: "#dc2626" }}>Failed to load</Text>
+                    <div
+                      style={{
+                        width: '120px',
+                        height: '120px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
+                        background: '#ffffff',
+                        borderRadius: '12px',
+                        border: '2px solid #f87171',
+                        gap: '8px',
+                      }}
+                    >
+                      <PictureOutlined
+                        style={{ fontSize: '32px', color: '#dc2626' }}
+                      />
+                      <Text style={{ fontSize: '10px', color: '#dc2626' }}>
+                        Failed to load
+                      </Text>
                     </div>
                   ) : (
                     <>
@@ -415,55 +458,62 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
                         src={imageUrl}
                         alt="Stamp Preview"
                         style={{
-                          maxWidth: "120px",
-                          maxHeight: "120px",
-                          border: "3px solid #10b981",
-                          borderRadius: "12px",
-                          boxShadow: "0 8px 25px -5px rgba(16, 185, 129, 0.3)",
+                          maxWidth: '120px',
+                          maxHeight: '120px',
+                          border: '3px solid #10b981',
+                          borderRadius: '12px',
+                          boxShadow: '0 8px 25px -5px rgba(16, 185, 129, 0.3)',
                         }}
                       />
                       <CheckCircleOutlined
                         style={{
-                          position: "absolute",
-                          top: "-12px",
-                          right: "-12px",
-                          fontSize: "24px",
-                          color: "#10b981",
-                          background: "white",
-                          borderRadius: "50%",
-                          padding: "2px",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                          position: 'absolute',
+                          top: '-12px',
+                          right: '-12px',
+                          fontSize: '24px',
+                          color: '#10b981',
+                          background: 'white',
+                          borderRadius: '50%',
+                          padding: '2px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                         }}
                       />
                     </>
                   )}
                 </div>
                 <div>
-                  <Text strong style={{ 
-                    color: convertingImage ? "#d97706" : imageError ? "#dc2626" : "#047857", 
-                    display: "block",
-                    fontSize: "14px"
-                  }}>
+                  <Text
+                    strong
+                    style={{
+                      color: convertingImage
+                        ? '#d97706'
+                        : imageError
+                        ? '#dc2626'
+                        : '#047857',
+                      display: 'block',
+                      fontSize: '14px',
+                    }}
+                  >
                     {convertingImage && (
                       <>
-                        <LoadingOutlined style={{ marginRight: "8px" }} />
+                        <LoadingOutlined style={{ marginRight: '8px' }} />
                         Processing image...
                       </>
                     )}
                     {imageError && (
                       <>
-                        <PictureOutlined style={{ marginRight: "8px" }} />
+                        <PictureOutlined style={{ marginRight: '8px' }} />
                         Error loading image
                       </>
                     )}
                     {!convertingImage && !imageError && (
                       <>
-                        <CheckCircleOutlined style={{ marginRight: "8px" }} />
+                        <CheckCircleOutlined style={{ marginRight: '8px' }} />
                         Ready for insertion
                       </>
                     )}
                   </Text>
-                  <Text type="secondary" style={{ fontSize: "12px" }}>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
                     {fileName}
                   </Text>
                 </div>
@@ -476,43 +526,64 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
         {position && (
           <Card
             size="small"
-            style={{ 
-              background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)", 
-              border: "1px solid #3b82f6",
-              borderRadius: "12px",
-              boxShadow: "0 2px 4px -1px rgba(0, 0, 0, 0.1)",
+            style={{
+              background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+              border: '1px solid #3b82f6',
+              borderRadius: '12px',
+              boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
             }}
           >
             <Row gutter={16} align="middle">
               <Col span={8}>
-                <div style={{ textAlign: "center" }}>
-                  <Text type="secondary" style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <div style={{ textAlign: 'center' }}>
+                  <Text
+                    type="secondary"
+                    style={{
+                      fontSize: '11px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
                     Position X
                   </Text>
                   <br />
-                  <Text strong style={{ fontSize: "16px", color: "#1e40af" }}>
+                  <Text strong style={{ fontSize: '16px', color: '#1e40af' }}>
                     {Math.round(position.x)}px
                   </Text>
                 </div>
               </Col>
               <Col span={8}>
-                <div style={{ textAlign: "center" }}>
-                  <Text type="secondary" style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <div style={{ textAlign: 'center' }}>
+                  <Text
+                    type="secondary"
+                    style={{
+                      fontSize: '11px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
                     Position Y
                   </Text>
                   <br />
-                  <Text strong style={{ fontSize: "16px", color: "#1e40af" }}>
+                  <Text strong style={{ fontSize: '16px', color: '#1e40af' }}>
                     {Math.round(position.y)}px
                   </Text>
                 </div>
               </Col>
               <Col span={8}>
-                <div style={{ textAlign: "center" }}>
-                  <Text type="secondary" style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <div style={{ textAlign: 'center' }}>
+                  <Text
+                    type="secondary"
+                    style={{
+                      fontSize: '11px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
                     Page
                   </Text>
                   <br />
-                  <Text strong style={{ fontSize: "16px", color: "#1e40af" }}>
+                  <Text strong style={{ fontSize: '16px', color: '#1e40af' }}>
                     {position.pageNumber}
                   </Text>
                 </div>
@@ -521,7 +592,7 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
           </Card>
         )}
 
-        <Divider style={{ margin: "16px 0", background: "#e5e7eb" }} />
+        <Divider style={{ margin: '16px 0', background: '#e5e7eb' }} />
 
         <Row gutter={12}>
           <Col span={24}>
@@ -533,27 +604,26 @@ const StampTool = ({ visible, position, onClose, onStampAnnotation }) => {
               loading={convertingImage}
               icon={base64 && !convertingImage ? <CheckCircleOutlined /> : null}
               style={{
-                height: "48px",
-                fontSize: "16px",
-                fontWeight: "600",
-                background: base64 && !convertingImage 
-                  ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" 
-                  : undefined,
-                borderColor: base64 && !convertingImage 
-                  ? "#10b981" 
-                  : undefined,
-                boxShadow: base64 && !convertingImage 
-                  ? "0 4px 12px rgba(16, 185, 129, 0.4)" 
-                  : undefined,
+                height: '48px',
+                fontSize: '16px',
+                fontWeight: '600',
+                background:
+                  base64 && !convertingImage
+                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                    : undefined,
+                borderColor: base64 && !convertingImage ? '#10b981' : undefined,
+                boxShadow:
+                  base64 && !convertingImage
+                    ? '0 4px 12px rgba(16, 185, 129, 0.4)'
+                    : undefined,
               }}
               className="!bg-[#9D4D01]"
             >
-              {convertingImage 
-                ? "Processing Image..." 
-                : base64 
-                  ? "Insert Stamp" 
-                  : "Select a Stamp First"
-              }
+              {convertingImage
+                ? 'Processing Image...'
+                : base64
+                ? 'Insert an endorsement artifact'
+                : 'Select an endorsement artifact first'}
             </Button>
           </Col>
         </Row>
