@@ -57,7 +57,6 @@ const Attachments = () => {
       key: 'createdAt',
       render: (value) => dayjs(value).format('YYYY-MM-DD HH:mm').toString(),
     },
-
     {
       title: 'Action',
       dataIndex: 'id',
@@ -66,7 +65,7 @@ const Attachments = () => {
         return (
           <EyeOutlined
             onClick={() => {
-              setShowToolbar(false);
+              setShowToolbar(true);
               handleAttachmentSelect(record);
             }}
             color="blue"
