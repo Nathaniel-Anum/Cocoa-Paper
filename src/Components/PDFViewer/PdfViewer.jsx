@@ -16,7 +16,7 @@ import PDFAnnotation from './PDFAnnotation';
 // Set up PDF.js worker source
 
 import { useRef } from 'react';
-const PDFViewerContent = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
+const PDFViewerContent = ({ pdfUrl, documentId, fileId, onPageChange, onZoom }) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
@@ -90,6 +90,7 @@ const PDFViewerContent = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
                   pdfUrl={pdfUrl}
                   documentId={documentId}
                   pageNumber={pg}
+                  fileId={fileId}
                   onDocumentLoadError={onDocumentLoadError}
                   onDocumentLoadSuccess={
                     pg === 1 ? onDocumentLoadSuccess : undefined
@@ -148,9 +149,10 @@ PDFViewerContent.propTypes = {
   documentId: PropTypes.string.isRequired,
   onPageChange: PropTypes.func,
   onZoom: PropTypes.func,
+  fileId: PropTypes.string
 };
 
-const PDFViewer = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
+const PDFViewer = ({ pdfUrl, documentId, onPageChange, onZoom, fileId }) => {
   const setOpenFileViewer = useStore((state) => state.setOpenFileViewer);
   const openFileViewer = useStore((state) => state.openFileViewer);
 
@@ -165,6 +167,7 @@ const PDFViewer = ({ pdfUrl, documentId, onPageChange, onZoom }) => {
     >
       <PDFViewerContent
         pdfUrl={pdfUrl}
+        fileId={fileId}
         documentId={documentId}
         onPageChange={onPageChange}
         onZoom={onZoom}
@@ -178,6 +181,7 @@ PDFViewer.propTypes = {
   documentId: PropTypes.string.isRequired,
   onPageChange: PropTypes.func,
   onZoom: PropTypes.func,
+  fileId: PropTypes.string
 };
 
 export { PDFViewerContent };
