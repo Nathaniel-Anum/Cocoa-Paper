@@ -1,27 +1,23 @@
-import JSZip from 'jszip';
-import { jsPDF } from 'jspdf';
-import { message } from 'antd';
-import * as fabric from 'fabric';
-import PropTypes from 'prop-types';
-import { saveAs } from 'file-saver';
-import { Document, Page } from 'react-pdf';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import JSZip from "jszip";
+import { jsPDF } from "jspdf";
+import { message } from "antd";
+import * as fabric from "fabric";
+import PropTypes from "prop-types";
+import { saveAs } from "file-saver";
+import { Document, Page } from "react-pdf";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useState, useRef, useEffect, useCallback } from "react";
 
-import '../../utils/pdfjs-worker';
-import StampTool from './StampTool';
-import axiosInstance from '../axiosInstance';
-import AnnotationToolbar from './AnnotationToolbar';
-import { useUser } from '../../Pages/CustomHook/useUser';
+import "../../utils/pdfjs-worker";
+import StampTool from "./StampTool";
+import axiosInstance from "../axiosInstance";
+import AnnotationToolbar from "./AnnotationToolbar";
+import { useUser } from "../../Pages/CustomHook/useUser";
 
-import './PDFAnnotation.css';
-import useStore from '../../store/store';
-import logo from '../../assets/logo.9a18109e1c16584832d5.png';
-import {
-  getAllRolePermissions,
-  hasPermission,
-  requiredPermissions,
-} from '../../../utils/Roles';
+import "./PDFAnnotation.css";
+import useStore from "../../store/store";
+import logo from "../../assets/logo.9a18109e1c16584832d5.png";
+import { getAllRolePermissions } from "../../../utils/Roles";
 
 const PDFAnnotation = ({
   pdfUrl,
@@ -33,6 +29,7 @@ const PDFAnnotation = ({
   registerCanvas,
   getAllPageCanvases,
   numPages,
+  fileId,
 }) => {
   const { user } = useUser();
 
@@ -44,8 +41,8 @@ const PDFAnnotation = ({
   const [redoStack, setRedoStack] = useState([]);
   const [undoStack, setUndoStack] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
-  const [penColor, setPenColor] = useState('#000000');
-  const [selectedTool, setSelectedTool] = useState('');
+  const [penColor, setPenColor] = useState("#000000");
+  const [selectedTool, setSelectedTool] = useState("");
   const [isPageLoaded, setIsPageLoaded] = useState(false);
   const [stampPosition, setStampPosition] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -56,14 +53,14 @@ const PDFAnnotation = ({
 
   // Query to fetch annotations
   const { data: annotations } = useQuery({
-    queryKey: ['annotations', documentId, pageNumber],
+    queryKey: ["annotations", fileId, pageNumber],
     queryFn: async () => {
       const response = await axiosInstance.get(
-        `/annotations/document/${documentId}`
+        `/annotations/file/${fileId}`
       );
       return response.data.data;
     },
-    enabled: !!documentId && !!pageNumber,
+    enabled: !!fileId && !!pageNumber,
   });
 
   const allRolePermissions = getAllRolePermissions(user);
@@ -74,7 +71,7 @@ const PDFAnnotation = ({
 
     const initializeCanvas = () => {
       if (containerRef.current && !canvasRef.current) {
-        const pdfPage = containerRef.current.querySelector('.react-pdf__Page');
+        const pdfPage = containerRef.current.querySelector(".react-pdf__Page");
         if (pdfPage) {
           try {
             const canvasId = `annotation-canvas-${pageNumber}`;
@@ -85,12 +82,12 @@ const PDFAnnotation = ({
             canvas.height = pdfPage.offsetHeight;
 
             fabricCanvas = new fabric.Canvas(canvas, {
-              isDrawingMode: selectedTool === 'pen',
+              isDrawingMode: selectedTool === "pen",
               width: pdfPage.offsetWidth,
               height: pdfPage.offsetHeight,
               selection: false,
               preserveObjectStacking: true,
-              backgroundColor: 'transparent',
+              backgroundColor: "transparent",
             });
 
             canvasRef.current = fabricCanvas;
@@ -100,7 +97,7 @@ const PDFAnnotation = ({
             pencilBrush.width = 2;
             pencilBrush.color = penColor;
             fabricCanvas.freeDrawingBrush = pencilBrush;
-            fabricCanvas.isDrawingMode = selectedTool === 'pen';
+            fabricCanvas.isDrawingMode = selectedTool === "pen";
 
             setCanvas(fabricCanvas);
             // Register this canvas for the current page
@@ -108,7 +105,7 @@ const PDFAnnotation = ({
               registerCanvas(pageNumber, fabricCanvas);
             }
           } catch (error) {
-            console.error('Error initializing canvas:', error);
+            console.error("Error initializing canvas:", error);
           }
         }
       }
@@ -121,28 +118,28 @@ const PDFAnnotation = ({
     // Update canvas size when window resizes
     const handleResize = () => {
       if (fabricCanvas && containerRef.current) {
-        const pdfPage = containerRef.current.querySelector('.react-pdf__Page');
+        const pdfPage = containerRef.current.querySelector(".react-pdf__Page");
         if (pdfPage) {
           try {
             fabricCanvas.setWidth(pdfPage.offsetWidth);
             fabricCanvas.setHeight(pdfPage.offsetHeight);
             fabricCanvas.renderAll();
           } catch (error) {
-            console.error('Error resizing canvas:', error);
+            console.error("Error resizing canvas:", error);
           }
         }
       }
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       if (fabricCanvas) {
         try {
           fabricCanvas.dispose();
         } catch (error) {
-          console.error('Error disposing canvas:', error);
+          console.error("Error disposing canvas:", error);
         }
       }
       canvasRef.current = null;
@@ -153,7 +150,7 @@ const PDFAnnotation = ({
   // Update canvas when page or scale changes
   useEffect(() => {
     if (canvas && containerRef.current) {
-      const pdfPage = containerRef.current.querySelector('.react-pdf__Page');
+      const pdfPage = containerRef.current.querySelector(".react-pdf__Page");
       if (pdfPage) {
         try {
           const oldWidth = canvas.width;
@@ -167,7 +164,7 @@ const PDFAnnotation = ({
 
           // Scale and reposition objects
           canvas.getObjects().forEach((obj) => {
-            if (obj.type === 'image') {
+            if (obj.type === "image") {
               // Scale signature position and size
               const scaleX = newWidth / oldWidth;
               const scaleY = newHeight / oldHeight;
@@ -183,7 +180,7 @@ const PDFAnnotation = ({
 
           canvas.renderAll();
         } catch (error) {
-          console.error('Error updating canvas dimensions:', error);
+          console.error("Error updating canvas dimensions:", error);
         }
       }
     }
@@ -197,11 +194,11 @@ const PDFAnnotation = ({
         canvas.clear();
 
         // Log all annotations for debugging
-        console.log('All annotations from backend:', annotations);
+        console.log("All annotations from backend:", annotations);
         if (annotations.length > 0) {
           console.log(
-            'Annotation types:',
-            annotations.map((a) => a.type).filter((b) => b === 'stamp')
+            "Annotation types:",
+            annotations.map((a) => a.type).filter((b) => b === "stamp")
           );
         }
 
@@ -212,7 +209,7 @@ const PDFAnnotation = ({
 
         // Load each annotation
         pageAnnotations.forEach((annotation) => {
-          if (annotation.type === 'draw') {
+          if (annotation.type === "draw") {
             // Recreate drawing path
             const pathData = annotation.annotationData;
             const path = new fabric.Path(pathData.path, {
@@ -221,8 +218,8 @@ const PDFAnnotation = ({
               globalCompositeOperation: pathData.globalCompositeOperation,
               selectable: false,
               fill: null,
-              strokeLineCap: 'round',
-              strokeLineJoin: 'round',
+              strokeLineCap: "round",
+              strokeLineJoin: "round",
               strokeMiterLimit: 10,
               perPixelTargetFind: true,
               hasControls: false,
@@ -237,30 +234,30 @@ const PDFAnnotation = ({
               evented: false,
             });
             canvas.add(path);
-          } else if (annotation.type === 'stamp') {
+          } else if (annotation.type === "stamp") {
             const data = annotation.annotationData;
             if (!data || !data.dataUrl) {
               console.error(
-                'Stamp annotation missing data or dataUrl',
+                "Stamp annotation missing data or dataUrl",
                 annotation
               );
               return;
             }
-            if (!data.dataUrl.startsWith('data:image/')) {
+            if (!data.dataUrl.startsWith("data:image/")) {
               console.error(
-                'Stamp annotation has invalid dataUrl format:',
+                "Stamp annotation has invalid dataUrl format:",
                 data.dataUrl.substring(0, 100)
               );
               return;
             }
             if (
-              typeof data.x !== 'number' ||
-              typeof data.y !== 'number' ||
-              typeof data.width !== 'number' ||
-              typeof data.height !== 'number'
+              typeof data.x !== "number" ||
+              typeof data.y !== "number" ||
+              typeof data.width !== "number" ||
+              typeof data.height !== "number"
             ) {
               console.error(
-                'Stamp annotation has invalid position/dimensions:',
+                "Stamp annotation has invalid position/dimensions:",
                 data
               );
               return;
@@ -293,20 +290,20 @@ const PDFAnnotation = ({
               canvas.add(imgInstance);
               canvas.renderAll();
               console.log(
-                'Stamp annotation: Successfully added to canvas using native Image'
+                "Stamp annotation: Successfully added to canvas using native Image"
               );
             };
             imgElement.onerror = function (e) {
               console.error(
-                'Failed to load image element for stamp annotation',
+                "Failed to load image element for stamp annotation",
                 e,
                 data.dataUrl.substring(0, 100)
               );
             };
             imgElement.src = data.dataUrl;
-          } else if (annotation.type === 'text') {
+          } else if (annotation.type === "text") {
             const data = annotation.data || annotation.annotationData;
-            const textbox = new fabric.Textbox(data.text || '', {
+            const textbox = new fabric.Textbox(data.text || "", {
               left: data.left,
               top: data.top,
               width: data.width,
@@ -347,7 +344,7 @@ const PDFAnnotation = ({
           );
         }, 100);
       } catch (error) {
-        message.error('Error loading annotations:', error);
+        message.error("Error loading annotations:", error);
       }
     }
   }, [canvas, annotations, pageNumber]);
@@ -360,10 +357,10 @@ const PDFAnnotation = ({
   const cleanupEraserHandlers = () => {
     if (canvas && eraserHandlersRef.current) {
       const { start, move, end } = eraserHandlersRef.current;
-      canvas.off('mouse:down', start);
-      canvas.off('mouse:move', move);
-      canvas.off('mouse:up', end);
-      canvas.off('mouse:leave', end);
+      canvas.off("mouse:down", start);
+      canvas.off("mouse:move", move);
+      canvas.off("mouse:up", end);
+      canvas.off("mouse:leave", end);
       eraserHandlersRef.current = null;
     }
   };
@@ -384,10 +381,10 @@ const PDFAnnotation = ({
           obj.lockScalingY = true;
           obj.lockUniScaling = true;
         });
-        if (tool === 'pen') {
+        if (tool === "pen") {
           canvas.isDrawingMode = true;
           canvas.selection = false;
-          canvas.defaultCursor = 'crosshair';
+          canvas.defaultCursor = "crosshair";
           if (
             !canvas.freeDrawingBrush ||
             !(canvas.freeDrawingBrush instanceof fabric.PencilBrush)
@@ -396,17 +393,17 @@ const PDFAnnotation = ({
           }
           canvas.freeDrawingBrush.width = 2;
           canvas.freeDrawingBrush.color = penColor;
-          canvas.freeDrawingBrush.globalCompositeOperation = 'source-over';
-        } else if (tool === 'highlighter') {
+          canvas.freeDrawingBrush.globalCompositeOperation = "source-over";
+        } else if (tool === "highlighter") {
           canvas.isDrawingMode = true;
           canvas.selection = false;
-          canvas.defaultCursor = 'crosshair';
+          canvas.defaultCursor = "crosshair";
           const pencilBrush = new fabric.PencilBrush(canvas);
           pencilBrush.width = 10;
-          pencilBrush.color = 'rgba(255, 255, 0, 0.3)';
-          pencilBrush.globalCompositeOperation = 'multiply';
+          pencilBrush.color = "rgba(255, 255, 0, 0.3)";
+          pencilBrush.globalCompositeOperation = "multiply";
           canvas.freeDrawingBrush = pencilBrush;
-        } else if (tool === 'select') {
+        } else if (tool === "select") {
           canvas.isDrawingMode = false;
           canvas.selection = true;
           canvas.forEachObject((obj) => {
@@ -420,8 +417,8 @@ const PDFAnnotation = ({
             obj.lockScalingY = false;
             obj.lockUniScaling = false;
           });
-          canvas.defaultCursor = 'default';
-        } else if (tool === 'eraser') {
+          canvas.defaultCursor = "default";
+        } else if (tool === "eraser") {
           canvas.isDrawingMode = false;
           canvas.selection = false;
           canvas.defaultCursor =
@@ -438,7 +435,7 @@ const PDFAnnotation = ({
 
             const objectsToErase = objects.filter((obj) => {
               if (!obj.selectable) return false; // Only erase selectable (unsaved/unlocked) objects
-              if (obj.type === 'path') {
+              if (obj.type === "path") {
                 const path = obj.path;
                 return path.some((point) => {
                   const distance = Math.sqrt(
@@ -447,7 +444,7 @@ const PDFAnnotation = ({
                   );
                   return distance < 10;
                 });
-              } else if (obj.type === 'image') {
+              } else if (obj.type === "image") {
                 return (
                   pointer.x >= obj.left &&
                   pointer.x <= obj.left + obj.width * obj.scaleX &&
@@ -455,16 +452,16 @@ const PDFAnnotation = ({
                   pointer.y <= obj.top + obj.height * obj.scaleY
                 );
               } else if (
-                obj.type === 'text' &&
-                (obj.constructor.name === 'Text' ||
-                  obj.class === '_Eo' ||
+                obj.type === "text" &&
+                (obj.constructor.name === "Text" ||
+                  obj.class === "_Eo" ||
                   (obj.text &&
-                    ['C', '7', 'T'].includes(obj.text) &&
-                    obj.fill === 'red' &&
-                    obj.fontFamily === 'Arial')) &&
-                ['C', '7', 'T'].includes(obj.text) &&
-                obj.fill === 'red' &&
-                obj.fontFamily === 'Arial'
+                    ["C", "7", "T"].includes(obj.text) &&
+                    obj.fill === "red" &&
+                    obj.fontFamily === "Arial")) &&
+                ["C", "7", "T"].includes(obj.text) &&
+                obj.fill === "red" &&
+                obj.fontFamily === "Arial"
               ) {
                 // For audit annotations, check bounding box
                 return (
@@ -482,12 +479,12 @@ const PDFAnnotation = ({
                 setUndoStack((prev) => [
                   ...prev,
                   {
-                    type: 'erase',
+                    type: "erase",
                     object: obj.toJSON([
-                      'selectable',
-                      'hasControls',
-                      'hasBorders',
-                      'annotationId',
+                      "selectable",
+                      "hasControls",
+                      "hasBorders",
+                      "annotationId",
                     ]),
                     annotationId: obj.annotationId,
                   },
@@ -505,14 +502,14 @@ const PDFAnnotation = ({
             move: handleEraserMove,
             end: handleEraserEnd,
           };
-          canvas.on('mouse:down', handleEraserStart);
-          canvas.on('mouse:move', handleEraserMove);
-          canvas.on('mouse:up', handleEraserEnd);
-          canvas.on('mouse:leave', handleEraserEnd);
+          canvas.on("mouse:down", handleEraserStart);
+          canvas.on("mouse:move", handleEraserMove);
+          canvas.on("mouse:up", handleEraserEnd);
+          canvas.on("mouse:leave", handleEraserEnd);
         }
         canvas.renderAll();
       } catch (error) {
-        console.error('Error setting tool:', error);
+        console.error("Error setting tool:", error);
       }
     }
   };
@@ -529,16 +526,16 @@ const PDFAnnotation = ({
         setUndoStack((prev) => [
           ...prev,
           {
-            type: 'draw',
-            object: path.toJSON(['selectable', 'hasControls', 'hasBorders']),
+            type: "draw",
+            object: path.toJSON(["selectable", "hasControls", "hasBorders"]),
           },
         ]);
         setRedoStack([]);
       };
 
-      canvas.on('path:created', handlePathCreated);
+      canvas.on("path:created", handlePathCreated);
       return () => {
-        canvas.off('path:created', handlePathCreated);
+        canvas.off("path:created", handlePathCreated);
       };
     }
   }, [canvas]);
@@ -547,25 +544,26 @@ const PDFAnnotation = ({
   const saveAnnotationMutation = useMutation({
     mutationFn: async (formData) => {
       try {
-        if (formData.get('annotations')) {
-          const response = await axiosInstance.post('/annotations', formData, {
+        if (formData.get("annotations")) {
+          const response = await axiosInstance.post("/annotations", formData, {
             headers: {
-              'Content-Type': 'multipart/form-data',
+              "Content-Type": "multipart/form-data",
             },
           });
           return response.data;
         }
       } catch (error) {
-        console.error('Error saving annotations:', error);
+        console.error("Error saving annotations:", error);
         throw error;
       }
     },
   });
 
+
   const handleSave = async () => {
     if (!canvas) return;
     if (!user || !user.userId) {
-      message.error('User ID is missing. Please log in again.');
+      message.error("User ID is missing. Please log in again.");
       return;
     }
     try {
@@ -574,90 +572,90 @@ const PDFAnnotation = ({
 
       const annotations = [
         ...objects
-          .filter((obj) => obj.type === 'path')
+          .filter((obj) => obj.type === "path")
           .map((obj) => ({
-            type: 'draw',
-            data: obj.toJSON(['selectable', 'hasControls', 'hasBorders']),
+            type: "draw",
+            data: obj.toJSON(["selectable", "hasControls", "hasBorders"]),
             pageNumber,
           })),
         ...objects
-          .filter((obj) => obj.type === 'textbox')
+          .filter((obj) => obj.type === "textbox")
           .map((obj) => ({
-            type: 'text',
+            type: "text",
             data: obj.toJSON([
-              'left',
-              'top',
-              'width',
-              'height',
-              'fontSize',
-              'fill',
-              'text',
-              'fontFamily',
-              'fontWeight',
-              'fontStyle',
-              'underline',
-              'linethrough',
-              'textAlign',
-              'angle',
-              'scaleX',
-              'scaleY',
-              'selectable',
-              'hasControls',
-              'hasBorders',
+              "left",
+              "top",
+              "width",
+              "height",
+              "fontSize",
+              "fill",
+              "text",
+              "fontFamily",
+              "fontWeight",
+              "fontStyle",
+              "underline",
+              "linethrough",
+              "textAlign",
+              "angle",
+              "scaleX",
+              "scaleY",
+              "selectable",
+              "hasControls",
+              "hasBorders",
             ]),
             pageNumber,
           })),
         ...objects
           .filter(
             (obj) =>
-              obj.type === 'image' &&
+              obj.type === "image" &&
               obj.annotationId &&
-              obj.annotationId.startsWith('stamp_')
+              obj.annotationId.startsWith("stamp_")
           )
           .map((obj) => ({
-            type: 'stamp',
+            type: "stamp",
             data: {
-              dataUrl: obj.dataUrl || '',
+              dataUrl: obj.dataUrl || "",
               x: obj.left,
               y: obj.top,
               width: obj.width * obj.scaleX,
               height: obj.height * obj.scaleY,
-              fileName: obj.fileName || '',
+              fileName: obj.fileName || "",
             },
             pageNumber,
           })),
         ...objects
           .filter(
             (obj) =>
-              obj.type === 'text' &&
-              (obj.constructor.name === 'Text' ||
-                obj.class === '_Eo' ||
+              obj.type === "text" &&
+              (obj.constructor.name === "Text" ||
+                obj.class === "_Eo" ||
                 (obj.text &&
-                  ['C', '7', 'T'].includes(obj.text) &&
-                  obj.fill === 'red' &&
-                  obj.fontFamily === 'Arial')) &&
-              ['C', '7', 'T'].includes(obj.text) &&
-              obj.fill === 'red' &&
-              obj.fontFamily === 'Arial'
+                  ["C", "7", "T"].includes(obj.text) &&
+                  obj.fill === "red" &&
+                  obj.fontFamily === "Arial")) &&
+              ["C", "7", "T"].includes(obj.text) &&
+              obj.fill === "red" &&
+              obj.fontFamily === "Arial"
           )
           .map((obj) => ({
-            type: 'audit',
+            type: "audit",
             data: obj.toJSON([
-              'left',
-              'top',
-              'fontSize',
-              'fill',
-              'text',
-              'fontFamily',
-              'angle',
-              'selectable',
-              'hasControls',
-              'hasBorders',
-              'lockRotation',
-              'lockScalingY',
-              'lockUniScaling',
-              'minWidth',
-              'minHeight',
+              "left",
+              "top",
+              "fontSize",
+              "fill",
+              "text",
+              "fontFamily",
+              "angle",
+              "selectable",
+              "hasControls",
+              "hasBorders",
+              "lockRotation",
+              "lockScalingY",
+              "lockUniScaling",
+              "minWidth",
+              "minHeight",
             ]),
             pageNumber,
           })),
@@ -665,23 +663,23 @@ const PDFAnnotation = ({
       ];
 
       const canvasDataUrl = canvas.toDataURL({
-        format: 'png',
+        format: "png",
         multiplier: 4,
       });
 
       const formData = new FormData();
-      formData.append('annotations', JSON.stringify(annotations));
-      formData.append('pageNumber', pageNumber);
-      formData.append('documentId', documentId);
-      formData.append('pageImage', canvasDataUrl);
-      formData.append('scale', scale);
-      formData.append('userId', user.userId);
+      formData.append("annotations", JSON.stringify(annotations));
+      formData.append("pageNumber", pageNumber);
+      formData.append("pageImage", canvasDataUrl);
+      formData.append("scale", scale);
+      formData.append("userId", user.userId);
+      formData.append("fileId", fileId);
 
       await saveAnnotationMutation.mutateAsync(formData);
-      message.success('Annotations saved and embedded in PDF successfully');
+      message.success("Annotations saved and embedded in PDF successfully");
       setLocalAnnotations([]);
     } catch (error) {
-      message.error('Failed to save annotations');
+      message.error("Failed to save annotations");
     } finally {
       setIsSaving(false);
     }
@@ -691,7 +689,7 @@ const PDFAnnotation = ({
   const loadErasedAnnotations = useCallback(
     (pageNum) => {
       // Try loading from global storage first
-      const globalKey = `erased_annotations_${documentId}`;
+      const globalKey = `erased_annotations_${fileId}`;
       const globalData = localStorage.getItem(globalKey);
       if (globalData) {
         const parsed = JSON.parse(globalData);
@@ -701,7 +699,7 @@ const PDFAnnotation = ({
       }
 
       // Fallback to page-specific storage
-      const key = `erased_annotations_${documentId}_page_${pageNum}`;
+      const key = `erased_annotations_${fileId}_page_${pageNum}`;
       const saved = localStorage.getItem(key);
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -709,7 +707,7 @@ const PDFAnnotation = ({
       }
       return [];
     },
-    [documentId]
+    [fileId]
   );
 
   // Update the useEffect for page changes
@@ -736,7 +734,7 @@ const PDFAnnotation = ({
     if (undoStack.length === 0) return;
     const lastAction = undoStack[undoStack.length - 1];
     setUndoStack((prev) => prev.slice(0, -1));
-    if (lastAction.type === 'erase') {
+    if (lastAction.type === "erase") {
       // Restore erased object
       fabric.util.enlivenObjects([lastAction.object], ([restoredObject]) => {
         if (restoredObject) {
@@ -746,12 +744,12 @@ const PDFAnnotation = ({
           setRedoStack((prev) => [
             ...prev,
             {
-              type: 'erase',
+              type: "erase",
               object: restoredObject.toJSON([
-                'selectable',
-                'hasControls',
-                'hasBorders',
-                'annotationId',
+                "selectable",
+                "hasControls",
+                "hasBorders",
+                "annotationId",
               ]),
               annotationId: restoredObject.annotationId,
             },
@@ -759,9 +757,9 @@ const PDFAnnotation = ({
         }
       });
     } else if (
-      lastAction.type === 'draw' ||
-      lastAction.type === 'text' ||
-      lastAction.type === 'audit'
+      lastAction.type === "draw" ||
+      lastAction.type === "text" ||
+      lastAction.type === "audit"
     ) {
       // Remove the last drawn object
       const objects = canvas.getObjects();
@@ -772,31 +770,31 @@ const PDFAnnotation = ({
           {
             type: lastAction.type,
             object: lastObject.toJSON([
-              'selectable',
-              'hasControls',
-              'hasBorders',
-              'annotationId',
-              'left',
-              'top',
-              'width',
-              'height',
-              'fontSize',
-              'fill',
-              'text',
-              'fontFamily',
-              'fontWeight',
-              'fontStyle',
-              'underline',
-              'linethrough',
-              'textAlign',
-              'angle',
-              'scaleX',
-              'scaleY',
-              'lockRotation',
-              'lockScalingY',
-              'lockUniScaling',
-              'minWidth',
-              'minHeight',
+              "selectable",
+              "hasControls",
+              "hasBorders",
+              "annotationId",
+              "left",
+              "top",
+              "width",
+              "height",
+              "fontSize",
+              "fill",
+              "text",
+              "fontFamily",
+              "fontWeight",
+              "fontStyle",
+              "underline",
+              "linethrough",
+              "textAlign",
+              "angle",
+              "scaleX",
+              "scaleY",
+              "lockRotation",
+              "lockScalingY",
+              "lockUniScaling",
+              "minWidth",
+              "minHeight",
             ]),
           },
         ]);
@@ -817,15 +815,15 @@ const PDFAnnotation = ({
     setRedoStack((prev) => prev.slice(0, -1));
 
     if (
-      lastAction.type === 'draw' ||
-      lastAction.type === 'text' ||
-      lastAction.type === 'audit'
+      lastAction.type === "draw" ||
+      lastAction.type === "text" ||
+      lastAction.type === "audit"
     ) {
       fabric.util.enlivenObjects([lastAction.object], ([restoredObject]) => {
         if (restoredObject) {
           // Restore all properties and annotationId
           Object.keys(lastAction.object).forEach((key) => {
-            if (key !== 'type' && key !== 'version') {
+            if (key !== "type" && key !== "version") {
               restoredObject[key] = lastAction.object[key];
             }
           });
@@ -836,37 +834,37 @@ const PDFAnnotation = ({
             {
               type: lastAction.type,
               object: restoredObject.toJSON([
-                'selectable',
-                'hasControls',
-                'hasBorders',
-                'annotationId',
-                'left',
-                'top',
-                'width',
-                'height',
-                'fontSize',
-                'fill',
-                'text',
-                'fontFamily',
-                'fontWeight',
-                'fontStyle',
-                'underline',
-                'linethrough',
-                'textAlign',
-                'angle',
-                'scaleX',
-                'scaleY',
-                'lockRotation',
-                'lockScalingY',
-                'lockUniScaling',
-                'minWidth',
-                'minHeight',
+                "selectable",
+                "hasControls",
+                "hasBorders",
+                "annotationId",
+                "left",
+                "top",
+                "width",
+                "height",
+                "fontSize",
+                "fill",
+                "text",
+                "fontFamily",
+                "fontWeight",
+                "fontStyle",
+                "underline",
+                "linethrough",
+                "textAlign",
+                "angle",
+                "scaleX",
+                "scaleY",
+                "lockRotation",
+                "lockScalingY",
+                "lockUniScaling",
+                "minWidth",
+                "minHeight",
               ]),
             },
           ]);
         }
       });
-    } else if (lastAction.type === 'erase') {
+    } else if (lastAction.type === "erase") {
       // Redo of an undo-erase means re-erasing (removing) the object again
       const objects = canvas.getObjects();
       const objectToErase = objects.find(
@@ -878,12 +876,12 @@ const PDFAnnotation = ({
         setUndoStack((prev) => [
           ...prev,
           {
-            type: 'erase',
+            type: "erase",
             object: objectToErase.toJSON([
-              'selectable',
-              'hasControls',
-              'hasBorders',
-              'annotationId',
+              "selectable",
+              "hasControls",
+              "hasBorders",
+              "annotationId",
             ]),
             annotationId: objectToErase.annotationId,
           },
@@ -896,7 +894,7 @@ const PDFAnnotation = ({
   useEffect(() => {
     if (canvas) {
       const handleKeyDown = (e) => {
-        if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+        if (e.key === "z" && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           if (e.shiftKey) {
             handleRedo(e);
@@ -906,17 +904,17 @@ const PDFAnnotation = ({
         }
       };
 
-      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener("keydown", handleKeyDown);
       return () => {
-        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener("keydown", handleKeyDown);
       };
     }
   }, [canvas, undoStack, redoStack]);
 
   useEffect(() => {
     if (canvas && canvas.wrapperEl) {
-      canvas.wrapperEl.setAttribute('data-tool', selectedTool);
-      if (selectedTool === 'pen') {
+      canvas.wrapperEl.setAttribute("data-tool", selectedTool);
+      if (selectedTool === "pen") {
         canvas.isDrawingMode = true;
         canvas.freeDrawingBrush.color = penColor;
         canvas.freeDrawingBrush.width = 2;
@@ -926,7 +924,7 @@ const PDFAnnotation = ({
 
   // Update pen color when it changes
   useEffect(() => {
-    if (canvas && selectedTool === 'pen') {
+    if (canvas && selectedTool === "pen") {
       const pencilBrush = new fabric.PencilBrush(canvas);
       pencilBrush.width = 2;
       pencilBrush.color = penColor;
@@ -944,21 +942,21 @@ const PDFAnnotation = ({
   // Multi-page annotation download logic
 
   const handleDownload = async () => {
-    if (!documentId) {
-      message.error('Document ID is missing.');
+    if (!fileId) {
+      message.error("File ID is missing.");
       return;
     }
     setIsDownloading(true);
     try {
       // Collect all page canvases and their images
       let pageImages = [];
-      if (getAllPageCanvases && typeof numPages === 'number' && numPages > 0) {
+      if (getAllPageCanvases && typeof numPages === "number" && numPages > 0) {
         const canvases = getAllPageCanvases();
         for (let i = 1; i <= numPages; i++) {
           const c = canvases[i];
           if (c) {
             const canvasDataUrl = c.toDataURL({
-              format: 'png',
+              format: "png",
               quality: 1,
               multiplier: 4,
             });
@@ -968,7 +966,7 @@ const PDFAnnotation = ({
       } else if (canvas) {
         // fallback: just current page
         const canvasDataUrl = canvas.toDataURL({
-          format: 'png',
+          format: "png",
           quality: 1,
           multiplier: 4,
         });
@@ -977,17 +975,17 @@ const PDFAnnotation = ({
 
       // Send all page images to the backend as JSON
       const response = await axiosInstance.post(
-        `/annotations/document/${documentId}/apply`,
+        `/annotations/file/${fileId}/apply`,
         { pageImages },
         {
-          responseType: 'blob',
+          responseType: "blob",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
       const annotatedPdfBlob = new Blob([response.data], {
-        type: 'application/pdf',
+        type: "application/pdf",
       });
 
       // Fetch comments for the document
@@ -1010,25 +1008,25 @@ const PDFAnnotation = ({
       const watermarkOpacity = 0.15;
       const addLogoWatermark = () => {
         doc.setGState(new doc.GState({ opacity: watermarkOpacity }));
-        doc.addImage(logo, 'PNG', imgX, imgY, imgWidth, imgHeight);
+        doc.addImage(logo, "PNG", imgX, imgY, imgWidth, imgHeight);
         doc.setGState(new doc.GState({ opacity: 1 }));
       };
       addLogoWatermark();
       doc.setFontSize(14);
       doc.setTextColor(0, 0, 0);
-      doc.text('Document Comments', 10, 15);
+      doc.text("Document Comments", 10, 15);
       let y = 25;
       if (comments.length === 0) {
         doc.setFontSize(12);
-        doc.text('No comments available.', 10, y);
+        doc.text("No comments available.", 10, y);
       } else {
         comments.forEach((comment, idx) => {
           if (!comment.isPrivate) {
-            const user = comment.user?.name || 'Unknown User';
+            const user = comment.user?.name || "Unknown User";
             const date = comment.createdAt
               ? new Date(comment.createdAt).toLocaleString()
-              : '';
-            const body = comment.body || '';
+              : "";
+            const body = comment.body || "";
             doc.setFontSize(12);
             doc.text(`${idx + 1}. ${user} (${date})`, 10, y);
             y += 7;
@@ -1046,24 +1044,24 @@ const PDFAnnotation = ({
           }
         });
       }
-      const commentsPdfBlob = doc.output('blob');
+      const commentsPdfBlob = doc.output("blob");
 
       // Zip the annotated PDF and comments PDF using JSZip
       const zip = new JSZip();
-      zip.file(`annotated-${documentId}.pdf`, annotatedPdfBlob);
-      zip.file(`comments-${documentId}.pdf`, commentsPdfBlob);
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      zip.file(`annotated-${fileId}.pdf`, annotatedPdfBlob);
+      zip.file(`comments-${fileId}.pdf`, commentsPdfBlob);
+      const zipBlob = await zip.generateAsync({ type: "blob" });
 
       // Trigger download of the zip
       saveAs(
         zipBlob,
-        `${docData?.file?.fileName || 'document'}-with-comments.zip`
+        `${docData?.file?.fileName || "document"}-with-comments.zip`
       );
       message.success(
-        'Annotated PDF and comments downloaded as zip successfully'
+        "Annotated PDF and comments downloaded as zip successfully"
       );
     } catch (error) {
-      message.error('Failed to download annotated PDF and comments as zip');
+      message.error("Failed to download annotated PDF and comments as zip");
     } finally {
       setIsDownloading(false);
     }
@@ -1077,16 +1075,16 @@ const PDFAnnotation = ({
       const target = opt.target;
 
       // Only show stamp modal if stamp tool is selected and click is NOT on an existing stamp
-      if (selectedTool === 'stamp' && !target) {
+      if (selectedTool === "stamp" && !target) {
         setStampPosition({ x: pointer.x, y: pointer.y, pageNumber });
         setStampToolVisible(true);
-      } else if (selectedTool === 'cast') {
-        const text = new fabric.Text('C', {
+      } else if (selectedTool === "cast") {
+        const text = new fabric.Text("C", {
           left: pointer.x,
           top: pointer.y,
           fontSize: 16,
-          fill: 'red',
-          fontFamily: 'Arial',
+          fill: "red",
+          fontFamily: "Arial",
           selectable: false,
           hasControls: false,
           hasBorders: false,
@@ -1100,35 +1098,35 @@ const PDFAnnotation = ({
         setUndoStack((prev) => [
           ...prev,
           {
-            type: 'audit',
+            type: "audit",
             object: text.toJSON([
-              'left',
-              'top',
-              'fontSize',
-              'fill',
-              'text',
-              'fontFamily',
-              'angle',
-              'selectable',
-              'hasControls',
-              'hasBorders',
-              'lockRotation',
-              'lockScalingY',
-              'lockUniScaling',
-              'minWidth',
-              'minHeight',
+              "left",
+              "top",
+              "fontSize",
+              "fill",
+              "text",
+              "fontFamily",
+              "angle",
+              "selectable",
+              "hasControls",
+              "hasBorders",
+              "lockRotation",
+              "lockScalingY",
+              "lockUniScaling",
+              "minWidth",
+              "minHeight",
             ]),
           },
         ]);
         setRedoStack([]);
         canvas.renderAll();
-      } else if (selectedTool === 'tick') {
-        const text = new fabric.Text('7', {
+      } else if (selectedTool === "tick") {
+        const text = new fabric.Text("7", {
           left: pointer.x,
           top: pointer.y,
           fontSize: 16,
-          fill: 'red',
-          fontFamily: 'Arial',
+          fill: "red",
+          fontFamily: "Arial",
           angle: -20,
           selectable: false,
           hasControls: false,
@@ -1143,35 +1141,35 @@ const PDFAnnotation = ({
         setUndoStack((prev) => [
           ...prev,
           {
-            type: 'audit',
+            type: "audit",
             object: text.toJSON([
-              'left',
-              'top',
-              'fontSize',
-              'fill',
-              'text',
-              'fontFamily',
-              'angle',
-              'selectable',
-              'hasControls',
-              'hasBorders',
-              'lockRotation',
-              'lockScalingY',
-              'lockUniScaling',
-              'minWidth',
-              'minHeight',
+              "left",
+              "top",
+              "fontSize",
+              "fill",
+              "text",
+              "fontFamily",
+              "angle",
+              "selectable",
+              "hasControls",
+              "hasBorders",
+              "lockRotation",
+              "lockScalingY",
+              "lockUniScaling",
+              "minWidth",
+              "minHeight",
             ]),
           },
         ]);
         setRedoStack([]);
         canvas.renderAll();
-      } else if (selectedTool === 'trace') {
-        const text = new fabric.Text('T', {
+      } else if (selectedTool === "trace") {
+        const text = new fabric.Text("T", {
           left: pointer.x,
           top: pointer.y,
           fontSize: 28,
-          fill: 'red',
-          fontFamily: 'Arial',
+          fill: "red",
+          fontFamily: "Arial",
           selectable: false,
           hasControls: false,
           hasBorders: false,
@@ -1185,35 +1183,35 @@ const PDFAnnotation = ({
         setUndoStack((prev) => [
           ...prev,
           {
-            type: 'audit',
+            type: "audit",
             object: text.toJSON([
-              'left',
-              'top',
-              'fontSize',
-              'fill',
-              'text',
-              'fontFamily',
-              'angle',
-              'selectable',
-              'hasControls',
-              'hasBorders',
-              'lockRotation',
-              'lockScalingY',
-              'lockUniScaling',
-              'minWidth',
-              'minHeight',
+              "left",
+              "top",
+              "fontSize",
+              "fill",
+              "text",
+              "fontFamily",
+              "angle",
+              "selectable",
+              "hasControls",
+              "hasBorders",
+              "lockRotation",
+              "lockScalingY",
+              "lockUniScaling",
+              "minWidth",
+              "minHeight",
             ]),
           },
         ]);
         setRedoStack([]);
         canvas.renderAll();
-      } else if (selectedTool === 'text') {
+      } else if (selectedTool === "text") {
         // Only create a textbox if there is not already one being edited
         const editingTextbox = canvas
           .getObjects()
-          .find((obj) => obj.type === 'textbox' && obj.isEditing);
+          .find((obj) => obj.type === "textbox" && obj.isEditing);
         if (!editingTextbox) {
-          const textbox = new fabric.Textbox('Enter text', {
+          const textbox = new fabric.Textbox("Enter text", {
             left: pointer.x,
             top: pointer.y,
             fontSize: 18,
@@ -1233,27 +1231,27 @@ const PDFAnnotation = ({
           setUndoStack((prev) => [
             ...prev,
             {
-              type: 'text',
+              type: "text",
               object: textbox.toJSON([
-                'left',
-                'top',
-                'width',
-                'height',
-                'fontSize',
-                'fill',
-                'text',
-                'fontFamily',
-                'fontWeight',
-                'fontStyle',
-                'underline',
-                'linethrough',
-                'textAlign',
-                'angle',
-                'scaleX',
-                'scaleY',
-                'selectable',
-                'hasControls',
-                'hasBorders',
+                "left",
+                "top",
+                "width",
+                "height",
+                "fontSize",
+                "fill",
+                "text",
+                "fontFamily",
+                "fontWeight",
+                "fontStyle",
+                "underline",
+                "linethrough",
+                "textAlign",
+                "angle",
+                "scaleX",
+                "scaleY",
+                "selectable",
+                "hasControls",
+                "hasBorders",
               ]),
             },
           ]);
@@ -1261,41 +1259,41 @@ const PDFAnnotation = ({
           canvas.setActiveObject(textbox);
           textbox.enterEditing && textbox.enterEditing();
           canvas.renderAll();
-          setSelectedTool('');
+          setSelectedTool("");
         }
       }
     };
-    canvas.on('mouse:down', handleCanvasClick);
+    canvas.on("mouse:down", handleCanvasClick);
     return () => {
-      canvas.off('mouse:down', handleCanvasClick);
+      canvas.off("mouse:down", handleCanvasClick);
     };
   }, [canvas, selectedTool, penColor, pageNumber]);
 
   // Handle annotation from StampTool
   const handleStampAnnotation = (annotation) => {
-    if (annotation && annotation.type === 'stamp') {
+    if (annotation && annotation.type === "stamp") {
       setLocalAnnotations((prev) => [...prev, annotation]);
       if (canvas) {
         const data = annotation.data;
         if (!data || !data.dataUrl) {
-          console.error('Stamp annotation missing data or dataUrl', annotation);
+          console.error("Stamp annotation missing data or dataUrl", annotation);
           return;
         }
-        if (!data.dataUrl.startsWith('data:image/')) {
+        if (!data.dataUrl.startsWith("data:image/")) {
           console.error(
-            'Stamp annotation has invalid dataUrl format:',
+            "Stamp annotation has invalid dataUrl format:",
             data.dataUrl.substring(0, 100)
           );
           return;
         }
         if (
-          typeof data.x !== 'number' ||
-          typeof data.y !== 'number' ||
-          typeof data.width !== 'number' ||
-          typeof data.height !== 'number'
+          typeof data.x !== "number" ||
+          typeof data.y !== "number" ||
+          typeof data.width !== "number" ||
+          typeof data.height !== "number"
         ) {
           console.error(
-            'Stamp annotation has invalid position/dimensions:',
+            "Stamp annotation has invalid position/dimensions:",
             data
           );
           return;
@@ -1327,12 +1325,12 @@ const PDFAnnotation = ({
           canvas.add(imgInstance);
           canvas.renderAll();
           console.log(
-            'Stamp annotation: Successfully added to canvas using native Image'
+            "Stamp annotation: Successfully added to canvas using native Image"
           );
         };
         imgElement.onerror = function (e) {
           message.error(
-            'Failed to load image element for stamp annotation' + e,
+            "Failed to load image element for stamp annotation" + e,
             data.dataUrl.substring(0, 100)
           );
         };
@@ -1364,10 +1362,10 @@ const PDFAnnotation = ({
         <canvas
           id={`annotation-canvas-${pageNumber}`}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            pointerEvents: 'auto',
+            pointerEvents: "auto",
           }}
         />
       </div>
@@ -1405,6 +1403,10 @@ PDFAnnotation.propTypes = {
   onDocumentLoadSuccess: PropTypes.func.isRequired,
   onDocumentLoadError: PropTypes.func.isRequired,
   documentId: PropTypes.string.isRequired,
+  registerCanvas: PropTypes.func,
+  getAllPageCanvases: PropTypes.func,
+  numPages: PropTypes.number,
+  fileId: PropTypes.string,
 };
 
 export default PDFAnnotation;
