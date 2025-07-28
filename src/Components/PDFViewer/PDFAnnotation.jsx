@@ -331,6 +331,30 @@ const PDFAnnotation = ({
               evented: false,
             });
             canvas.add(textbox);
+          } else if (annotation.type === 'audit') {
+            // Render audit annotation (fabric.Text)
+            const data = annotation.data || annotation.annotationData;
+            if (!data || !['C', '7', '✓'].includes(data.text)) return;
+            const text = new fabric.Text(data.text, {
+              left: data.left,
+              top: data.top,
+              fontSize: data.fontSize || 32,
+              fill: data.fill || 'red',
+              fontFamily: data.fontFamily || 'Noto Sans Symbols',
+              angle: data.angle || 0,
+              selectable: true,
+              hasControls: true,
+              hasBorders: true,
+              lockMovementX: false,
+              lockMovementY: false,
+              lockRotation: false,
+              lockScalingX: false,
+              lockScalingY: false,
+              lockUniScaling: false,
+              minWidth: 20,
+              minHeight: 20,
+            });
+            canvas.add(text);
           }
         });
 
