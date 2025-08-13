@@ -22,6 +22,7 @@ import { EditTwoTone, DeleteTwoTone, LoadingOutlined } from '@ant-design/icons';
 import Edit from '../modals/Staff/Edit';
 import { capitalize } from '../../../utils/typography';
 import { useGetRoles } from '../../queryHooks/user';
+import OTPToggleButton from '../OTPToggleButton';
 
 const Staff = () => {
   const queryClient = useQueryClient();
@@ -222,6 +223,14 @@ const Staff = () => {
           return <Tag key={idx}>{capitalize(role.role)}</Tag>;
         });
       },
+    },
+    {
+      title: '2FA Status',
+      key: 'otpStatus',
+      dataIndex: 'userId',
+      render: (userId, record) => (
+        <OTPToggleButton staffUserId={userId} staffName={record.name} />
+      ),
     },
 
     {

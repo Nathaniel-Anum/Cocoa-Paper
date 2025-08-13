@@ -15,33 +15,34 @@ import {
   Mentions,
   Typography,
   InputNumber,
-} from "antd";
-import dayjs from "dayjs";
-import { FaHandshake } from "react-icons/fa";
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { EditOutlined, UploadOutlined } from "@ant-design/icons";
-import { LuArchive, LuMessageSquare, LuSend, LuUser } from "react-icons/lu";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+} from 'antd';
+import dayjs from 'dayjs';
+import { FaHandshake } from 'react-icons/fa';
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { EditOutlined, UploadOutlined } from '@ant-design/icons';
+import { LuArchive, LuMessageSquare, LuSend, LuUser } from 'react-icons/lu';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import pdf from "../assets/pdf.svg";
-import { useViewDocument } from "../queryHooks/document";
-import axiosInstance from "../Components/axiosInstance";
-import { useUser } from "./CustomHook/useUser";
-import { formatMoney } from "../../utils/typography";
-import useStore from "../store/store";
+import pdf from '../assets/pdf.svg';
+import { useViewDocument } from '../queryHooks/document';
+import axiosInstance from '../Components/axiosInstance';
+import { useUser } from './CustomHook/useUser';
+import { formatMoney } from '../../utils/typography';
+import useStore from '../store/store';
 
-import { approveDocument, uploadFile } from "../http/addDocument";
+import { approveDocument, uploadFile } from '../http/addDocument';
 import {
   hasPermission,
   requiredPermissions,
   getAllRolePermissions,
-} from "../../utils/Roles";
-import ArchiveFiles from "../Components/modals/Archive/ArchiveFiles";
-import { updateBudgetAmount } from "../http/budget";
-import Loader from "../Components/Loader/Loader";
-import { PDFViewerContent } from "../Components/PDFViewer/PdfViewer";
-import TextArea from "antd/es/input/TextArea";
+} from '../../utils/Roles';
+import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
+import { updateBudgetAmount } from '../http/budget';
+import Loader from '../Components/Loader/Loader';
+import { PDFViewerContent } from '../Components/PDFViewer/PdfViewer';
+import TextArea from 'antd/es/input/TextArea';
+import OTPVerificationModal from '../Components/OTPVerificationModal';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -57,14 +58,15 @@ function ViewDocument() {
   // State management
   const openFileViewer = useStore((state) => state.openFileViewer);
 
-  const [fileUrl, setFileUrl] = useState("");
+  const [fileUrl, setFileUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [selectedDivision, setSelectedDivision] = useState("");
+  const [selectedDivision, setSelectedDivision] = useState('');
   const [showArchiveModal, setShowArchiveModal] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedBudgetItem, setSelectedBudgetItem] = useState(null);
+  const [showOTPModal, setShowOTPModal] = useState(false);
 
   // Data fetching
   const { data: document, refetch } = useViewDocument(docId);
@@ -82,13 +84,13 @@ function ViewDocument() {
       setIsLoading(true);
       const response = await axiosInstance.get(
         `/archive/file/${document.data.document.file.fileId}`,
-        { responseType: "blob" }
+        { responseType: 'blob' }
       );
       const fileUrl = URL.createObjectURL(response.data);
       setFileUrl(fileUrl);
     } catch (error) {
-      console.error("Error fetching file:", error.message);
-      message.error("Failed to load document file");
+      console.error('Error fetching file:', error.message);
+      message.error('Failed to load document file');
     } finally {
       setIsLoading(false);
     }
@@ -100,76 +102,78 @@ function ViewDocument() {
 
   // Mutations
   const { mutate: forwardDocument, isPending: submitLoading } = useMutation({
-    mutationKey: ["forwardDocument", docId],
+    mutationKey: ['forwardDocument', docId],
     mutationFn: (values) =>
       axiosInstance.patch(`/trail/${docId}`, {
         ...values,
         userId: values?.userId,
-        status: "Forwarded",
+        status: 'Forwarded',
       }),
     onSuccess: () => {
-      message.success("Document forwarded successfully");
+      message.success('Document forwarded successfully');
       forwardForm.resetFields();
-      queryClient.invalidateQueries(["trail"]);
-      navigate("/incoming");
+      queryClient.invalidateQueries(['trail']);
+      navigate('/incoming');
     },
     onError: (error) => {
       message.error(
-        error.response?.data?.error || "Failed to forward document"
+        error.response?.data?.error || 'Failed to forward document'
       );
     },
   });
 
   const { mutate: approveDoc, isPending: approvalLoading } = useMutation({
-    mutationKey: ["approveDocument", docId],
-    mutationFn: () => approveDocument(docId),
+    mutationKey: ['approveDocument', docId],
+    mutationFn: (otpToken) => approveDocument(docId, otpToken),
     onSuccess: () => {
-      message.success("Request approved successfully");
+      message.success('Request approved successfully');
       refetch();
+      setShowOTPModal(false);
     },
     onError: (error) => {
-      message.error(error.response?.data?.error || "Approval failed");
+      message.error(error.response?.data?.error || 'Approval failed');
+      setShowOTPModal(false);
     },
   });
 
   const qClient = useQueryClient();
 
   const { mutate: updateAmount, isPending: isUpdatingAmount } = useMutation({
-    mutationKey: ["updateBudgetAmount", selectedBudgetItem],
+    mutationKey: ['updateBudgetAmount', selectedBudgetItem],
     mutationFn: (values) => updateBudgetAmount(selectedBudgetItem, values),
     onSuccess: () => {
-      message.success("Amount updated successfully");
-      qClient.invalidateQueries({ queryKey: ["document", docId] });
+      message.success('Amount updated successfully');
+      qClient.invalidateQueries({ queryKey: ['document', docId] });
       setShowModal(false);
       refetch();
     },
     onError: (error) => {
-      message.error(error.response?.data?.error || "Failed to update amount");
+      message.error(error.response?.data?.error || 'Failed to update amount');
     },
   });
 
   useEffect(() => {
     if (selectedBudgetItem) {
-      amountForm.setFieldValue("amount", selectedBudgetItem.amount || 0);
+      amountForm.setFieldValue('amount', selectedBudgetItem.amount || 0);
     }
   }, [selectedBudgetItem, amountForm]);
 
   // Data queries
   const { data: divisions } = useQuery({
-    queryKey: ["divisions"],
-    queryFn: () => axiosInstance.get("/division"),
+    queryKey: ['divisions'],
+    queryFn: () => axiosInstance.get('/division'),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data: departments } = useQuery({
-    queryKey: ["departments", selectedDivision],
+    queryKey: ['departments', selectedDivision],
     queryFn: () => axiosInstance.get(`/department/${selectedDivision}`),
     enabled: !!selectedDivision,
     staleTime: 1000 * 60 * 5,
   });
 
   const { data: users } = useQuery({
-    queryKey: ["users", selectedDepartment],
+    queryKey: ['users', selectedDepartment],
     queryFn: () => axiosInstance.get(`/all-users/${selectedDepartment}`),
     enabled: !!selectedDepartment,
     staleTime: 1000 * 60 * 5,
@@ -177,14 +181,14 @@ function ViewDocument() {
 
   const { mutate: uploadMultipleFiles, isPending: isMultipleUploading } =
     useMutation({
-      mutationKey: ["uploadMultiple"],
+      mutationKey: ['uploadMultiple'],
       mutationFn: async ({ files, subject, ref }) => {
         // Create an array of promises for each file upload
         const uploadPromises = files.map((file) => {
           const formData = new FormData();
-          formData.append("file", file);
-          formData.append("subject", subject);
-          formData.append("ref", ref);
+          formData.append('file', file);
+          formData.append('subject', subject);
+          formData.append('ref', ref);
 
           return uploadFile(formData).then((response) => {
             if (!response?.data?.newFile?.fileId) {
@@ -200,13 +204,13 @@ function ViewDocument() {
         return Promise.all(uploadPromises);
       },
       onSuccess: (fileIds) => {
-        console.log("All files uploaded successfully with IDs:", fileIds);
+        console.log('All files uploaded successfully with IDs:', fileIds);
 
         // Get form values and add file IDs
         const values = forwardForm.getFieldsValue();
         forwardDocument({
           ...values,
-          status: "Forwarded",
+          status: 'Forwarded',
           isPrivate,
           attachmentIds: fileIds,
         });
@@ -220,13 +224,22 @@ function ViewDocument() {
   // Handlers
   const handleDivisionChange = (value) => setSelectedDivision(value);
   const handleDepartmentChange = (value) => setSelectedDepartment(value);
+
+  const handleApproveDocument = () => {
+    setShowOTPModal(true);
+  };
+
+  const handleOTPVerificationSuccess = (otpToken) => {
+    approveDoc(otpToken);
+  };
+
   const handleSubmit = (values) => {
     const attachmentFiles = values.attachments?.fileList;
 
     if (!attachmentFiles || attachmentFiles.length === 0) {
       // No attachments, just upload the main file
 
-      forwardDocument({ ...values, status: "Forwarded", isPrivate });
+      forwardDocument({ ...values, status: 'Forwarded', isPrivate });
     } else {
       const attachmentFilesArray = attachmentFiles.map(
         (fileItem) => fileItem.originFileObj
@@ -235,8 +248,8 @@ function ViewDocument() {
       // Upload all attachments with reference to main file
       uploadMultipleFiles({
         files: attachmentFilesArray,
-        subject: "",
-        ref: "",
+        subject: '',
+        ref: '',
       });
     }
 
@@ -247,9 +260,9 @@ function ViewDocument() {
   // Table configuration
   const budgetColumns = [
     {
-      title: "Item",
-      key: "item",
-      dataIndex: ["budgetItem", "item"],
+      title: 'Item',
+      key: 'item',
+      dataIndex: ['budgetItem', 'item'],
       render: (value, record) => (
         <span
           className={
@@ -263,9 +276,9 @@ function ViewDocument() {
       ),
     },
     {
-      title: "Amount",
-      key: "amount",
-      dataIndex: "amount",
+      title: 'Amount',
+      key: 'amount',
+      dataIndex: 'amount',
       render: (value, record) => (
         <span
           className={
@@ -274,15 +287,15 @@ function ViewDocument() {
             )
           }
         >
-          {value ? `¢${formatMoney(value)}` : "--"}
+          {value ? `¢${formatMoney(value)}` : '--'}
         </span>
       ),
     },
 
     {
-      title: "Allocation",
-      key: "allocation",
-      dataIndex: ["budgetItem", "amount"],
+      title: 'Allocation',
+      key: 'allocation',
+      dataIndex: ['budgetItem', 'amount'],
       render: (value, record) => (
         <span
           className={
@@ -294,9 +307,9 @@ function ViewDocument() {
       ),
     },
     {
-      title: "Balance",
-      dataIndex: "balance",
-      key: "balance",
+      title: 'Balance',
+      dataIndex: 'balance',
+      key: 'balance',
       render: (value, record) => (
         <span
           className={
@@ -314,9 +327,9 @@ function ViewDocument() {
     ])
       ? [
           {
-            title: "Action",
-            dataIndex: "id",
-            key: "id",
+            title: 'Action',
+            dataIndex: 'id',
+            key: 'id',
             render: (value, record) => (
               <Tooltip title="Edit Amount">
                 <EditOutlined
@@ -359,18 +372,18 @@ function ViewDocument() {
   );
 
   const attachmentUploadProps = {
-    name: "file", // The name of the file input field, not the form field name
+    name: 'file', // The name of the file input field, not the form field name
     multiple: true,
     beforeUpload: () => false, // Prevent auto upload
     onChange(info) {
       console.log(
-        "Attachment files selected:",
+        'Attachment files selected:',
         info.fileList.map((f) => f.name)
       );
       // The fileList will be stored in the form
       form.setFieldsValue({ attachments: { fileList: info.fileList } });
     },
-    accept: ".pdf",
+    accept: '.pdf',
   };
 
   const commentsToShow =
@@ -395,15 +408,15 @@ function ViewDocument() {
           <Form.Item
             name="amount"
             label="Amount"
-            rules={[{ required: true, message: "Please enter an amount" }]}
+            rules={[{ required: true, message: 'Please enter an amount' }]}
           >
             <InputNumber
               placeholder="Enter Amount"
               className="w-full"
               formatter={(value) =>
-                `¢ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                `¢ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
               }
-              parser={(value) => value?.replace(/¢\s?|(,*)/g, "")}
+              parser={(value) => value?.replace(/¢\s?|(,*)/g, '')}
             />
           </Form.Item>
           <Button
@@ -431,10 +444,10 @@ function ViewDocument() {
             bordered={false}
             className="h-full"
             bodyStyle={{
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              padding: "16px",
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '16px',
             }}
           >
             <div className="flex justify-between items-center mb-3">
@@ -475,15 +488,15 @@ function ViewDocument() {
             <Card
               bordered={false}
               className="bg-[#582F08]/5 flex-shrink-0"
-              bodyStyle={{ padding: "16px" }}
+              bodyStyle={{ padding: '16px' }}
             >
-              {document.data.document.documentType === "BudgetRelease" && (
+              {document.data.document.documentType === 'BudgetRelease' && (
                 <Table
                   dataSource={budgetData}
                   columns={budgetColumns}
                   pagination={false}
                   loading={isLoading}
-                  locale={{ emptyText: "No budget data available" }}
+                  locale={{ emptyText: 'No budget data available' }}
                 />
               )}
 
@@ -491,14 +504,14 @@ function ViewDocument() {
                 requiredPermissions.APPROVE_DOCUMENT,
               ]) &&
                 !document.data.document.isApproved &&
-                document.data.document.documentType !== "General" && (
+                document.data.document.documentType !== 'General' && (
                   <Button
                     type="primary"
                     htmlType="button"
                     loading={approvalLoading}
                     icon={<FaHandshake className="w-4 h-4" />}
                     className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-6"
-                    onClick={() => approveDoc()}
+                    onClick={handleApproveDocument}
                   >
                     Approve
                   </Button>
@@ -511,10 +524,10 @@ function ViewDocument() {
             bordered={false}
             className="h-full"
             bodyStyle={{
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              padding: "16px",
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '16px',
             }}
           >
             <div className="flex items-center gap-2 mb-4 flex-shrink-0">
@@ -527,9 +540,9 @@ function ViewDocument() {
             <div
               className="flex-1 bg-[#e4c8ad] rounded-lg p-4 overflow-y-auto mb-4"
               style={{
-                height: "calc(100vh - 20rem)",
-                minHeight: "200px",
-                maxHeight: "calc(100vh - 20rem)",
+                height: 'calc(100vh - 20rem)',
+                minHeight: '200px',
+                maxHeight: 'calc(100vh - 20rem)',
               }}
             >
               {commentsToShow.length > 0 ? (
@@ -538,31 +551,31 @@ function ViewDocument() {
                     key={comment.id}
                     className={`flex ${
                       comment.userId === user?.userId
-                        ? "justify-end"
-                        : "justify-start"
+                        ? 'justify-end'
+                        : 'justify-start'
                     } mb-4`}
                   >
                     <div
                       className={`flex gap-3 max-w-[80%] ${
                         comment.userId === user?.userId
-                          ? "flex-row-reverse"
-                          : "flex-row"
+                          ? 'flex-row-reverse'
+                          : 'flex-row'
                       }`}
                     >
                       <Avatar icon={<LuUser className="w-5 h-5" />} />
                       <div
                         className={`rounded-lg p-4 ${
                           comment.userId === user?.userId
-                            ? "bg-[#582F08] text-white"
-                            : "bg-[#9d4d01] text-white"
+                            ? 'bg-[#582F08] text-white'
+                            : 'bg-[#9d4d01] text-white'
                         }`}
                       >
                         <p className="font-medium text-sm">
-                          {comment.user?.name || "Unknown User"}
+                          {comment.user?.name || 'Unknown User'}
                         </p>
                         <p className="mt-1">{comment.body}</p>
                         <p className="text-xs mt-2 opacity-75">
-                          {dayjs(comment.createdAt).format("YYYY-MM-DD HH:mm")}
+                          {dayjs(comment.createdAt).format('YYYY-MM-DD HH:mm')}
                         </p>
                       </div>
                     </div>
@@ -577,7 +590,7 @@ function ViewDocument() {
             {document &&
               document.data.document.trail[
                 document.data.document.trail.length - 1
-              ].status === "Received" &&
+              ].status === 'Received' &&
               document.data.document.trail[
                 document.data.document.trail.length - 1
               ].receiverId === user.userId &&
@@ -594,7 +607,7 @@ function ViewDocument() {
                     name="divisionId"
                     label="Division"
                     rules={[
-                      { required: true, message: "Division is required" },
+                      { required: true, message: 'Division is required' },
                     ]}
                   >
                     <Select
@@ -615,7 +628,7 @@ function ViewDocument() {
                     name="departmentId"
                     label="Department"
                     rules={[
-                      { required: true, message: "Department is required" },
+                      { required: true, message: 'Department is required' },
                     ]}
                   >
                     <Select
@@ -637,7 +650,7 @@ function ViewDocument() {
                     name="userId"
                     label="Recipient"
                     rules={[
-                      { required: true, message: "Recipient is required" },
+                      { required: true, message: 'Recipient is required' },
                     ]}
                   >
                     <Select
@@ -694,7 +707,7 @@ function ViewDocument() {
                       <Button
                         icon={<UploadOutlined />}
                         loading={isMultipleUploading}
-                        style={{ width: "100%" }}
+                        style={{ width: '100%' }}
                         className="cursor-pointer w-full"
                       >
                         Upload Additional Docs
@@ -748,6 +761,14 @@ function ViewDocument() {
           record={document.data.document}
         />
       )}
+
+      <OTPVerificationModal
+        visible={showOTPModal}
+        onCancel={() => setShowOTPModal(false)}
+        onSuccess={handleOTPVerificationSuccess}
+        documentSubject={document?.data?.document?.subject || ''}
+        isLoading={approvalLoading}
+      />
     </div>
   );
 }

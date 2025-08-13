@@ -8,6 +8,7 @@ import {
 } from '../../utils/Roles';
 import { GiTakeMyMoney } from 'react-icons/gi';
 import { HiMiniPresentationChartLine } from 'react-icons/hi2';
+import { FaShieldAlt } from 'react-icons/fa';
 
 const Sidebar = () => {
   const { user } = useUser();
@@ -111,6 +112,13 @@ const Sidebar = () => {
                 />
 
                 <p>Recycle Bin</p>
+              </li>
+            </Link>
+
+            <Link to="/otp-settings">
+              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+                <FaShieldAlt className="w-[6rem] text-[#E3BC97]" size={40} />
+                <p>2FA Settings</p>
               </li>
             </Link>
           </ul>

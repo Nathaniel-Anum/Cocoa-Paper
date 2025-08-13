@@ -16,8 +16,8 @@ export const getDocument = (id) => {
   return axiosInstance.get(`/document/${id}`);
 };
 
-export const approveDocument = (id) => {
-  return axiosInstance.patch(`/document/approve/${id}`);
+export const approveDocument = (id, otpToken) => {
+  return axiosInstance.patch(`/document/approve/${id}`, { otpToken });
 };
 
 export const recallDocument = (id) => {

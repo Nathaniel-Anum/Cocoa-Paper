@@ -42,6 +42,7 @@ import Attachments from './Pages/Attachments';
 import Configuration from './Components/BackOffice/Configuration';
 import UserGroups from './Components/BackOffice/UserGroups';
 import Stamp from './Components/BackOffice/Stamp';
+import OTPSettings from './Components/OTPSettings';
 import { socket } from './utils/socket';
 
 function App() {
@@ -518,6 +519,8 @@ function App() {
               element={<RoleManagement />}
             />
           </Route>
+
+          <Route path="/otp-settings" element={<OTPSettings />} />
           {/* </Route> */}
 
           <Route element={<PublicRoutes />}>

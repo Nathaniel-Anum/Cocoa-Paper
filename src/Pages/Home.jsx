@@ -7,14 +7,18 @@ import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance, { baseURL } from '../Components/axiosInstance';
 import { useCookies } from 'react-cookie';
 import { useState } from 'react';
+import QRCodeModal from '../Components/QRCodeModal';
 import { useUser } from './CustomHook/useUser';
 import {
   hasPermission,
   requiredPermissions,
   getAllRolePermissions,
 } from '../../utils/Roles';
+import LoginOTPModal from '../Components/LoginOTPModal';
 
 const Home = () => {
+  // New state for scanComplete
+  const [scanComplete, setScanComplete] = useState(false);
   const [form] = Form.useForm();
 
   const location = useLocation();
@@ -22,6 +26,10 @@ const Home = () => {
   // console.log(location.state);
 
   const [loading, setLoading] = useState(false);
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [pendingLoginData, setPendingLoginData] = useState(null);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
   const { setUser, setIsLoading } = useUser();
   const { user } = useUser();
   const allRolePermissions = getAllRolePermissions(user);
@@ -29,14 +37,39 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (values) => {
-    // console.log(values);
     setLoading(true);
-    await setTimeout(() => {
-      setLoading(false);
-      // form.resetFields();
-    }, 2500);
     try {
       const res = await axiosInstance.post('/login', values);
+
+      // If backend returns qrCodeUrl and scanComplete is false, show QR modal
+      if (
+        res.data.qrCodeUrl &&
+        res.data.scanComplete === false &&
+        res.data.isEnabled === false
+      ) {
+        setQrCodeUrl(res.data.qrCodeUrl);
+        setShowQRModal(true);
+        setScanComplete(false);
+        setLoading(false);
+        setPendingLoginData({ email: values.email, password: values.password });
+        return;
+      }
+
+      // If scanComplete is true and isEnabled is false, show OTP modal for verification
+      if (res.data.scanComplete === true && res.data.isEnabled === false) {
+        setPendingLoginData({ email: values.email, password: values.password });
+        setShowOTPModal(true);
+        setLoading(false);
+        return;
+      }
+      if (res.data.scanComplete === true && res.data.isEnabled === true) {
+        setPendingLoginData({ email: values.email, password: values.password });
+        setShowOTPModal(true);
+        setLoading(false);
+        return;
+      }
+
+      // Normal login flow
       localStorage.setItem('accessToken', res?.data?.token);
       localStorage.setItem('refreshToken', res?.data?.refreshToken);
 
@@ -48,15 +81,36 @@ const Home = () => {
       }
 
       navigate('/');
-      // setTimeout(() => {
-      //   // message.success("Login successful!");
-      //   navigate("/dashboard");
-      // }, 2500);
     } catch (err) {
-      setTimeout(() => {
-        message.error(err?.response?.data?.error);
-      }, 2500);
+      message.error(err?.response?.data?.error || 'Login failed');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleOTPSuccess = async (loginData) => {
+    try {
+      localStorage.setItem('accessToken', loginData.token);
+      localStorage.setItem('refreshToken', loginData.refreshToken);
+
+      setIsLoading(true);
+      const user = await axiosInstance.get('/user');
+      setUser(user?.data?.user);
+      setIsLoading(false);
+
+      setShowOTPModal(false);
+      setPendingLoginData(null);
+      navigate('/');
+      message.success('Login successful!');
+    } catch (error) {
+      message.error('Failed to complete login');
+    }
+  };
+
+  const handleOTPCancel = () => {
+    setShowOTPModal(false);
+    setPendingLoginData(null);
+    form.resetFields();
   };
 
   return (
@@ -165,6 +219,34 @@ const Home = () => {
         </div>
       </div>
       <ToastContainer />
+
+      <LoginOTPModal
+        visible={showOTPModal}
+        onCancel={handleOTPCancel}
+        onSuccess={handleOTPSuccess}
+        userEmail={pendingLoginData?.email || ''}
+        userPassword={pendingLoginData?.password || ''}
+        isLoading={loading}
+      />
+      <QRCodeModal
+        visible={showQRModal}
+        onCancel={() => setShowQRModal(false)}
+        qrCodeUrl={qrCodeUrl}
+        staffName={pendingLoginData?.email || ''}
+        onScanComplete={async () => {
+          // Call backend to set scanComplete
+          try {
+            await axiosInstance.post('/otp/scan-complete', {
+              email: pendingLoginData?.email,
+            });
+            setShowQRModal(false);
+            setScanComplete(true);
+            setShowOTPModal(true);
+          } catch (err) {
+            message.error('Failed to mark scan as complete');
+          }
+        }}
+      />
     </div>
   );
 };
