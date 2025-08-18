@@ -33,8 +33,15 @@ const OTPToggleButton = ({ staffUserId, staffName }) => {
         title: 'Disable 2FA',
         content: `Are you sure you want to disable 2FA for ${staffName}? This will remove the additional security layer.`,
         onOk: () => toggleOTP({ action }),
-        okText: 'Disable',
+        okText: <span style={{ color: '#fff' }}>Disable</span>,
         cancelText: 'Cancel',
+        okButtonProps: {
+          style: {
+            backgroundColor: '#582f08',
+            borderColor: '#582f08',
+            color: '#fff',
+          },
+        },
       });
     } else {
       toggleOTP({ action });
@@ -56,3 +63,5 @@ const OTPToggleButton = ({ staffUserId, staffName }) => {
 };
 
 export default OTPToggleButton;
+
+

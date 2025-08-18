@@ -23,14 +23,18 @@ const OTPVerificationModal = ({
         setOtpToken('');
       } else {
         // Show backend error message if available, else fallback
-        const backendMsg = response.data?.error || response.data?.message || 'Invalid OTP token';
+        const backendMsg =
+          response.data?.error || response.data?.message || 'Invalid OTP token';
         message.error(backendMsg);
       }
     },
     onError: (error) => {
       console.error('OTP verification failed:', error);
       // Show backend error message if available, else fallback
-      const backendMsg = error.response?.data?.error || error.response?.data?.message || 'Invalid OTP token';
+      const backendMsg =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        'Invalid OTP token';
       message.error(backendMsg);
     },
   });

@@ -232,6 +232,17 @@ const Staff = () => {
         <OTPToggleButton staffUserId={userId} staffName={record.name} />
       ),
     },
+    {
+      title: '2FA Scan Status',
+      key: 'otpScanStatus',
+      dataIndex: 'scanComplete',
+      render: (scanComplete) =>
+        scanComplete ? (
+          <Tag color="green">Scanned</Tag>
+        ) : (
+          <Tag color="red">Not Scanned</Tag>
+        ),
+    },
 
     {
       title: 'Actions',

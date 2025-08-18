@@ -14,7 +14,11 @@ import {
 } from 'antd';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UploadOutlined } from '@ant-design/icons';
+import {
+  CheckOutlined,
+  CloseOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
 import { SlOptionsVertical } from 'react-icons/sl';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 
@@ -31,6 +35,7 @@ import useStore from '../store/store';
 import { useUser } from './CustomHook/useUser';
 import { uploadFile } from '../http/addDocument';
 import { set } from 'lodash';
+import Trail from '../Components/Trail/Trail';
 
 const Incoming = () => {
   const navigate = useNavigate();
@@ -317,6 +322,19 @@ const Incoming = () => {
       dataIndex: ['userIntendedFor', 'name'],
       key: 'userIntendedFor',
     },
+    hasPermission(allRolePermissions, [
+      requiredPermissions.READ_AUDIT_STATUS,
+    ]) && {
+      title: 'Audited',
+      dataIndex: 'audited',
+      key: 'audited',
+      render: (audited) =>
+        audited ? (
+          <Tag color="green">Audited</Tag>
+        ) : (
+          <Tag color="red">UnAudited</Tag>
+        ),
+    },
 
     {
       title: 'Division',
@@ -368,12 +386,14 @@ const Incoming = () => {
         );
       },
     },
-  ];
+  ].filter(Boolean);
 
   const _data = trails.map((s) => ({
     ...s,
     key: s.docId,
   }));
+
+  console.log(_data);
 
   return (
     <div className="mt-8">
@@ -514,7 +534,7 @@ const Incoming = () => {
           </div>
         </Modal>
       )}
-      <Modal
+      {/* <Modal
         title="Locator"
         open={open}
         onCancel={handleClose}
@@ -548,7 +568,13 @@ const Incoming = () => {
             })}
           />
         </div>
-      </Modal>
+      </Modal> */}
+
+      <Trail
+        open={open}
+        handleCancel={handleClose}
+        trails={trailData?.data?.trails}
+      />
       {show ? (
         <ArchiveFiles
           show={show}

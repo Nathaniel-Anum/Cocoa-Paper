@@ -29,7 +29,7 @@ const QRCodeModal = ({
       {qrCodeUrl && (
         <div className="text-center">
           <Text strong className="block mb-4">
-            Scan this QR code with Google Authenticator:
+            Scan this QR code with your Authenticator App:
           </Text>
           <div className="flex justify-center mb-4">
             <QRCode value={qrCodeUrl} size={200} />
