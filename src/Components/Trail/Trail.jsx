@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import React from 'react';
 
 const Trail = ({ trails, open, handleCancel }) => {
+  console.log({ trails });
   return (
     <div>
       <Modal
@@ -77,7 +78,7 @@ const Trail = ({ trails, open, handleCancel }) => {
                   return [
                     {
                       title: titleWithTooltip,
-                      description: trail.sender.name,
+                      description: ` ${trail.sender?.department?.departmentName} (${trail.sender.name})`,
                     },
                     {
                       title: (
@@ -96,13 +97,13 @@ const Trail = ({ trails, open, handleCancel }) => {
                           <span className="cursor-pointer">{trail.status}</span>
                         </Tooltip>
                       ),
-                      description: trail.receiver.name,
+                      description: ` ${trail.receiver?.department?.departmentName} (${trail.receiver.name})`,
                     },
                   ];
                 } else {
                   return {
                     title: titleWithTooltip,
-                    description: trail.receiver.name,
+                    description: ` ${trail.receiver?.department?.departmentName} (${trail.receiver.name})`,
                   };
                 }
               })

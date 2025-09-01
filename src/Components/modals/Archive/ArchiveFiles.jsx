@@ -40,7 +40,7 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
   const { mutate: uploadFile } = useMutation({
     mutationKey: 'fileUpload',
     mutationFn: (values) => {
-      // console.log(values);
+      console.log(values);
       return axiosInstance.post(`/archive/${record?.docID}`, values);
     },
     onSuccess: () => {
@@ -98,10 +98,10 @@ const ArchiveFiles = ({ setShow, show, record, sender = null }) => {
       formData.append('file', selectedFile);
       formData.append('ref', values.ref);
       formData.append('subject', values.subject);
+      uploadFile(formData);
     }
 
-    formData.append('folderId', folderId);
-    uploadFile(formData);
+    uploadFile({ folderId });
 
     // console.log(formData);
   };

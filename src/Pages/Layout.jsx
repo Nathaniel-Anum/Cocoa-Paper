@@ -14,7 +14,7 @@ const Layout = () => {
       <Navbar />
       <Sidebar />
       <div className="pt-[10rem] h-screen w-full pl-[200px] pr-[72px] ">
-        {pathname !== '/' && (
+        {/* {pathname !== '/' && (
           <span
             className="flex items-center gap-2  pl-[20px] w-[100px] cursor-pointer font-semibold text-[#694422]"
             onClick={() => navigate(-1)}
@@ -22,7 +22,7 @@ const Layout = () => {
             <LuArrowLeft />
             <span className=" ">Back</span>
           </span>
-        )}
+        )} */}
 
         <Outlet />
       </div>

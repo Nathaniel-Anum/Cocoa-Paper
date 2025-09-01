@@ -753,10 +753,12 @@ const AddDocument = () => {
                       title: 'Users',
                       options:
                         ccUsers &&
-                        ccUsers?.data?.users?.map((user) => ({
-                          label: user?.name,
-                          value: user?.userId,
-                        })),
+                        ccUsers?.data?.users
+                          ?.filter((emp) => emp.userId !== user?.userId)
+                          .map((user) => ({
+                            label: user?.name,
+                            value: user?.userId,
+                          })),
                     },
                   ]}
                 />

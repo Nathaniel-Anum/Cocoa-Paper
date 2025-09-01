@@ -9,9 +9,12 @@ import { IoLocationOutline } from 'react-icons/io5';
 import { render } from 'react-dom';
 import { capitalize } from '../../utils/typography';
 import { useNavigate } from 'react-router-dom';
+import useStore from '../store/store';
 const WorkHistory = () => {
   const [showModal, setShowModal] = React.useState(false);
   const [trails, setTrails] = React.useState([]);
+
+  const setShowToolbar = useStore((state) => state.setShowToolbar);
 
   const navigate = useNavigate();
 
@@ -60,7 +63,10 @@ const WorkHistory = () => {
             >
               <FaRegEye
                 className=" text-xl  cursor-pointer"
-                onClick={() => navigate(`/view-document/${record?.docID}`)}
+                onClick={() => {
+                  setShowToolbar(false);
+                  navigate(`/view-document/${record?.docID}`);
+                }}
               />
             </Popover>
             <Popover

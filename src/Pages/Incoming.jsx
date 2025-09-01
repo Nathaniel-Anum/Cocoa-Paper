@@ -348,7 +348,7 @@ const Incoming = () => {
       title: 'Department',
       key: 'department',
       render: (document) => {
-        return <div>{document.document.department.departmentName}</div>;
+        return <div>{document.sender.department.departmentName}</div>;
       },
     },
     {

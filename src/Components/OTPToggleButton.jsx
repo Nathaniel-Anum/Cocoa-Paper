@@ -48,7 +48,9 @@ const OTPToggleButton = ({ staffUserId, staffName }) => {
     }
   };
 
-  const isOTPEnabled = otpStatus?.data?.data?.isEnabled;
+  console.log(otpStatus?.data?.data);
+
+  const isOTPEnabled = otpStatus?.data?.data?.hasSecret ? true : false;
 
   return (
     <Switch
@@ -63,5 +65,3 @@ const OTPToggleButton = ({ staffUserId, staffName }) => {
 };
 
 export default OTPToggleButton;
-
-
