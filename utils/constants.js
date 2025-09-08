@@ -3,3 +3,12 @@ export const CONFIGS = {
   DIRECTOR_THRESHOLD: 'Director Threshold',
   CE_THRESHOLD: 'Chief Executive Threshold',
 };
+
+export const DIVISIONS = {
+  CMC: 'CMC',
+  BOD: 'BOD',
+  SPD: 'SPD',
+  QCC: 'QCC',
+  CRIG: 'CRIG',
+  CHED: 'CHED',
+};

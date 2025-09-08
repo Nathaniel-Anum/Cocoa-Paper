@@ -7,8 +7,14 @@ import { GiTrail, GiWheelbarrow } from 'react-icons/gi';
 import { HiOutlineWrenchScrewdriver } from 'react-icons/hi2';
 import { FaUserGroup } from 'react-icons/fa6';
 import { AiFillSignature } from 'react-icons/ai';
+import { useUser } from '../../Pages/CustomHook/useUser';
+import { DIVISIONS } from '../../../utils/constants';
 
 const BackOfficeSideBar = () => {
+  const { user } = useUser();
+
+  console.log({ user });
+
   return (
     <div>
       <div className="w-full h-full bg-center ">
@@ -41,42 +47,54 @@ const BackOfficeSideBar = () => {
                 <p className="text-[15px] ">Department</p>
               </li>
             </Link>
-            <Link to="/backoffice/division">
-              <li className=" duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex  gap-3">
-                <img
-                  className="w-[22px]"
-                  src="/asset/archive.3b9ddd7f65d8f9353f8fd0efad0c45e5.svg"
-                  alt=""
-                />
-                <p className="text-[15px]">Division</p>
-              </li>
-            </Link>
-            <Link to="/backoffice/financialYears">
-              <li className=" duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex  gap-3">
-                <CalendarFilled className="text-[#E3BC97] text-lg" />
-                <p className="text-[15px]">Financial Years</p>
-              </li>
-            </Link>
-            <Link to="/backoffice/roles">
-              <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex  gap-3">
-                <img
-                  className="w-[22px]"
-                  src="/asset/work-history.c7047f9c0a21ca2ba896c6c73f75c562.svg"
-                  alt=""
-                />
-                <p className="text-[15px]">Roles </p>
-              </li>
-            </Link>
-            <Link to="/backoffice/rolemanagement">
-              <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">
-                <img
-                  className="w-[22px]"
-                  src="/asset/work-history.c7047f9c0a21ca2ba896c6c73f75c562.svg"
-                  alt=""
-                />
-                <p className="text-[15px]">Role Management </p>
-              </li>
-            </Link>
+
+            {user && user?.division?.divisionName === DIVISIONS.BOD && (
+              <>
+                <Link to="/backoffice/division">
+                  <li className=" duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex  gap-3">
+                    <img
+                      className="w-[22px]"
+                      src="/asset/archive.3b9ddd7f65d8f9353f8fd0efad0c45e5.svg"
+                      alt=""
+                    />
+                    <p className="text-[15px]">Division</p>
+                  </li>
+                </Link>
+                <Link to="/backoffice/financialYears">
+                  <li className=" duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex  gap-3">
+                    <CalendarFilled className="text-[#E3BC97] text-lg" />
+                    <p className="text-[15px]">Financial Years</p>
+                  </li>
+                </Link>
+                <Link to="/backoffice/roles">
+                  <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex  gap-3">
+                    <img
+                      className="w-[22px]"
+                      src="/asset/work-history.c7047f9c0a21ca2ba896c6c73f75c562.svg"
+                      alt=""
+                    />
+                    <p className="text-[15px]">Roles </p>
+                  </li>
+                </Link>
+                <Link to="/backoffice/rolemanagement">
+                  <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">
+                    <img
+                      className="w-[22px]"
+                      src="/asset/work-history.c7047f9c0a21ca2ba896c6c73f75c562.svg"
+                      alt=""
+                    />
+                    <p className="text-[15px]">Role Management </p>
+                  </li>
+                </Link>
+                <Link to="/backoffice/config">
+                  <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">
+                    <HiOutlineWrenchScrewdriver className="text-[#E3BC97] text-lg" />
+                    <p className="text-[15px]">Configuration </p>
+                  </li>
+                </Link>
+              </>
+            )}
+
             <Link to="/backoffice/stamps">
               <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">
                 <LuStamp className="text-[#E3BC97] text-lg" />
@@ -87,12 +105,6 @@ const BackOfficeSideBar = () => {
               <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">
                 <GiTrail className="text-[#E3BC97] text-lg" />
                 <p className="text-[15px]">Audit Trail </p>
-              </li>
-            </Link>
-            <Link to="/backoffice/config">
-              <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">
-                <HiOutlineWrenchScrewdriver className="text-[#E3BC97] text-lg" />
-                <p className="text-[15px]">Configuration </p>
               </li>
             </Link>
           </ul>

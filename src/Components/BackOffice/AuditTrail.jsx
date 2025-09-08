@@ -1,8 +1,35 @@
-import { useGetAuditTrail } from '../../queryHooks/audit-trail';
+import { useState, useEffect } from 'react';
 import { Table, Tag, Tooltip } from 'antd';
 import dayjs from 'dayjs';
+import axiosInstance from '../../Components/axiosInstance';
 
 const AuditTrail = () => {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [rows, setRows] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await axiosInstance.get('/audit-trail', {
+          params: { page, limit: pageSize },
+        });
+        if (!isMounted) return;
+        setRows(res?.data?.data ?? []);
+        setTotal(res?.data?.pagination?.total ?? 0);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [page, pageSize]);
+
   const columns = [
     {
       title: 'User',
@@ -62,27 +89,26 @@ const AuditTrail = () => {
     },
   ];
 
-  const { data: auditTrail, isLoading } = useGetAuditTrail();
-
-  console.log({ auditTrail });
-
   return (
     <div className="px-[240px] pt-[50px] mx-auto ">
       <h2 className="text-2xl font-bold mb-4">Audit Trail</h2>
       <Table
         columns={columns}
-        loading={isLoading}
-        dataSource={
-          (auditTrail &&
-            auditTrail?.data?.data?.map((trail) => ({
-              ...trail,
-              key: trail.id,
-            }))) ||
-          []
-        }
+        loading={loading}
+        dataSource={rows}
+        rowKey="id"
         bordered
         size="middle"
-        pagination={{ pageSize: 10 }}
+        pagination={{
+          current: page,
+          pageSize,
+          total,
+          showSizeChanger: true,
+          onChange: (current, size) => {
+            setPage(current);
+            setPageSize(size);
+          },
+        }}
         scroll={{ x: true }}
       />
     </div>

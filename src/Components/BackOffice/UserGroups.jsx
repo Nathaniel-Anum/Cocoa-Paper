@@ -252,6 +252,7 @@ const UserGroups = () => {
             <Select
               mode="multiple"
               placeholder="Select users"
+              optionFilterProp="label"
               style={{ width: '100%' }}
               loading={isLoadingUsers}
               options={

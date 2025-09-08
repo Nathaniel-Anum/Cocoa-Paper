@@ -202,6 +202,8 @@ const Stamp = () => {
     });
   };
 
+  console.log(users && users);
+
   const uploadProps = {
     name: 'file',
     beforeUpload: () => false, // Prevent auto upload
@@ -295,7 +297,7 @@ const Stamp = () => {
               allowClear
               options={
                 (users &&
-                  users?.data.map((user) => ({
+                  users?.data?.users?.map((user) => ({
                     label: user?.name,
                     value: user?.userId,
                   }))) ||
