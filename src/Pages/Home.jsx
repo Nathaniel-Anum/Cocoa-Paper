@@ -41,7 +41,7 @@ const Home = () => {
     try {
       const res = await axiosInstance.post('/login', values);
 
-      // If backend returns qrCodeUrl and scanComplete is false, show QR modal
+      // Case 1: User hasn't scanned QR code yet (2FA setup initiated but not scanned)
       if (
         res.data.qrCodeUrl &&
         res.data.scanComplete === false &&
@@ -55,32 +55,42 @@ const Home = () => {
         return;
       }
 
-      // If scanComplete is true and isEnabled is false, show OTP modal for verification
-      if (res.data.scanComplete === true && res.data.isEnabled === false) {
-        setPendingLoginData({ email: values.email, password: values.password });
-        setShowOTPModal(true);
-        setLoading(false);
-        return;
-      }
-      if (res.data.scanComplete === true && res.data.isEnabled === true) {
+      // Case 2: User has scanned QR but hasn't completed first-time verification (2FA setup in progress)
+      if (
+        res.data.scanComplete === true &&
+        res.data.isEnabled === false &&
+        res.data.requiresOTP === true
+      ) {
         setPendingLoginData({ email: values.email, password: values.password });
         setShowOTPModal(true);
         setLoading(false);
         return;
       }
 
-      // Normal login flow
-      localStorage.setItem('accessToken', res?.data?.token);
-      localStorage.setItem('refreshToken', res?.data?.refreshToken);
+      // Case 3: 2FA is fully enabled - user must verify OTP
+      if (
+        res.data.isEnabled === true &&
+        res.data.scanComplete === true &&
+        res.data.requiresOTP === true
+      ) {
+        setPendingLoginData({ email: values.email, password: values.password });
+        setShowOTPModal(true);
+        setLoading(false);
+        return;
+      }
 
-      if (res.data) {
+      // Case 4: Normal login flow (no 2FA or OTP already verified)
+      if (res.data.token) {
+        localStorage.setItem('accessToken', res?.data?.token);
+        localStorage.setItem('refreshToken', res?.data?.refreshToken);
+
         setIsLoading(true);
         const user = await axiosInstance.get('/user');
         setUser(user?.data?.user);
         setIsLoading(false);
-      }
 
-      navigate('/');
+        navigate('/');
+      }
     } catch (err) {
       message.error(err?.response?.data?.error || 'Login failed');
     } finally {
