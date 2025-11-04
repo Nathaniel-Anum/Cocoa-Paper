@@ -169,6 +169,8 @@ const Stamp = () => {
     enabled: false,
   });
 
+  console.log(users && users);
+
   const handleDivisionChange = (option) => {
     setSelectedDivision(option.value);
   };
@@ -297,7 +299,7 @@ const Stamp = () => {
               allowClear
               options={
                 (users &&
-                  users?.data?.users?.map((user) => ({
+                  users?.data?.map((user) => ({
                     label: user?.name,
                     value: user?.userId,
                   }))) ||

@@ -112,7 +112,15 @@ const Staff = () => {
       setLoading(false);
       setOpen(false);
       form.resetFields();
-      console.log(error?.response?.data);
+      const resp = error?.response;
+      const serverMessage = resp?.data?.error || resp?.data?.message;
+      if (Array.isArray(serverMessage)) {
+        const first = serverMessage[0]?.msg || serverMessage[0];
+        message.error(first || 'Failed to add staff');
+      } else {
+        message.error(serverMessage || error.message || 'Failed to add staff');
+      }
+      console.log(resp?.data);
     },
   });
 

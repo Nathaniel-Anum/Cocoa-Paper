@@ -41,45 +41,7 @@ const Home = () => {
     try {
       const res = await axiosInstance.post('/login', values);
 
-      // Case 1: User hasn't scanned QR code yet (2FA setup initiated but not scanned)
-      if (
-        res.data.qrCodeUrl &&
-        res.data.scanComplete === false &&
-        res.data.isEnabled === false
-      ) {
-        setQrCodeUrl(res.data.qrCodeUrl);
-        setShowQRModal(true);
-        setScanComplete(false);
-        setLoading(false);
-        setPendingLoginData({ email: values.email, password: values.password });
-        return;
-      }
-
-      // Case 2: User has scanned QR but hasn't completed first-time verification (2FA setup in progress)
-      if (
-        res.data.scanComplete === true &&
-        res.data.isEnabled === false &&
-        res.data.requiresOTP === true
-      ) {
-        setPendingLoginData({ email: values.email, password: values.password });
-        setShowOTPModal(true);
-        setLoading(false);
-        return;
-      }
-
-      // Case 3: 2FA is fully enabled - user must verify OTP
-      if (
-        res.data.isEnabled === true &&
-        res.data.scanComplete === true &&
-        res.data.requiresOTP === true
-      ) {
-        setPendingLoginData({ email: values.email, password: values.password });
-        setShowOTPModal(true);
-        setLoading(false);
-        return;
-      }
-
-      // Case 4: Normal login flow (no 2FA or OTP already verified)
+      // MFA disabled: proceed on token only
       if (res.data.token) {
         localStorage.setItem('accessToken', res?.data?.token);
         localStorage.setItem('refreshToken', res?.data?.refreshToken);
