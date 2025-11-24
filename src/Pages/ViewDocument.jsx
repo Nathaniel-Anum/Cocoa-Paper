@@ -225,9 +225,9 @@ function ViewDocument() {
   const handleDivisionChange = (value) => setSelectedDivision(value);
   const handleDepartmentChange = (value) => setSelectedDepartment(value);
 
-  const handleApproveDocument = () => {
-    setShowOTPModal(true);
-  };
+  // const handleApproveDocument = () => {
+  //   setShowOTPModal(true);
+  // };
 
   const handleOTPVerificationSuccess = (otpToken) => {
     approveDoc(otpToken);
@@ -511,7 +511,7 @@ function ViewDocument() {
                     loading={approvalLoading}
                     icon={<FaHandshake className="w-4 h-4" />}
                     className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-6"
-                    onClick={handleApproveDocument}
+                    // onClick={handleApproveDocument}
                   >
                     Approve
                   </Button>
