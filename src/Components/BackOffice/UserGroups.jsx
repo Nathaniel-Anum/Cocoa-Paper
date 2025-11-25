@@ -39,7 +39,7 @@ const UserGroups = () => {
     groups &&
     groups.data?.map((s) => ({
       ...s,
-      key: s?.groupId,
+      key: s?.id,
     }));
   // Fetch users
 
@@ -63,7 +63,7 @@ const UserGroups = () => {
   // Update group mutation
   const updateGroupMutation = useMutation({
     mutationFn: async ({ id, values }) => {
-      const response = await axiosInstance.put(`/user-group/${id}`, values);
+      const response = await axiosInstance.patch(`/user-group/${id}`, values);
       return response.data;
     },
     onSuccess: () => {
@@ -120,7 +120,7 @@ const UserGroups = () => {
     try {
       const values = await form.validateFields();
       if (editingGroup) {
-        updateGroupMutation.mutate({ id: editingGroup._id, values });
+        updateGroupMutation.mutate({ id: editingGroup.id, values });
       } else {
         createGroupMutation.mutate(values);
       }
@@ -166,7 +166,7 @@ const UserGroups = () => {
 
           <Popconfirm
             title="Are you sure you want to delete this group?"
-            onConfirm={() => handleDelete(record._id)}
+            onConfirm={() => handleDelete(record.id)}
             okText="Yes"
             cancelText="No"
           >
@@ -215,7 +215,7 @@ const UserGroups = () => {
       <Table
         columns={columns}
         dataSource={_data}
-        rowKey="_id"
+        rowKey="id"
         pagination={{ pageSize: 10 }}
         loading={isLoadingGroups}
       />
