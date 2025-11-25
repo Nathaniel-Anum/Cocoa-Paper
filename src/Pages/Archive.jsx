@@ -35,7 +35,7 @@ import {
   getAllRolePermissions,
 } from '../../utils/Roles';
 import { useUser } from './CustomHook/useUser';
-import PDFViewer from '../Components/PDFViewer/PdfViewer';
+import { PDFViewerContent } from '../Components/PDFViewer/PdfViewer';
 
 const Archive = () => {
   const queryClient = useQueryClient();
@@ -269,7 +269,9 @@ const Archive = () => {
             responseType: 'blob',
           }
         );
-        const fileUrl = URL.createObjectURL(response.data);
+        // Ensure the blob has the correct MIME type for PDF
+        const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+        const fileUrl = URL.createObjectURL(pdfBlob);
         setSelectedItem((prev) => ({ ...prev, file: { ...record, fileUrl } }));
         setModalStates((prev) => ({ ...prev, fileViewer: true }));
       } catch (error) {
@@ -664,9 +666,11 @@ const Archive = () => {
         className="!top-9"
       >
         {selectedItem.file?.fileUrl && (
-          <PDFViewer
+          <PDFViewerContent
             pdfUrl={selectedItem.file.fileUrl}
             documentId={selectedItem.file.fileId}
+            fileId={selectedItem.file.fileId}
+            hideToolbar={true}
           />
         )}
       </Modal>

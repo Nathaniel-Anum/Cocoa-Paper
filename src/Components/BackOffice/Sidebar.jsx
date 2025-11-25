@@ -48,7 +48,7 @@ const BackOfficeSideBar = () => {
               </li>
             </Link>
 
-            {user && user?.division?.divisionName === DIVISIONS.BOD && (
+            {/* {user && user?.division?.divisionName === DIVISIONS.BOD && ( */}
               <>
                 <Link to="/backoffice/division">
                   <li className=" duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex  gap-3">
@@ -93,7 +93,7 @@ const BackOfficeSideBar = () => {
                   </li>
                 </Link>
               </>
-            )}
+            
 
             <Link to="/backoffice/stamps">
               <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">

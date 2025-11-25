@@ -6,8 +6,10 @@ import useStore from '../../store/store';
 
 // Import CSS
 import './PDFViewer.css';
-import 'react-pdf/dist/cjs/Page/TextLayer.css';
-import 'react-pdf/dist/cjs/Page/AnnotationLayer.css';
+// import 'react-pdf/dist/cjs/Page/TextLayer.css';
+// import 'react-pdf/dist/cjs/Page/AnnotationLayer.css';
+
+
 
 // Import configured pdfjs
 import '../../utils/pdfjs-worker';
@@ -16,7 +18,13 @@ import PDFAnnotation from './PDFAnnotation';
 // Set up PDF.js worker source
 
 import { useRef } from 'react';
-const PDFViewerContent = ({ pdfUrl, documentId, fileId, onPageChange, onZoom }) => {
+const PDFViewerContent = ({ pdfUrl, documentId, fileId, onPageChange, onZoom, hideToolbar = false }) => {
+  // Debug: log the incoming pdfUrl to verify what's passed from callers
+  try {
+    console.log('PDFViewerContent: pdfUrl ->', pdfUrl, 'typeof:', typeof pdfUrl);
+  } catch (e) {
+    console.error('PDFViewerContent: error logging pdfUrl', e);
+  }
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
@@ -98,6 +106,7 @@ const PDFViewerContent = ({ pdfUrl, documentId, fileId, onPageChange, onZoom }) 
                   registerCanvas={registerCanvas}
                   getAllPageCanvases={() => pageCanvases.current}
                   numPages={numPages}
+                  hideToolbar={hideToolbar}
                 />
               </div>
             );
@@ -149,7 +158,8 @@ PDFViewerContent.propTypes = {
   documentId: PropTypes.string.isRequired,
   onPageChange: PropTypes.func,
   onZoom: PropTypes.func,
-  fileId: PropTypes.string
+  fileId: PropTypes.string,
+  hideToolbar: PropTypes.bool,
 };
 
 const PDFViewer = ({ pdfUrl, documentId, onPageChange, onZoom, fileId }) => {

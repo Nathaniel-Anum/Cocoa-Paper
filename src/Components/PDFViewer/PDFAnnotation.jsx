@@ -8,6 +8,8 @@ import { Document, Page } from "react-pdf";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState, useRef, useEffect, useCallback } from "react";
 
+import "react-pdf/dist/Page/TextLayer.css";
+import "react-pdf/dist/Page/AnnotationLayer.css";
 import "../../utils/pdfjs-worker";
 import StampTool from "./StampTool";
 import axiosInstance from "../axiosInstance";
@@ -30,7 +32,17 @@ const PDFAnnotation = ({
   getAllPageCanvases,
   numPages,
   fileId,
+  hideToolbar = false,
 }) => {
+  // Debug: log incoming pdfUrl (type and sample) to help diagnose load issues
+  try {
+    console.log('PDFAnnotation: received pdfUrl ->', pdfUrl, 'type:', typeof pdfUrl);
+    if (pdfUrl && typeof pdfUrl === 'string' && pdfUrl.length > 200) {
+      console.log('PDFAnnotation: pdfUrl (truncated) ->', pdfUrl.slice(0, 200) + '...');
+    }
+  } catch (e) {
+    console.error('PDFAnnotation: error logging pdfUrl', e);
+  }
   const { user } = useUser();
 
   const canvasRef = useRef(null);
@@ -1394,7 +1406,7 @@ const PDFAnnotation = ({
         />
       </div>
 
-      {showToolbar && (
+      {showToolbar && !hideToolbar && (
         <AnnotationToolbar
           selectedTool={selectedTool}
           onToolSelect={handleToolSelect}
@@ -1431,6 +1443,7 @@ PDFAnnotation.propTypes = {
   getAllPageCanvases: PropTypes.func,
   numPages: PropTypes.number,
   fileId: PropTypes.string,
+  hideToolbar: PropTypes.bool,
 };
 
 export default PDFAnnotation;
