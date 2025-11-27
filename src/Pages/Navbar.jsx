@@ -106,13 +106,13 @@ const Navbar = () => {
     },
   ];
 
-  // Conditionally add the "Go to Admin Console" option if the user is an admin
-  if (user?.role[0].role === 'ADMIN') {
-    items.push({
-      label: <a href="/backoffice/bod">Admin Console</a>,
-      key: '1',
-    });
-  }
+// Conditionally add the "Go to Admin Console" option if the user has ADMIN in their roles
+if (user?.role?.some(r => r.role?.includes('ADMIN'))) {
+  items.push({
+    label: <a href="/backoffice/bod">Admin Console</a>,
+    key: '1',
+  });
+}
 
   // Function to render menu items in the dropdown based on search results
   const renderMenuItems = () => {

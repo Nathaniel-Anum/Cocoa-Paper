@@ -7,16 +7,22 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
 
-  const [selectedDivision, setSelectedDivision] = useState(
-    staffDetail?.division?.divisionId
-  );
+  const [selectedDivision, setSelectedDivision] = useState(null);
   const [isDepartment, setIsDepartment] = useState(false);
   const [isSecretariat, setIssecretariat] = useState(false);
+  const [divisionChanged, setDivisionChanged] = useState(false);
 
-  const divisionId = selectedDivision;
+  // Set initial division when staffDetail changes
+  useEffect(() => {
+    if (staffDetail?.division?.divisionId) {
+      setSelectedDivision(staffDetail.division.divisionId);
+      setDivisionChanged(false); // Reset flag when modal opens with new data
+    }
+  }, [staffDetail]);
 
   const handleDivisionChange = (value) => {
     setSelectedDivision(value);
+    setDivisionChanged(true); // User changed division
     form.setFieldsValue({ departmentId: undefined }); // Clear department when division changes
   };
 
@@ -41,13 +47,21 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
         staffNumber: staffDetail.staff?.staffNumber,
         email: staffDetail.email,
         divisionId: staffDetail?.division?.divisionId,
-        departmentId: staffDetail?.department?.departmentId,
         roleId: staffDetail?.role?.map((role) => role.roleId),
       });
       setIsDepartment(staffDetail?.staff?.isDepartment);
       setIssecretariat(staffDetail?.staff?.isSecretariat);
     }
   }, [staffDetail]);
+
+  // Set departmentId once departments are loaded (only on initial load, not when user changes division)
+  useEffect(() => {
+    if (departments?.data?.data && staffDetail?.department?.departmentId && !divisionChanged) {
+      form.setFieldsValue({
+        departmentId: staffDetail.department.departmentId,
+      });
+    }
+  }, [departments, staffDetail, divisionChanged]);
 
   // useMutation to edit staff
   const { mutate, isPending } = useMutation({
