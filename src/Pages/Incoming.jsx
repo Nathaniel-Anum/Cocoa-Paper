@@ -36,6 +36,7 @@ import { useUser } from './CustomHook/useUser';
 import { uploadFile } from '../http/addDocument';
 import { set } from 'lodash';
 import Trail from '../Components/Trail/Trail';
+import { useGetAllUserGroups, useGetAllUsers } from '../queryHooks/user';
 
 const Incoming = () => {
   const navigate = useNavigate();
@@ -57,6 +58,9 @@ const Incoming = () => {
 
   const { user: authUser } = useUser();
   const allRolePermissions = getAllRolePermissions(authUser);
+
+  const { data: userGroups } = useGetAllUserGroups();
+  const { data: ccUsers } = useGetAllUsers();
 
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
@@ -475,14 +479,46 @@ const Incoming = () => {
                   allowClear
                   options={
                     (users &&
-                      users?.data
-                        .filter((emp) => emp.userId !== authUser?.userId)
+                      (users?.data?.users || users?.data)
+                        ?.filter((emp) => emp.userId !== authUser?.userId)
                         .map((user) => ({
                           label: user?.name,
                           value: user?.userId,
                         }))) ||
                     []
                   }
+                />
+              </Form.Item>
+              <Form.Item name="carbonCopyIds" label="CC" initialValue={[]}>
+                <Select
+                  optionFilterProp="label"
+                  mode="multiple"
+                  showSearch
+                  placeholder="Copy group or Users"
+                  options={[
+                    {
+                      label: <span>User Groups</span>,
+                      title: 'User Groups',
+                      options:
+                        userGroups &&
+                        userGroups?.data?.data?.map((group) => ({
+                          label: group?.name,
+                          value: group?.id,
+                        })),
+                    },
+                    {
+                      label: <span>Users</span>,
+                      title: 'Users',
+                      options:
+                        ccUsers &&
+                        ccUsers?.data?.users
+                          ?.filter((emp) => emp.userId !== authUser?.userId)
+                          .map((u) => ({
+                            label: u?.name,
+                            value: u?.userId,
+                          })),
+                    },
+                  ]}
                 />
               </Form.Item>
               <Form.Item>
@@ -497,7 +533,7 @@ const Incoming = () => {
                   placeholder="Enter Comment...."
                   options={
                     (users &&
-                      users?.data
+                      (users?.data?.users || users?.data)
                         ?.filter((emp) => emp.userId !== authUser?.userId)
                         .map((user) => ({
                           label: user?.name,

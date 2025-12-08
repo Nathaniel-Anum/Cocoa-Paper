@@ -1,16 +1,18 @@
-import { DownOutlined, LoadingOutlined } from '@ant-design/icons';
-import { Dropdown, Space, Modal, Button, Steps } from 'antd';
+import { DownOutlined, LoadingOutlined, BellOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { Dropdown, Space, Modal, Button, Steps, Badge, Popover, List, Empty } from 'antd';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useUser } from './CustomHook/useUser';
 import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '../Components/axiosInstance';
 import _ from 'lodash';
 import useDebounce from './CustomHook/use-debounce';
 import { useNavigate } from 'react-router-dom';
 import DocViewer, { DocViewerRenderers } from 'react-doc-viewer';
 import useOutsideClick from './CustomHook/useOutsideClick';
+import { getAllRolePermissions, hasPermission, requiredPermissions } from '../../utils/Roles';
+import { useGetAccessRequests, useGrantAccess, useDenyAccess, useRequestAccess } from './CustomHook/useAccessRequests';
 
 const Navbar = () => {
   //Searching files components
@@ -94,6 +96,80 @@ const Navbar = () => {
     localStorage.removeItem('refreshToken');
   };
 
+  // Access requests hooks
+  const { data: accessRequests, isLoading: accessRequestsLoading } = useGetAccessRequests();
+  const { mutate: grantAccessMutation, isPending: grantingAccess } = useGrantAccess();
+  const { mutate: denyAccessMutation, isPending: denyingAccess } = useDenyAccess();
+  const { mutate: requestAccessMutation, isPending: requestingAccess } = useRequestAccess();
+
+  // Get the actual array from the response (handle both data.data and data formats)
+  const accessRequestsList = Array.isArray(accessRequests?.data) 
+    ? accessRequests.data 
+    : Array.isArray(accessRequests?.data?.data) 
+      ? accessRequests.data.data 
+      : [];
+  
+  const accessRequestCount = accessRequestsList.length || 0;
+
+  // Render access request notifications
+  const renderAccessRequestContent = () => {
+    if (accessRequestsLoading) {
+      return <div className="p-4 text-center"><LoadingOutlined /></div>;
+    }
+
+    if (!accessRequestsList || accessRequestsList.length === 0) {
+      return <Empty description="No pending access requests" className="p-4" />;
+    }
+
+    return (
+      <List
+        className="max-h-80 overflow-y-auto"
+        style={{ width: 350 }}
+        dataSource={accessRequestsList}
+        renderItem={(request) => (
+          <List.Item
+            key={request.id}
+            actions={[
+              <Button
+                type="primary"
+                size="small"
+                icon={<CheckOutlined />}
+                className="bg-green-600"
+                loading={grantingAccess}
+                onClick={() => grantAccessMutation(request.id)}
+              >
+                Grant
+              </Button>,
+              <Button
+                danger
+                size="small"
+                icon={<CloseOutlined />}
+                loading={denyingAccess}
+                onClick={() => denyAccessMutation(request.id)}
+              >
+                Deny
+              </Button>,
+            ]}
+          >
+            <List.Item.Meta
+              title={<span className="font-semibold">{request.requester?.name}</span>}
+              description={
+                <div>
+                  <div className="text-xs text-gray-500">
+                    Requesting access to: <strong>{request.document?.subject}</strong>
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    Ref: {request.document?.ref}
+                  </div>
+                </div>
+              }
+            />
+          </List.Item>
+        )}
+      />
+    );
+  };
+
   // Assuming `user` is accessible globally in your app
   const items = [
     {
@@ -106,22 +182,41 @@ const Navbar = () => {
     },
   ];
 
-// Conditionally add the "Go to Admin Console" option if the user has ADMIN in their roles
-if (user?.role?.some(r => r.role?.includes('ADMIN'))) {
-  items.push({
-    label: <a href="/backoffice/bod">Admin Console</a>,
-    key: '1',
-  });
-}
+  const allRolePermissions = getAllRolePermissions(user);
+
+  // Conditionally add the "Go to Admin Console" option if the user has backoffice permissions
+  const hasBackofficeAccess = hasPermission(allRolePermissions, [
+    requiredPermissions.READ_STAFF,
+  ]) || hasPermission(allRolePermissions, [
+    requiredPermissions.READ_DEPT,
+  ]) || hasPermission(allRolePermissions, [
+    requiredPermissions.READ_ROLES,
+  ]) || hasPermission(allRolePermissions, [
+    requiredPermissions.READ_USER,
+  ]);
+
+  if (hasBackofficeAccess) {
+    items.push({
+      label: <span onClick={() => navigate('/backoffice/bod')} className="cursor-pointer">Admin Console</span>,
+      key: '1',
+    });
+  }
 
   // Function to render menu items in the dropdown based on search results
   const renderMenuItems = () => {
-    if (!results || results.length === 0) {
+    const hasResults = 
+      results?.incomingAndOutgoing?.length > 0 || 
+      results?.files?.length > 0 || 
+      results?.grantedAccessDocuments?.length > 0 || 
+      results?.inaccessibleDocuments?.length > 0;
+
+    if (!results || !hasResults) {
       return <div className="text-gray-500 p-4">No results found</div>;
     }
 
     const uniqueItemsMap = new Map();
 
+    // Process incomingAndOutgoing - Full access documents
     (results?.incomingAndOutgoing || []).forEach((item) => {
       const { document, status, sender, receiver } = item;
       const isArchivedByUser =
@@ -136,10 +231,12 @@ if (user?.role?.some(r => r.role?.includes('ADMIN'))) {
           isArchiver,
           status,
           type: 'Document',
+          accessType: 'full', // Full access via trail
         });
       }
     });
 
+    // Process files
     (results?.files || []).forEach((file) => {
       const existingItem = uniqueItemsMap.get(file.ref);
 
@@ -155,54 +252,153 @@ if (user?.role?.some(r => r.role?.includes('ADMIN'))) {
           ...file,
           type: 'File',
           hasFile: true,
+          accessType: 'full',
         });
       }
     });
 
-    return Array.from(uniqueItemsMap.values()).map((item, index) => {
-      const showTrailButton =
-        item.isArchiver || (item.type === 'Document' && item.isArchivedByUser);
-      const showTrackButton = !item.isArchiver && item.type === 'Document';
-
-      return (
-        <div
-          key={index}
-          className="p-4 border-b last:border-none border-gray-200 bg-white hover:bg-gray-100 transition-colors"
-        >
-          <div className="text-lg font-semibold">{item.subject}</div>
-          <div className="text-sm text-gray-500">Ref: {item.ref}</div>
-          <div className="flex gap-2">
-            {item.hasFile && (
-              <Button
-                type="primary"
-                className="mt-2 bg-[#582F08] mr-2"
-                onClick={() => handleButtonClick(item, 'View')}
-              >
-                View
-              </Button>
-            )}
-            {showTrailButton && (
-              <Button
-                type="primary"
-                className="mt-2 bg-[#582F08]"
-                onClick={() => handleButtonClick(item, 'Trail')}
-              >
-                Trail
-              </Button>
-            )}
-            {showTrackButton && (
-              <Button
-                type="primary"
-                className="mt-2 bg-[#582F08]"
-                onClick={() => handleButtonClick(item, 'Track')}
-              >
-                Track
-              </Button>
-            )}
-          </div>
-        </div>
-      );
+    // Process grantedAccessDocuments - View-only access
+    (results?.grantedAccessDocuments || []).forEach((doc) => {
+      if (!uniqueItemsMap.has(doc.ref)) {
+        uniqueItemsMap.set(doc.ref, {
+          ...doc,
+          type: 'Document',
+          accessType: 'granted', // View-only granted access
+          hasFile: !!doc.fileId,
+        });
+      }
     });
+
+    // Process inaccessibleDocuments - No access
+    (results?.inaccessibleDocuments || []).forEach((doc) => {
+      if (!uniqueItemsMap.has(doc.ref)) {
+        uniqueItemsMap.set(doc.ref, {
+          ...doc,
+          type: 'Document',
+          accessType: 'none', // No access
+          hasFile: false,
+        });
+      }
+    });
+
+    const fullAccessItems = Array.from(uniqueItemsMap.values()).filter(item => item.accessType === 'full');
+    const grantedAccessItems = Array.from(uniqueItemsMap.values()).filter(item => item.accessType === 'granted');
+    const noAccessItems = Array.from(uniqueItemsMap.values()).filter(item => item.accessType === 'none');
+
+    return (
+      <>
+        {/* Full Access Documents (incomingAndOutgoing) */}
+        {fullAccessItems.map((item, index) => {
+          const showTrailButton =
+            item.isArchiver || (item.type === 'Document' && item.isArchivedByUser);
+          const showTrackButton = !item.isArchiver && item.type === 'Document';
+
+          return (
+            <div
+              key={`full-${index}`}
+              className="p-4 border-b last:border-none border-gray-200 bg-white hover:bg-gray-100 transition-colors"
+            >
+              <div className="text-lg font-semibold">{item.subject}</div>
+              <div className="text-sm text-gray-500">Ref: {item.ref}</div>
+              <div className="flex gap-2 flex-wrap">
+                {item.hasFile && (
+                  <Button
+                    type="primary"
+                    className="mt-2 bg-[#582F08] mr-2"
+                    onClick={() => handleButtonClick(item, 'View')}
+                  >
+                    View
+                  </Button>
+                )}
+                {showTrailButton && (
+                  <Button
+                    type="primary"
+                    className="mt-2 bg-[#582F08]"
+                    onClick={() => handleButtonClick(item, 'Trail')}
+                  >
+                    Trail
+                  </Button>
+                )}
+                {showTrackButton && (
+                  <Button
+                    type="primary"
+                    className="mt-2 bg-[#582F08]"
+                    onClick={() => handleButtonClick(item, 'Track')}
+                  >
+                    Track
+                  </Button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Granted Access Documents (View-Only) */}
+        {grantedAccessItems.length > 0 && (
+          <>
+            {fullAccessItems.length > 0 && (
+              <div className="px-4 py-2 bg-blue-50 text-xs font-semibold text-blue-600 uppercase">
+                Granted Access (View Only)
+              </div>
+            )}
+            {grantedAccessItems.map((item, index) => (
+              <div
+                key={`granted-${index}`}
+                className="p-4 border-b last:border-none border-gray-200 bg-blue-50 hover:bg-blue-100 transition-colors"
+              >
+                <div className="text-lg font-semibold">{item.subject}</div>
+                <div className="text-sm text-gray-500">Ref: {item.ref}</div>
+                <div className="text-xs text-blue-500">View-only access granted</div>
+                <div className="flex gap-2 flex-wrap mt-2">
+                  <Button
+                    type="primary"
+                    className="bg-[#582F08]"
+                    onClick={() => handleButtonClick(item, 'View')}
+                  >
+                    View
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* Inaccessible Documents (Request Access) */}
+        {noAccessItems.length > 0 && (
+          <>
+            {(fullAccessItems.length > 0 || grantedAccessItems.length > 0) && (
+              <div className="px-4 py-2 bg-gray-100 text-xs font-semibold text-gray-600 uppercase">
+                Documents You Don't Have Access To
+              </div>
+            )}
+            {noAccessItems.map((item, index) => (
+              <div
+                key={`inaccessible-${index}`}
+                className="p-4 border-b last:border-none border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <div className="text-lg font-semibold">{item.subject}</div>
+                <div className="text-sm text-gray-500">Ref: {item.ref}</div>
+                {item.currentHolder && (
+                  <div className="text-xs text-gray-400">
+                    Held by: {item.currentHolder.name}
+                  </div>
+                )}
+                <div className="flex gap-2 flex-wrap mt-2">
+                  <Button
+                    type="default"
+                    className="border-[#582F08] text-[#582F08]"
+                    loading={requestingAccess}
+                    onClick={() => requestAccessMutation(item.docID)}
+                  >
+                    Request Access
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+      </>
+    );
   };
 
   //useQUery to fetch trail associated to doc ID
@@ -305,22 +501,23 @@ if (user?.role?.some(r => r.role?.includes('ADMIN'))) {
           </div>
         </div>
 
-        <div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            className="svgs1"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
-            />
-          </svg>
-        </div>
+        {/* Notification Bell for Access Requests */}
+        <Popover
+          content={renderAccessRequestContent()}
+          title={
+            <div className="font-semibold text-[#582F08]">
+              Access Requests
+            </div>
+          }
+          trigger="click"
+          placement="bottomRight"
+        >
+          <div className="cursor-pointer">
+            <Badge count={accessRequestCount} size="small" offset={[-2, 2]}>
+              <BellOutlined className="text-2xl text-[#582F08] hover:text-[#9D4D01]" />
+            </Badge>
+          </div>
+        </Popover>
 
         <div className="pr-[80px] flex gap-2 items-center">
           <p className="bg-[#E3BC97] text-[#582F08] px-3 py-2 font-semibold rounded-md text-[18px]">

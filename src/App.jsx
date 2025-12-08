@@ -94,6 +94,13 @@ function App() {
 
   const allRolePermissions = getAllRolePermissions(user);
 
+  // Debug: Log permissions to see what the user has
+  console.log('All role permissions:', allRolePermissions);
+  console.log('Has READ_STAFF:', hasPermission(allRolePermissions, [requiredPermissions.READ_STAFF]));
+  console.log('Has READ_USER:', hasPermission(allRolePermissions, [requiredPermissions.READ_USER]));
+  console.log('Has READ_DEPT:', hasPermission(allRolePermissions, [requiredPermissions.READ_DEPT]));
+  console.log('Has READ_ROLES:', hasPermission(allRolePermissions, [requiredPermissions.READ_ROLES]));
+
   // console.log(
   //   hasPermission(user?.role[0].rolePermissions, [
   //     requiredPermissions.CREATE_ARCHIVE,
@@ -358,24 +365,12 @@ function App() {
             path="/backoffice"
             element={
               <ProtectedRoutes
-                isAllowed={hasPermission(allRolePermissions, [
-                  requiredPermissions.READ_USER,
-                  requiredPermissions.UPDATE_USER,
-                  requiredPermissions.CREATE_USER,
-                  requiredPermissions.DELETE_USER,
-                  requiredPermissions.CREATE_ROLES,
-                  requiredPermissions.READ_ROLES,
-                  requiredPermissions.DELETE_ROLES,
-                  requiredPermissions.UPDATE_ROLES,
-                  requiredPermissions.CREATE_DEPT,
-                  requiredPermissions.DELETE_DEPT,
-                  requiredPermissions.READ_DEPT,
-                  requiredPermissions.UPDATE_DEPT,
-                  requiredPermissions.CREATE_STAFF,
-                  requiredPermissions.READ_STAFF,
-                  requiredPermissions.DELETE_STAFF,
-                  requiredPermissions.UPDATE_STAFF,
-                ])}
+                isAllowed={
+                  hasPermission(allRolePermissions, [requiredPermissions.READ_USER]) ||
+                  hasPermission(allRolePermissions, [requiredPermissions.READ_STAFF]) ||
+                  hasPermission(allRolePermissions, [requiredPermissions.READ_ROLES]) ||
+                  hasPermission(allRolePermissions, [requiredPermissions.READ_DEPT])
+                }
               >
                 <Dashboard />
               </ProtectedRoutes>
@@ -386,10 +381,7 @@ function App() {
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(allRolePermissions, [
-                    requiredPermissions.CREATE_STAFF,
                     requiredPermissions.READ_STAFF,
-                    requiredPermissions.DELETE_STAFF,
-                    requiredPermissions.UPDATE_STAFF,
                   ])}
                 >
                   <Staff />
@@ -401,10 +393,7 @@ function App() {
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(allRolePermissions, [
-                    requiredPermissions.CREATE_STAFF,
                     requiredPermissions.READ_STAFF,
-                    requiredPermissions.DELETE_STAFF,
-                    requiredPermissions.UPDATE_STAFF,
                   ])}
                 >
                   <UserGroups />
@@ -416,10 +405,7 @@ function App() {
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(allRolePermissions, [
-                    requiredPermissions.CREATE_STAFF,
                     requiredPermissions.READ_STAFF,
-                    requiredPermissions.DELETE_STAFF,
-                    requiredPermissions.UPDATE_STAFF,
                   ])}
                 >
                   <Stamp />
@@ -431,10 +417,7 @@ function App() {
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(allRolePermissions, [
-                    requiredPermissions.CREATE_STAFF,
                     requiredPermissions.READ_STAFF,
-                    requiredPermissions.DELETE_STAFF,
-                    requiredPermissions.UPDATE_STAFF,
                   ])}
                 >
                   <FinancialYear />
@@ -447,10 +430,7 @@ function App() {
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(allRolePermissions, [
-                    requiredPermissions.CREATE_DEPT,
                     requiredPermissions.READ_DEPT,
-                    requiredPermissions.DELETE_DEPT,
-                    requiredPermissions.UPDATE_DEPT,
                   ])}
                 >
                   <Department />
@@ -462,10 +442,7 @@ function App() {
               element={
                 <ProtectedRoutes
                   isAllowed={hasPermission(allRolePermissions, [
-                    requiredPermissions.CREATE_DEPT,
                     requiredPermissions.READ_DEPT,
-                    requiredPermissions.DELETE_DEPT,
-                    requiredPermissions.UPDATE_DEPT,
                   ])}
                 >
                   <AuditTrail />
@@ -490,9 +467,6 @@ function App() {
                 <ProtectedRoutes
                   isAllowed={hasPermission(allRolePermissions, [
                     requiredPermissions.READ_ROLES,
-                    requiredPermissions.CREATE_ROLES,
-                    requiredPermissions.DELETE_ROLES,
-                    requiredPermissions.UPDATE_ROLES,
                   ])}
                 >
                   <Role />

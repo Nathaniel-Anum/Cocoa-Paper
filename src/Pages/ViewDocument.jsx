@@ -31,7 +31,7 @@ import { useUser } from './CustomHook/useUser';
 import { formatMoney } from '../../utils/typography';
 import useStore from '../store/store';
 
-import { approveDocument, uploadFile } from '../http/addDocument';
+import { approveDocument, reverseApproval, recallDocument, uploadFile } from '../http/addDocument';
 import {
   hasPermission,
   requiredPermissions,
@@ -43,6 +43,7 @@ import Loader from '../Components/Loader/Loader';
 import { PDFViewerContent } from '../Components/PDFViewer/PdfViewer';
 import TextArea from 'antd/es/input/TextArea';
 import OTPVerificationModal from '../Components/OTPVerificationModal';
+import { useGetAllUserGroups, useGetAllUsers } from '../queryHooks/user';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -71,6 +72,8 @@ function ViewDocument() {
   // Data fetching
   const { data: document, refetch } = useViewDocument(docId);
   const { user } = useUser();
+  const { data: userGroups } = useGetAllUserGroups();
+  const { data: ccUsers } = useGetAllUsers();
 
   const [form] = Form.useForm();
 
@@ -124,15 +127,27 @@ function ViewDocument() {
 
   const { mutate: approveDoc, isPending: approvalLoading } = useMutation({
     mutationKey: ['approveDocument', docId],
-    mutationFn: (otpToken) => approveDocument(docId, otpToken),
+    mutationFn: () => approveDocument(docId),
     onSuccess: () => {
       message.success('Request approved successfully');
       refetch();
-      setShowOTPModal(false);
+      qClient.invalidateQueries({ queryKey: ['budgets'] });
     },
     onError: (error) => {
       message.error(error.response?.data?.error || 'Approval failed');
-      setShowOTPModal(false);
+    },
+  });
+
+  const { mutate: reverseDoc, isPending: reverseLoading } = useMutation({
+    mutationKey: ['reverseApproval', docId],
+    mutationFn: () => reverseApproval(docId),
+    onSuccess: () => {
+      message.success('Approval reversed successfully. Balance has been restored.');
+      refetch();
+      qClient.invalidateQueries({ queryKey: ['budgets'] });
+    },
+    onError: (error) => {
+      message.error(error.response?.data?.error || 'Reverse failed');
     },
   });
 
@@ -225,12 +240,12 @@ function ViewDocument() {
   const handleDivisionChange = (value) => setSelectedDivision(value);
   const handleDepartmentChange = (value) => setSelectedDepartment(value);
 
-  // const handleApproveDocument = () => {
-  //   setShowOTPModal(true);
-  // };
+  const handleApproveDocument = () => {
+    approveDoc();
+  };
 
-  const handleOTPVerificationSuccess = (otpToken) => {
-    approveDoc(otpToken);
+  const handleReverseApproval = () => {
+    reverseDoc();
   };
 
   const handleSubmit = (values) => {
@@ -511,9 +526,27 @@ function ViewDocument() {
                     loading={approvalLoading}
                     icon={<FaHandshake className="w-4 h-4" />}
                     className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-6"
-                    // onClick={handleApproveDocument}
+                    onClick={handleApproveDocument}
                   >
                     Approve
+                  </Button>
+                )}
+
+              {hasPermission(getAllRolePermissions(user), [
+                requiredPermissions.APPROVE_DOCUMENT,
+              ]) &&
+                document.data.document.isApproved &&
+                document.data.document.documentType !== 'General' && (
+                  <Button
+                    type="primary"
+                    htmlType="button"
+                    loading={reverseLoading}
+                    danger
+                    icon={<FaHandshake className="w-4 h-4" />}
+                    className="flex-1 w-full mt-6"
+                    onClick={handleReverseApproval}
+                  >
+                    Reverse Approval
                   </Button>
                 )}
             </Card>
@@ -671,6 +704,38 @@ function ViewDocument() {
                       disabled={!selectedDepartment}
                     />
                   </Form.Item>
+                  <Form.Item name="carbonCopyIds" label="CC" initialValue={[]}>
+                    <Select
+                      optionFilterProp="label"
+                      mode="multiple"
+                      showSearch
+                      placeholder="Copy group or Users"
+                      options={[
+                        {
+                          label: <span>User Groups</span>,
+                          title: 'User Groups',
+                          options:
+                            userGroups &&
+                            userGroups?.data?.data?.map((group) => ({
+                              label: group?.name,
+                              value: group?.id,
+                            })),
+                        },
+                        {
+                          label: <span>Users</span>,
+                          title: 'Users',
+                          options:
+                            ccUsers &&
+                            ccUsers?.data?.users
+                              ?.filter((emp) => emp.userId !== user?.userId)
+                              .map((u) => ({
+                                label: u?.name,
+                                value: u?.userId,
+                              })),
+                        },
+                      ]}
+                    />
+                  </Form.Item>
                   <Form.Item label="">
                     <Checkbox onChange={() => setIsPrivate(!isPrivate)}>
                       Private Comment?
@@ -761,14 +826,6 @@ function ViewDocument() {
           record={document.data.document}
         />
       )}
-
-      <OTPVerificationModal
-        visible={showOTPModal}
-        onCancel={() => setShowOTPModal(false)}
-        onSuccess={handleOTPVerificationSuccess}
-        documentSubject={document?.data?.document?.subject || ''}
-        isLoading={approvalLoading}
-      />
     </div>
   );
 }

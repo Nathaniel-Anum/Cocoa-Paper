@@ -136,27 +136,9 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
         >
           <Input placeholder="Email" allowClear />
         </Form.Item>
-        <Form.Item
-          name="divisionId"
-          label="Division"
-          rules={[
-            {
-              required: true,
-              message: 'Please choose your Division!',
-            },
-          ]}
-        >
-          <Select
-            placeholder="Please choose your Division"
-            allowClear
-            options={divisions?.data.map((division, index) => {
-              return {
-                label: division?.divisionName,
-                value: division?.divisionId,
-              };
-            })}
-            onChange={handleDivisionChange}
-          />
+        {/* Hidden field to keep divisionId in form values */}
+        <Form.Item name="divisionId" hidden>
+          <Input />
         </Form.Item>
         <Form.Item
           name="departmentId"

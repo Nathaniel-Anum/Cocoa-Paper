@@ -11,6 +11,14 @@ function ProtectedRoutes({ isAllowed, children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Debug logging
+  console.log('ProtectedRoutes:', { 
+    path: location.pathname, 
+    isAllowed, 
+    hasUser: !!user, 
+    isLoading 
+  });
+
   useEffect(() => {
     if (!isLoading && !user) {
       sessionStorage.setItem('lastVisitedPath', location.pathname);
@@ -21,6 +29,7 @@ function ProtectedRoutes({ isAllowed, children }) {
 
   if (user) {
     if (!isAllowed) {
+      console.log('ProtectedRoutes: Access denied, redirecting to /');
       return <Navigate to="/" />;
     } else {
       return children ? children : <Outlet />;

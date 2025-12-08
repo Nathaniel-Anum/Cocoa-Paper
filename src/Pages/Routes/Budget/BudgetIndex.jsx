@@ -154,8 +154,6 @@ const BudgetIndex = () => {
 
   const qClient = useQueryClient();
 
-  const { user } = useUser();
-
   const { mutate: removeBudget } = useMutation({
     mutationKey: ['deleteBudget'],
     mutationFn: (id) => deleteBudget(id),
@@ -306,7 +304,7 @@ const BudgetIndex = () => {
 
       <div className="flex justify-end gap-2 items-center">
         <Input.Search placeholder="Search...." className="w-[20rem]" />
-        {hasPermission(user?.role[0].rolePermissions, [
+        {hasPermission(allRolePermissions, [
           requiredPermissions.CREATE_BUDGET,
         ]) && (
           <Button

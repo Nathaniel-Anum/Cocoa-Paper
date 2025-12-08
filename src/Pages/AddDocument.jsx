@@ -197,7 +197,9 @@ const AddDocument = () => {
     onSuccess: (fileId) => {
       console.log('File uploaded successfully with ID:', fileId);
       const values = form.getFieldsValue();
-      startDocument({ ...values, fileId, isPrivate });
+      // Remove file and attachments fields as they are not needed in the document payload
+      const { file, attachments, ...documentData } = values;
+      startDocument({ ...documentData, fileId, isPrivate });
     },
     onError: (error) => {
       setLoading(false);
@@ -240,10 +242,11 @@ const AddDocument = () => {
         // Get main file ID
         const mainFileId = variables.mainFileId;
 
-        // Get form values and add file IDs
+        // Get form values and remove file/attachments fields
         const values = form.getFieldsValue();
+        const { file, attachments, ...documentData } = values;
         startDocument({
-          ...values,
+          ...documentData,
           fileId: mainFileId,
           attachmentIds: fileIds,
           isPrivate,
