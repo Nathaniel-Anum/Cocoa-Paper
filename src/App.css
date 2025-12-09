@@ -37,7 +37,15 @@ table th {
 }
 .ant-btn-primary {
   color: white !important;
+  background-color: #582f08 !important;
+  border-color: #582f08 !important;
 }
+
+.ant-btn-primary:hover {
+  background-color: #9d4d01 !important;
+  border-color: #9d4d01 !important;
+}
+
 .ant-steps-item-icon {
   background-color: #582f08 !important;
 }

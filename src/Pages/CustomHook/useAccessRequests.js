@@ -5,7 +5,7 @@ import axiosInstance from '../../Components/axiosInstance';
 // API functions
 const getAccessRequests = () => axiosInstance.get('/access-request');
 const getAccessRequestCount = () => axiosInstance.get('/access-request/count');
-const grantAccess = (requestId) => axiosInstance.patch(`/access-request/${requestId}/grant`);
+const grantAccess = (requestId, expiresAt) => axiosInstance.patch(`/access-request/${requestId}/grant`, { expiresAt });
 const denyAccess = (requestId) => axiosInstance.patch(`/access-request/${requestId}/deny`);
 const requestAccess = (documentId) => axiosInstance.post('/access-request', { documentId });
 
@@ -48,7 +48,7 @@ export const useGrantAccess = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (requestId) => grantAccess(requestId),
+    mutationFn: ({ requestId, expiresAt }) => grantAccess(requestId, expiresAt),
     onSuccess: () => {
       message.success('Access granted successfully');
       queryClient.invalidateQueries({ queryKey: ['accessRequests'] });

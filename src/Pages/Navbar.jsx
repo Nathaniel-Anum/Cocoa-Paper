@@ -1,5 +1,5 @@
 import { DownOutlined, LoadingOutlined, BellOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Dropdown, Space, Modal, Button, Steps, Badge, Popover, List, Empty } from 'antd';
+import { Dropdown, Space, Modal, Button, Steps, Badge, Popover, List, Empty, DatePicker, Form, message } from 'antd';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useUser } from './CustomHook/useUser';
@@ -24,6 +24,9 @@ const Navbar = () => {
   const [isFileModalVisible, setFileModalVisible] = useState(false);
   const [currentFile, setCurrentFile] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [expirationDate, setExpirationDate] = useState(null);
 
   // Define the callback to close the dropdown
   const handleCloseDropdown = () => {
@@ -74,8 +77,8 @@ const Navbar = () => {
           params: { searchTerm },
         })
         .then((res) => {
+          console.log('Search response:', res?.data);
           setResults(res?.data);
-          // console.log(res?.data);
         })
         .catch((err) => {
           console.error(err?.response?.data?.error);
@@ -135,8 +138,10 @@ const Navbar = () => {
                 size="small"
                 icon={<CheckOutlined />}
                 className="bg-green-600"
-                loading={grantingAccess}
-                onClick={() => grantAccessMutation(request.id)}
+                onClick={() => {
+                  setSelectedRequest(request);
+                  setIsGrantModalOpen(true);
+                }}
               >
                 Grant
               </Button>,
@@ -204,11 +209,17 @@ const Navbar = () => {
 
   // Function to render menu items in the dropdown based on search results
   const renderMenuItems = () => {
+    // Handle case where results might not have all expected properties
+    const incomingAndOutgoing = results?.incomingAndOutgoing || [];
+    const files = results?.files || [];
+    const grantedAccessDocuments = results?.grantedAccessDocuments || [];
+    const inaccessibleDocuments = results?.inaccessibleDocuments || [];
+
     const hasResults = 
-      results?.incomingAndOutgoing?.length > 0 || 
-      results?.files?.length > 0 || 
-      results?.grantedAccessDocuments?.length > 0 || 
-      results?.inaccessibleDocuments?.length > 0;
+      incomingAndOutgoing.length > 0 || 
+      files.length > 0 || 
+      grantedAccessDocuments.length > 0 || 
+      inaccessibleDocuments.length > 0;
 
     if (!results || !hasResults) {
       return <div className="text-gray-500 p-4">No results found</div>;
@@ -217,7 +228,7 @@ const Navbar = () => {
     const uniqueItemsMap = new Map();
 
     // Process incomingAndOutgoing - Full access documents
-    (results?.incomingAndOutgoing || []).forEach((item) => {
+    incomingAndOutgoing.forEach((item) => {
       const { document, status, sender, receiver } = item;
       const isArchivedByUser =
         status === 'Archived' && sender.userId === user?.userId;
@@ -237,7 +248,7 @@ const Navbar = () => {
     });
 
     // Process files
-    (results?.files || []).forEach((file) => {
+    files.forEach((file) => {
       const existingItem = uniqueItemsMap.get(file.ref);
 
       if (existingItem) {
@@ -258,7 +269,7 @@ const Navbar = () => {
     });
 
     // Process grantedAccessDocuments - View-only access
-    (results?.grantedAccessDocuments || []).forEach((doc) => {
+    grantedAccessDocuments.forEach((doc) => {
       if (!uniqueItemsMap.has(doc.ref)) {
         uniqueItemsMap.set(doc.ref, {
           ...doc,
@@ -270,7 +281,7 @@ const Navbar = () => {
     });
 
     // Process inaccessibleDocuments - No access
-    (results?.inaccessibleDocuments || []).forEach((doc) => {
+    inaccessibleDocuments.forEach((doc) => {
       if (!uniqueItemsMap.has(doc.ref)) {
         uniqueItemsMap.set(doc.ref, {
           ...doc,
@@ -602,6 +613,79 @@ const Navbar = () => {
           />
         )}
       </Modal>
+
+      {/* Grant Access Modal with Date Picker */}
+      <Modal
+        title="Grant Access"
+        open={isGrantModalOpen}
+        onCancel={() => {
+          setIsGrantModalOpen(false);
+          setSelectedRequest(null);
+          setExpirationDate(null);
+        }}
+        footer={null}
+        centered
+      >
+        <div className="py-4">
+          <p className="mb-2">
+            Grant <strong>{selectedRequest?.requester?.name}</strong> access to:
+          </p>
+          <p className="text-gray-600 mb-4">
+            <strong>{selectedRequest?.document?.subject}</strong> (Ref: {selectedRequest?.document?.ref})
+          </p>
+          
+          <Form layout="vertical">
+            <Form.Item 
+              label="Access Expires On" 
+              required
+              help="Select when the access should expire. After this date, the user will need to request access again."
+            >
+              <DatePicker
+                showTime
+                format="YYYY-MM-DD HH:mm"
+                className="w-full"
+                placeholder="Select expiration date and time"
+                onChange={(date) => setExpirationDate(date)}
+                disabledDate={(current) => current && current < new Date()}
+              />
+            </Form.Item>
+          </Form>
+
+          <div className="flex gap-2 justify-end mt-6">
+            <Button 
+              onClick={() => {
+                setIsGrantModalOpen(false);
+                setSelectedRequest(null);
+                setExpirationDate(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              className="bg-[#582F08] hover:bg-[#9D4D01]"
+              loading={grantingAccess}
+              disabled={!expirationDate}
+              onClick={() => {
+                if (!expirationDate) {
+                  message.error('Please select an expiration date');
+                  return;
+                }
+                grantAccessMutation({
+                  requestId: selectedRequest.id,
+                  expiresAt: expirationDate.toISOString(),
+                });
+                setIsGrantModalOpen(false);
+                setSelectedRequest(null);
+                setExpirationDate(null);
+              }}
+            >
+              Grant Access
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       <ToastContainer />
     </div>
   );
