@@ -254,36 +254,32 @@ const Incoming = () => {
   const getItems = (selectedRecord) => {
     return [
       {
-        label: (
-          <span
-            onClick={() => {
-              selectedRecord.isCarbonCopy
-                ? setShowToolbar(false)
-                : setShowToolbar(true);
-              handleViewDocument(selectedRecord);
-            }}
-          >
-            View
-          </span>
-        ),
+        label: 'View',
         key: 0,
+        onClick: () => {
+          selectedRecord.isCarbonCopy
+            ? setShowToolbar(false)
+            : setShowToolbar(true);
+          handleViewDocument(selectedRecord);
+        },
       },
       !selectedRecord.isCarbonCopy && {
-        label: <span onClick={() => handleClick(selectedRecord)}>Forward</span>,
+        label: 'Forward',
         key: 1,
+        onClick: () => handleClick(selectedRecord),
       },
       hasPermission(allRolePermissions, [
         requiredPermissions.ARCHIVE_DOCUMENT,
       ]) &&
         !selectedRecord.isCarbonCopy && {
-          label: (
-            <span onClick={() => handleFile(selectedRecord)}>Archive</span>
-          ),
+          label: 'Archive',
           key: 2,
+          onClick: () => handleFile(selectedRecord),
         },
       !selectedRecord.isCarbonCopy && {
-        label: <span onClick={() => handleView(selectedRecord)}>Trail</span>,
+        label: 'Trail',
         key: 3,
+        onClick: () => handleView(selectedRecord),
       },
     ].filter(Boolean);
   };
