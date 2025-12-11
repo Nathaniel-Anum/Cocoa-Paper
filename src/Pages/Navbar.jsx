@@ -189,18 +189,11 @@ const Navbar = () => {
 
   const allRolePermissions = getAllRolePermissions(user);
 
-  // Conditionally add the "Go to Admin Console" option if the user has backoffice permissions
-  const hasBackofficeAccess = hasPermission(allRolePermissions, [
-    requiredPermissions.READ_STAFF,
-  ]) || hasPermission(allRolePermissions, [
-    requiredPermissions.READ_DEPT,
-  ]) || hasPermission(allRolePermissions, [
-    requiredPermissions.READ_ROLES,
-  ]) || hasPermission(allRolePermissions, [
-    requiredPermissions.READ_USER,
-  ]);
+  // Check if user has ADMIN role
+  const isAdmin = user?.role?.some(r => r.role === 'ADMIN');
 
-  if (hasBackofficeAccess) {
+  // Only show Admin Console to users with ADMIN role
+  if (isAdmin) {
     items.push({
       label: <span onClick={() => navigate('/backoffice/bod')} className="cursor-pointer">Admin Console</span>,
       key: '1',
