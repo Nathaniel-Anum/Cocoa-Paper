@@ -36,10 +36,12 @@ import BudgetIndex from './Pages/Routes/Budget/BudgetIndex';
 import AddBudget from './Pages/Routes/Budget/Add';
 import UpdateBudget from './Pages/Routes/Budget/Update';
 import Analytics from './Pages/Analytics';
+import AdvancedAnalytics from './Pages/AdvancedAnalytics';
 import FinancialYear from './Components/BackOffice/FinancialYear';
 import AuditTrail from './Components/BackOffice/AuditTrail';
 import Attachments from './Pages/Attachments';
 import Configuration from './Components/BackOffice/Configuration';
+import RetentionPolicy from './Components/BackOffice/RetentionPolicy';
 import UserGroups from './Components/BackOffice/UserGroups';
 import Stamp from './Components/BackOffice/Stamp';
 import OTPSettings from './Components/OTPSettings';
@@ -194,6 +196,18 @@ function App() {
                   ])}
                 >
                   <Analytics />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/advanced-analytics"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(allRolePermissions, [
+                    requiredPermissions.READ_ANALYTICS,
+                  ])}
+                >
+                  <AdvancedAnalytics />
                 </ProtectedRoutes>
               }
             />
@@ -485,6 +499,18 @@ function App() {
                   ])}
                 >
                   <Configuration />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/backoffice/retention"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(allRolePermissions, [
+                    requiredPermissions.READ_ARCHIVE,
+                  ])}
+                >
+                  <RetentionPolicy />
                 </ProtectedRoutes>
               }
             />

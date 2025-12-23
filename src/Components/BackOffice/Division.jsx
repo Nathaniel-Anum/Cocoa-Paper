@@ -1,8 +1,10 @@
-import React from "react";
-import { Table } from "antd";
+import React, { useState } from "react";
+import { Table, Input } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../axiosInstance";
 const Division = () => {
+  const [searchText, setSearchText] = useState('');
+  
   //   useQuery to fetch division
   const { data: divisions } = useQuery({
     queryKey: ["divisions"],
@@ -24,6 +26,10 @@ const Division = () => {
       title: " Division Name",
       dataIndex: "divisionName",
       key: "name",
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        return record.divisionName?.toLowerCase().includes(value.toLowerCase());
+      },
       render: (text) => <a>{text}</a>,
     },
   ];
@@ -31,6 +37,14 @@ const Division = () => {
   return (
     <div>
       <div className=" px-[240px] pt-[50px] ">
+        <div className="flex justify-end mb-4">
+          <Input.Search
+            placeholder="Search divisions..."
+            className="w-[30rem]"
+            allowClear
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </div>
         <Table columns={columns} dataSource={_data} />
       </div>
     </div>

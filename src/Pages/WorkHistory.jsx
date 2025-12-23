@@ -1,5 +1,5 @@
-import React from 'react';
-import { Popover, Table, Tooltip } from 'antd';
+import React, { useState } from 'react';
+import { Popover, Table, Tooltip, Input } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../Components/axiosInstance';
 import Trail from '../Components/Trail/Trail';
@@ -13,6 +13,7 @@ import useStore from '../store/store';
 const WorkHistory = () => {
   const [showModal, setShowModal] = React.useState(false);
   const [trails, setTrails] = React.useState([]);
+  const [searchText, setSearchText] = useState('');
 
   const setShowToolbar = useStore((state) => state.setShowToolbar);
 
@@ -35,6 +36,15 @@ const WorkHistory = () => {
       title: 'Subject',
       dataIndex: 'subject',
       key: 'subject',
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        return (
+          record.subject?.toLowerCase().includes(search) ||
+          record.file?.fileName?.toLowerCase().includes(search) ||
+          record.ref?.toLowerCase().includes(search)
+        );
+      },
     },
     {
       title: 'File Name',
@@ -114,8 +124,15 @@ const WorkHistory = () => {
           handleCancel={() => setShowModal(false)}
           trails={trails}
         />
+        <div className="flex justify-end mb-4 mt-8">
+          <Input.Search
+            placeholder="Search by subject, file name, reference..."
+            className="w-[30rem]"
+            allowClear
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </div>
         <Table
-          className="mt-8"
           // loading={isLoading || isFetching}
           dataSource={isArray(workHistory?.data) ? _data : []}
           // dataSource={_data}

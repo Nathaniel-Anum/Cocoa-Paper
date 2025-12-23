@@ -43,6 +43,7 @@ const Archive = () => {
   const { id } = useParams();
   const { user } = useUser();
   const allRolePermissions = getAllRolePermissions(user);
+  const [searchText, setSearchText] = useState('');
 
   // State management
   const [modalStates, setModalStates] = useState({
@@ -304,6 +305,17 @@ const Archive = () => {
     {
       title: 'Name',
       dataIndex: 'folderName',
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        return (
+          record.folderName?.toLowerCase().includes(search) ||
+          record.fileName?.toLowerCase().includes(search) ||
+          record.ref?.toLowerCase().includes(search) ||
+          record.subject?.toLowerCase().includes(search) ||
+          record.type?.toLowerCase().includes(search)
+        );
+      },
       render: (value, record) => (
         <div
           className="flex gap-2 cursor-pointer"
@@ -493,6 +505,15 @@ const Archive = () => {
           </Link>
         )}
       />
+
+      <div className="flex justify-end my-4">
+        <Input.Search
+          placeholder="Search by name, reference, subject..."
+          className="w-[30rem]"
+          allowClear
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+      </div>
 
       <Table
         columns={columns}

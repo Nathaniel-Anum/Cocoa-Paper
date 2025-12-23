@@ -25,6 +25,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 const FinancialYear = () => {
   const [openModal, setOpenModal] = useState(false);
   const [form] = Form.useForm();
+  const [searchText, setSearchText] = useState('');
 
   const [selectedRecord, setSelectedRecord] = useState(null);
 
@@ -94,6 +95,16 @@ const FinancialYear = () => {
       title: 'Start Date',
       dataIndex: 'startDate',
       key: 'startDate',
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        const startDate = new Date(record.startDate).toLocaleDateString().toLowerCase();
+        const endDate = new Date(record.endDate).toLocaleDateString().toLowerCase();
+        return (
+          startDate.includes(search) ||
+          endDate.includes(search)
+        );
+      },
       render: (value) => <span>{new Date(value).toLocaleDateString()}</span>,
     },
     {
@@ -178,7 +189,13 @@ const FinancialYear = () => {
       </Modal>
       <div className="w-[80%] mx-auto">
         <div className=" px-[240px] pt-[50px] ">
-          <div className="flex justify-end mb-2">
+          <div className="flex justify-end gap-4 mb-2">
+            <Input.Search
+              placeholder="Search by date..."
+              className="w-[20rem]"
+              allowClear
+              onChange={(e) => setSearchText(e.target.value)}
+            />
             <Button
               className="bg-[#694421] text-white"
               onClick={() => setOpenModal(true)}

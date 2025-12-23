@@ -18,6 +18,7 @@ const RoleManagement = () => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [wholeRecord, setWholeRecord] = useState({});
+  const [searchText, setSearchText] = useState('');
 
   const [form] = Form.useForm();
 
@@ -133,6 +134,15 @@ const RoleManagement = () => {
       dataIndex: 'role',
       key: 'name',
       width: '25%',
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        const permissions = record.rolePermissions?.map(p => p.permission?.permission?.toLowerCase()).join(' ') || '';
+        return (
+          record.role?.toLowerCase().includes(search) ||
+          permissions.includes(search)
+        );
+      },
       render: (text) => <a>{text}</a>,
     },
     {
@@ -174,6 +184,14 @@ const RoleManagement = () => {
   return (
     <div>
       <div className=" px-[240px] pt-[50px] ">
+        <div className="flex justify-end mb-4">
+          <Input.Search
+            placeholder="Search by role or permission..."
+            className="w-[30rem]"
+            allowClear
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </div>
         <Modal
           open={open}
           title="Edit Role Management"

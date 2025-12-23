@@ -30,6 +30,7 @@ import axiosInstance from '../Components/axiosInstance';
 import { useUser } from './CustomHook/useUser';
 import { formatMoney } from '../../utils/typography';
 import useStore from '../store/store';
+import { recordDocumentView } from '../http/documentViews';
 
 import { approveDocument, reverseApproval, recallDocument, uploadFile } from '../http/addDocument';
 import {
@@ -102,6 +103,20 @@ function ViewDocument() {
   useEffect(() => {
     fetchFile();
   }, [fetchFile]);
+
+  // Record document view when component mounts
+  useEffect(() => {
+    if (docId) {
+      recordDocumentView(docId)
+        .then(() => {
+          console.log('Document view recorded');
+        })
+        .catch((error) => {
+          console.error('Failed to record view:', error);
+          // Don't show error to user - this is a background operation
+        });
+    }
+  }, [docId]);
 
   // Mutations
   const { mutate: forwardDocument, isPending: submitLoading } = useMutation({

@@ -17,6 +17,7 @@ const PhysicalDocs = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   const allRolePermissions = getAllRolePermissions(user);
+  const [searchText, setSearchText] = useState('');
 
   const [form] = Form.useForm();
 
@@ -59,6 +60,17 @@ const PhysicalDocs = () => {
       title: 'Subject',
       dataIndex: 'document',
       key: 'subject',
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        return (
+          record.document?.subject?.toLowerCase().includes(search) ||
+          record.document?.ref?.toLowerCase().includes(search) ||
+          record.sender?.name?.toLowerCase().includes(search) ||
+          record.document?.division?.divisionName?.toLowerCase().includes(search) ||
+          record.document?.department?.departmentName?.toLowerCase().includes(search)
+        );
+      },
       render: (document) => {
         //   console.log(document);
         return <div>{document.subject}</div>;
@@ -146,6 +158,14 @@ const PhysicalDocs = () => {
   // console.log(_data);
   return (
     <div className="">
+      <div className="flex justify-end mb-4">
+        <Input.Search
+          placeholder="Search by subject, reference, sender, department..."
+          className="w-[30rem]"
+          allowClear
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+      </div>
       <Table columns={columns} dataSource={_data} loading={isLoading} />
     </div>
   );

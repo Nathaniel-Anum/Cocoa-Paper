@@ -8,6 +8,9 @@ import {
   message,
   Tooltip,
   Tag,
+  Input,
+  Select,
+  Button,
 } from 'antd';
 import { useTrail } from './CustomHook/useTrail';
 import { FaRegEye } from 'react-icons/fa';
@@ -26,11 +29,18 @@ import { IoIosLocate } from 'react-icons/io';
 import { IoLocationOutline } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/store';
+import { FiFilter } from 'react-icons/fi';
 
 const Outgoing = () => {
   const { trails, isLoading } = useTrail('outgoing');
   const [trailId, setTrailId] = useState('');
   const [open, SetOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [filterDivision, setFilterDivision] = useState(null);
+  const [filterDepartment, setFilterDepartment] = useState(null);
+  const [tempFilterDivision, setTempFilterDivision] = useState(null);
+  const [tempFilterDepartment, setTempFilterDepartment] = useState(null);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const setShowToolbar = useStore((state) => state.setShowToolbar);
@@ -49,6 +59,22 @@ const Outgoing = () => {
     SetOpen(false);
   };
 
+  // useQuery for getting all divisions
+  const { data: divisions } = useQuery({
+    queryKey: ['divisions'],
+    queryFn: () => {
+      return axiosInstance.get('/division');
+    },
+  });
+
+  // useQuery for getting all departments (for filter)
+  const { data: allDepartments } = useQuery({
+    queryKey: ['allDepartments'],
+    queryFn: () => {
+      return axiosInstance.get('/department');
+    },
+  });
+
   //useQUery to fetch trail associated to doc ID
 
   const { data: trailData } = useQuery({
@@ -66,6 +92,17 @@ const Outgoing = () => {
       title: 'Subject',
       dataIndex: 'document',
       key: 'subject',
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        return (
+          record.document?.subject?.toLowerCase().includes(search) ||
+          record.document?.ref?.toLowerCase().includes(search) ||
+          record.receiver?.name?.toLowerCase().includes(search) ||
+          record.document?.division?.divisionName?.toLowerCase().includes(search) ||
+          record.document?.department?.departmentName?.toLowerCase().includes(search)
+        );
+      },
       render: (document) => {
         //   console.log(document);
         return <div>{document.subject}</div>;
@@ -88,6 +125,14 @@ const Outgoing = () => {
     {
       title: 'Division',
       key: 'division',
+      filters: divisions?.data?.map((div) => ({
+        text: div.divisionName,
+        value: div.divisionName,
+      })) || [],
+      filteredValue: filterDivision ? [filterDivision] : null,
+      onFilter: (value, record) => {
+        return record.document?.division?.divisionName === value;
+      },
       render: (document) => {
         return <div>{document.document.division.divisionName}</div>;
       },
@@ -95,6 +140,14 @@ const Outgoing = () => {
     {
       title: 'Department',
       key: 'department',
+      filters: allDepartments?.data?.map((dept) => ({
+        text: dept.departmentName,
+        value: dept.departmentName,
+      })) || [],
+      filteredValue: filterDepartment ? [filterDepartment] : null,
+      onFilter: (value, record) => {
+        return record.document?.department?.departmentName === value;
+      },
       render: (document) => {
         return <div>{document.document.department.departmentName}</div>;
       },
@@ -220,6 +273,101 @@ const Outgoing = () => {
 
   return (
     <div className="mt-8">
+      <div className="flex justify-end gap-2 mb-4">
+        <Input.Search
+          placeholder="Search by subject, reference, receiver..."
+          className="w-[25rem]"
+          allowClear
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+        <button
+          onClick={() => {
+            setTempFilterDivision(filterDivision);
+            setTempFilterDepartment(filterDepartment);
+            setIsFilterModalOpen(true);
+          }}
+          className="relative flex items-center justify-center w-[32px] h-[32px] border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+        >
+          <FiFilter className="text-[#582F08] text-lg" />
+          {(filterDivision || filterDepartment) && (
+            <span className="absolute -top-1 -right-1 bg-[#582F08] text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+              {(filterDivision ? 1 : 0) + (filterDepartment ? 1 : 0)}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Filter Modal */}
+      <Modal
+        title="Filter Documents"
+        open={isFilterModalOpen}
+        onCancel={() => {
+          setTempFilterDivision(filterDivision);
+          setTempFilterDepartment(filterDepartment);
+          setIsFilterModalOpen(false);
+        }}
+        footer={[
+          <Button
+            key="clear"
+            onClick={() => {
+              setTempFilterDivision(null);
+              setTempFilterDepartment(null);
+              setFilterDivision(null);
+              setFilterDepartment(null);
+            }}
+          >
+            Clear Filters
+          </Button>,
+          <Button
+            key="apply"
+            type="primary"
+            style={{ backgroundColor: '#582F08' }}
+            onClick={() => {
+              setFilterDivision(tempFilterDivision);
+              setFilterDepartment(tempFilterDepartment);
+              setIsFilterModalOpen(false);
+            }}
+          >
+            Apply Filters
+          </Button>,
+        ]}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Division
+            </label>
+            <Select
+              placeholder="Select Division"
+              allowClear
+              style={{ width: '100%' }}
+              value={tempFilterDivision}
+              onChange={(value) => setTempFilterDivision(value)}
+              options={divisions?.data?.map((div) => ({
+                label: div.divisionName,
+                value: div.divisionName,
+              })) || []}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Department
+            </label>
+            <Select
+              placeholder="Select Department"
+              allowClear
+              style={{ width: '100%' }}
+              value={tempFilterDepartment}
+              onChange={(value) => setTempFilterDepartment(value)}
+              options={allDepartments?.data?.map((dept) => ({
+                label: dept.departmentName,
+                value: dept.departmentName,
+              })) || []}
+            />
+          </div>
+        </div>
+      </Modal>
+
       <Trail
         open={open}
         handleCancel={handleClose}

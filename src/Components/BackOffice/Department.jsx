@@ -92,9 +92,11 @@ const Department = () => {
       key: 'name',
       filteredValue: [searchText],
       onFilter: (value, record) => {
-        return record.departmentName
-          .toLowerCase()
-          .includes(searchText.toLowerCase());
+        const search = value.toLowerCase();
+        return (
+          record.departmentName?.toLowerCase().includes(search) ||
+          record.division?.divisionName?.toLowerCase().includes(search)
+        );
       },
     },
     {

@@ -1,13 +1,14 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { message, Popconfirm, Table, Tooltip } from 'antd';
+import { message, Popconfirm, Table, Tooltip, Input } from 'antd';
 
-import React from 'react';
+import React, { useState } from 'react';
 import axiosInstance from '../Components/axiosInstance';
 import { MdOutlineSettingsBackupRestore } from 'react-icons/md';
 import { FilePdfFilled, FolderFilled } from '@ant-design/icons';
 
 const RecycleBin = () => {
   const queryClient = useQueryClient();
+  const [searchText, setSearchText] = useState('');
   // useQuery to fetch all trails
   const { data: recycle } = useQuery({
     queryKey: ['recycle'],
@@ -74,22 +75,33 @@ const RecycleBin = () => {
     {
       title: 'Name',
       dataIndex: 'name',
-      key: 'name  ',
+      key: 'name',
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        const nameText = typeof record.name === 'string' ? record.name : 
+          record.name?.props?.children?.[1] || '';
+        return (
+          nameText.toString().toLowerCase().includes(search) ||
+          record.subject?.toLowerCase().includes(search) ||
+          record.reference?.toLowerCase().includes(search)
+        );
+      },
     },
     {
       title: 'Subject',
       dataIndex: 'subject',
-      key: 'subject  ',
+      key: 'subject',
     },
     {
       title: 'Reference',
       dataIndex: 'reference',
-      key: 'reference  ',
+      key: 'reference',
     },
     {
       title: 'Action',
       dataIndex: 'id',
-      key: 'id  ',
+      key: 'id',
       render: (_, record) => (
         <Popconfirm
           title="Are you sure you want to restore this item?"
@@ -107,6 +119,14 @@ const RecycleBin = () => {
 
   return (
     <div>
+      <div className="flex justify-end mb-4">
+        <Input.Search
+          placeholder="Search by name, subject, reference..."
+          className="w-[30rem]"
+          allowClear
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+      </div>
       <Table columns={columns} dataSource={formattedData} />
     </div>
   );

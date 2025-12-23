@@ -26,6 +26,7 @@ const Stamp = () => {
   const [openModal, setOpenModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editingStamp, setEditingStamp] = useState(null);
+  const [searchText, setSearchText] = useState('');
 
   const [form] = Form.useForm();
 
@@ -39,6 +40,14 @@ const Stamp = () => {
       title: 'Artifact Image',
       dataIndex: 'stamp',
       key: 'stamp',
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        return (
+          record.name?.toLowerCase().includes(search) ||
+          record.user?.name?.toLowerCase().includes(search)
+        );
+      },
       render: (value) => {
         return (
           <img
@@ -338,7 +347,13 @@ const Stamp = () => {
           </Form.Item>
         </Form>
       </Modal>
-      <div className="flex justify-end mb-[20px] ">
+      <div className="flex justify-end gap-4 mb-[20px] ">
+        <Input.Search
+          placeholder="Search by name or user..."
+          className="w-[20rem]"
+          allowClear
+          onChange={(e) => setSearchText(e.target.value)}
+        />
         <Button
           className="bg-[#582F08] text-[#edd3bb]"
           onClick={() => setOpenModal(true)}

@@ -174,15 +174,15 @@ const Staff = () => {
       key: 'name',
       filteredValue: [searchText],
       onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        const roles = record.role?.map(r => r.role?.toLowerCase()).join(' ') || '';
         return (
-          record.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          record.email.toLowerCase().includes(searchText.toLowerCase()) ||
-          record.department.departmentName
-            .toLowerCase()
-            .includes(searchText.toLowerCase()) ||
-          record.staff.staffNumber
-            .toLowerCase()
-            .includes(searchText.toLowerCase())
+          record.name?.toLowerCase().includes(search) ||
+          record.email?.toLowerCase().includes(search) ||
+          record.department?.departmentName?.toLowerCase().includes(search) ||
+          record.division?.divisionName?.toLowerCase().includes(search) ||
+          record.staff?.staffNumber?.toLowerCase().includes(search) ||
+          roles.includes(search)
         );
       },
     },

@@ -48,7 +48,7 @@ const BackOfficeSideBar = () => {
               </li>
             </Link>
 
-            {/* {user && user?.division?.divisionName === DIVISIONS.BOD && ( */}
+            {user && user?.division?.divisionName === DIVISIONS.COCOBOD && (
               <>
                 <Link to="/backoffice/division">
                   <li className=" duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex  gap-3">
@@ -92,8 +92,14 @@ const BackOfficeSideBar = () => {
                     <p className="text-[15px]">Configuration </p>
                   </li>
                 </Link>
+                <Link to="/backoffice/retention">
+                  <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">
+                    <LuCalendar className="text-[#E3BC97] text-lg" />
+                    <p className="text-[15px]">Retention Policy </p>
+                  </li>
+                </Link>
               </>
-            
+            )}
 
             <Link to="/backoffice/stamps">
               <li className="duration-500 hover:bg-white/10 hover:py-2 hover:scale-105 hover:rounded-md flex gap-3">

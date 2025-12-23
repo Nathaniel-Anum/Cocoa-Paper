@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useViewDocument } from '../queryHooks/document';
 import pdf from '../assets/pdf.svg';
 
 import useStore from '../store/store';
 import { EyeOutlined } from '@ant-design/icons';
-import { Table } from 'antd';
+import { Table, Input } from 'antd';
 import { create } from 'lodash';
 import dayjs from 'dayjs';
 import PDFViewer, { PDFViewerContent } from '../Components/PDFViewer/PdfViewer';
@@ -13,6 +13,7 @@ import axiosInstance from '../Components/axiosInstance';
 
 const Attachments = () => {
   const { id: docId } = useParams();
+  const [searchText, setSearchText] = useState('');
 
   const { data: document, refetch } = useViewDocument(docId);
 
@@ -34,6 +35,16 @@ const Attachments = () => {
       title: 'File Name',
       dataIndex: 'fileName',
       key: 'fileName',
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        return (
+          record.fileName?.toLowerCase().includes(search) ||
+          record.user?.name?.toLowerCase().includes(search) ||
+          record.user?.department?.departmentName?.toLowerCase().includes(search) ||
+          record.user?.division?.divisionName?.toLowerCase().includes(search)
+        );
+      },
     },
     {
       title: 'Uploaded By',
@@ -96,6 +107,14 @@ const Attachments = () => {
           documentId={selectedFile?.fileId}
         />
       )}
+      <div className="flex justify-end mb-4">
+        <Input.Search
+          placeholder="Search by file name, uploader, department..."
+          className="w-[30rem]"
+          allowClear
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+      </div>
       <Table
         columns={columns}
         dataSource={

@@ -36,6 +36,7 @@ import { CONFIGS } from '../../../utils/constants';
 const Configuration = () => {
   const [openModal, setOpenModal] = useState(false);
   const [form] = Form.useForm();
+  const [searchText, setSearchText] = useState('');
 
   const [selectedRecord, setSelectedRecord] = useState(null);
 
@@ -93,6 +94,15 @@ const Configuration = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        const configName = CONFIGS[record.name] || record.name || '';
+        return (
+          configName.toLowerCase().includes(search) ||
+          record.value?.toString().toLowerCase().includes(search)
+        );
+      },
       render: (value) => <span>{CONFIGS[value]}</span>,
     },
     {
@@ -185,7 +195,13 @@ const Configuration = () => {
       </Modal>
       <div className="w-[80%] mx-auto">
         <div className=" px-[240px] pt-[50px] ">
-          <div className="flex justify-end mb-2">
+          <div className="flex justify-end gap-4 mb-2">
+            <Input.Search
+              placeholder="Search by name or value..."
+              className="w-[20rem]"
+              allowClear
+              onChange={(e) => setSearchText(e.target.value)}
+            />
             <Button
               className="bg-[#694421] text-white"
               onClick={() => setOpenModal(true)}

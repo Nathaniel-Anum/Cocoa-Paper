@@ -21,6 +21,7 @@ const { Title } = Typography;
 const UserGroups = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
+  const [searchText, setSearchText] = useState('');
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -147,6 +148,15 @@ const UserGroups = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      filteredValue: [searchText],
+      onFilter: (value, record) => {
+        const search = value.toLowerCase();
+        const userNames = record.users?.map(u => u.name?.toLowerCase()).join(' ') || '';
+        return (
+          record.name?.toLowerCase().includes(search) ||
+          userNames.includes(search)
+        );
+      },
     },
 
     {
@@ -202,14 +212,22 @@ const UserGroups = () => {
         }}
       >
         <Title level={2}>User Groups</Title>
-        <Button
-          type="primary "
-          className="bg-[#582f08]"
-          icon={<PlusOutlined />}
-          onClick={() => showModal()}
-        >
-          Add New Group
-        </Button>
+        <div className="flex gap-4">
+          <Input.Search
+            placeholder="Search by group name or users..."
+            className="w-[20rem]"
+            allowClear
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          <Button
+            type="primary "
+            className="bg-[#582f08]"
+            icon={<PlusOutlined />}
+            onClick={() => showModal()}
+          >
+            Add New Group
+          </Button>
+        </div>
       </div>
 
       <Table
