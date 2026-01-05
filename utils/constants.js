@@ -8,7 +8,7 @@ export const CONFIGS = {
 
 export const DIVISIONS = {
   CMC: 'CMC',
-  BOD: 'BOD',
+  COCOBOD: 'COCOBOD',
   SPD: 'SPD',
   QCC: 'QCC',
   CRIG: 'CRIG',
