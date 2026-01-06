@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Card,
@@ -60,10 +60,21 @@ const AdvancedAnalytics = () => {
     endDate: dayjs().format('YYYY-MM-DD'),
   });
 
+  // Set division filter based on user's division when user is loaded
+  useEffect(() => {
+    if (user?.division?.divisionId) {
+      setFilters((prev) => ({
+        ...prev,
+        divisionId: user.division.divisionId,
+      }));
+    }
+  }, [user?.division?.divisionId]);
+
   const { data, isLoading } = useQuery({
     queryKey: ['advancedAnalytics', filters],
     queryFn: () => getDashboardData(filters),
     refetchInterval: 60000,
+    enabled: !!filters.divisionId, // Only fetch when division is set
   });
 
   const analytics = data?.data;
@@ -817,7 +828,10 @@ const AdvancedAnalytics = () => {
                 Performance Dashboard
               </Title>
               <Text className="text-gray-600 text-base">
-                Comprehensive insights into document processing and staff productivity
+                {user?.division?.divisionName 
+                  ? `Division: ${user.division.divisionName} • Comprehensive insights into document processing and staff productivity`
+                  : 'Comprehensive insights into document processing and staff productivity'
+                }
               </Text>
             </div>
             <div className="bg-white rounded-xl shadow-md p-4 border border-[#e4c8ad]">
