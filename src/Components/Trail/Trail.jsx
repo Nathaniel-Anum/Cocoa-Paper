@@ -1,13 +1,13 @@
-import { Modal, Steps, Tooltip } from 'antd';
+import { Modal, Steps, Tooltip, Spin, Empty } from 'antd';
 import dayjs from 'dayjs';
 import React from 'react';
 
-const Trail = ({ trails, open, handleCancel }) => {
+const Trail = ({ trails, open, handleCancel, loading = false }) => {
   console.log({ trails });
   return (
     <div>
       <Modal
-        title="Locator"
+        title="Document Trail"
         open={open}
         onCancel={handleCancel}
         footer={null}
@@ -15,6 +15,13 @@ const Trail = ({ trails, open, handleCancel }) => {
         width={'60%'}
       >
         <div className="py-6">
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <Spin size="large" />
+            </div>
+          ) : !trails || trails.length === 0 ? (
+            <Empty description="No trail data available. You may not have access to view this document's trail." />
+          ) : (
           <Steps
             responsive
             direction
@@ -109,6 +116,7 @@ const Trail = ({ trails, open, handleCancel }) => {
               })
             }
           />
+          )}
         </div>
       </Modal>
     </div>

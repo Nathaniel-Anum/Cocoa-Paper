@@ -16,6 +16,7 @@ import {
   Divider,
   Space,
   Statistic,
+  Tooltip,
 } from 'antd';
 import {
   BarChart,
@@ -44,6 +45,8 @@ import { GiSandsOfTime, GiProgression } from 'react-icons/gi';
 import { AiOutlineRise, AiOutlineFall } from 'react-icons/ai';
 import { getDashboardData } from '../http/advancedAnalytics';
 import { useUser } from './CustomHook/useUser';
+import Trail from '../Components/Trail/Trail';
+import axiosInstance from '../Components/axiosInstance';
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
@@ -59,6 +62,8 @@ const AdvancedAnalytics = () => {
     startDate: dayjs().subtract(30, 'days').format('YYYY-MM-DD'),
     endDate: dayjs().format('YYYY-MM-DD'),
   });
+  const [trailModalOpen, setTrailModalOpen] = useState(false);
+  const [selectedDocId, setSelectedDocId] = useState(null);
 
   // Set division filter based on user's division when user is loaded
   useEffect(() => {
@@ -77,7 +82,27 @@ const AdvancedAnalytics = () => {
     enabled: !!filters.divisionId, // Only fetch when division is set
   });
 
+  // Query to fetch trail data for selected document
+  const { data: trailData, isLoading: isTrailLoading } = useQuery({
+    queryKey: ['trailData', selectedDocId],
+    queryFn: async () => {
+      return axiosInstance.get(`/trail/${selectedDocId}`);
+    },
+    enabled: !!selectedDocId,
+  });
+
   const analytics = data?.data;
+
+  const handleViewTrail = (docId) => {
+    setSelectedDocId(docId);
+    setTrailModalOpen(true);
+  };
+
+  const handleCloseTrailModal = () => {
+    setTrailModalOpen(false);
+    // Reset docId after a short delay to avoid flashing empty content
+    setTimeout(() => setSelectedDocId(null), 300);
+  };
 
   const handleDateRangeChange = (dates) => {
     if (dates) {
@@ -98,10 +123,20 @@ const AdvancedAnalytics = () => {
     );
   }
 
+  // Helper function to format decimal days as "Xd Yh" format
+  const formatDaysAndHours = (decimalDays) => {
+    const days = Math.floor(decimalDays);
+    const hours = Math.round((decimalDays - days) * 24);
+    if (days === 0) return `${hours}h`;
+    if (hours === 0) return `${days}d`;
+    return `${days}d ${hours}h`;
+  };
+
   const bottleneckChartData = analytics?.bottlenecks?.topDepartmentBottlenecks?.slice(0, 8).map((dept) => ({
     name: dept.departmentName?.substring(0, 12) || 'Unknown',
-    holdTime: parseFloat(dept.avgHoldTimeDays.toFixed(1)),
-    documents: dept.documentCount,
+    holdTime: parseFloat(dept.avgHoldTimeDays.toFixed(2)),
+    holdTimeFormatted: formatDaysAndHours(dept.avgHoldTimeDays),
+    documents: Math.round(dept.documentCount),
   })) || [];
 
   const statusChartData = analytics?.distribution?.byStatus || [];
@@ -146,7 +181,7 @@ const AdvancedAnalytics = () => {
         <div className="flex items-center gap-2">
           <FaClock className="text-[#ce6d11]" />
           <span className="text-[#582f08] font-medium">
-            {record.metrics.averageResponseTimeDays.toFixed(1)}d
+            {formatDaysAndHours(record.metrics.averageResponseTimeDays)}
           </span>
         </div>
       ),
@@ -205,9 +240,8 @@ const AdvancedAnalytics = () => {
         <div className="flex items-center gap-2">
           <GiSandsOfTime className="text-[#ce6d11] text-lg" />
           <span className="text-[#ce6d11] font-bold text-lg">
-            {record.avgHoldTimeDays.toFixed(1)}
+            {formatDaysAndHours(record.avgHoldTimeDays)}
           </span>
-          <span className="text-gray-500 text-sm">days</span>
         </div>
       ),
       sorter: (a, b) => a.avgHoldTimeDays - b.avgHoldTimeDays,
@@ -260,9 +294,8 @@ const AdvancedAnalytics = () => {
         <div className="flex items-center gap-2">
           <FaBolt className="text-[#ce6d11]" />
           <span className="text-[#ce6d11] font-bold">
-            {record.turnaroundDays.toFixed(1)}
+            {formatDaysAndHours(record.turnaroundDays)}
           </span>
-          <span className="text-gray-500 text-sm">days</span>
         </div>
       ),
       sorter: (a, b) => a.turnaroundDays - b.turnaroundDays,
@@ -271,8 +304,18 @@ const AdvancedAnalytics = () => {
       title: <span className="font-semibold text-[#582f08]">Steps</span>,
       dataIndex: 'stepsCount',
       key: 'steps',
-      render: (val) => (
-        <Badge count={val} style={{ backgroundColor: '#582f08' }} />
+      render: (val, record) => (
+        <Tooltip title="Click to view document trail">
+          <div 
+            onClick={() => handleViewTrail(record.docID)}
+            className="cursor-pointer hover:scale-110 transition-transform"
+          >
+            <Badge 
+              count={val} 
+              style={{ backgroundColor: '#582f08', cursor: 'pointer' }} 
+            />
+          </div>
+        </Tooltip>
       ),
     },
   ];
@@ -294,8 +337,7 @@ const AdvancedAnalytics = () => {
                 <Col xs={24} md={8}>
                   <Statistic
                     title={<span className="text-[#582f08] font-medium">Average Turnaround</span>}
-                    value={analytics?.turnaround?.averageTurnaroundDays?.toFixed(1) || 0}
-                    suffix="days"
+                    value={analytics?.turnaround?.averageTurnaroundDays ? formatDaysAndHours(analytics.turnaround.averageTurnaroundDays) : '0'}
                     valueStyle={{ color: '#ce6d11', fontWeight: 'bold' }}
                     prefix={<GiSandsOfTime />}
                   />
@@ -303,8 +345,7 @@ const AdvancedAnalytics = () => {
                 <Col xs={24} md={8}>
                   <Statistic
                     title={<span className="text-[#582f08] font-medium">Fastest Processing</span>}
-                    value={analytics?.turnaround?.fastest?.[0]?.turnaroundDays?.toFixed(1) || 'N/A'}
-                    suffix={analytics?.turnaround?.fastest?.[0] ? 'days' : ''}
+                    value={analytics?.turnaround?.fastest?.[0]?.turnaroundDays ? formatDaysAndHours(analytics.turnaround.fastest[0].turnaroundDays) : 'N/A'}
                     valueStyle={{ color: '#27ae60', fontWeight: 'bold' }}
                     prefix={<AiOutlineRise />}
                   />
@@ -312,8 +353,7 @@ const AdvancedAnalytics = () => {
                 <Col xs={24} md={8}>
                   <Statistic
                     title={<span className="text-[#582f08] font-medium">Slowest Processing</span>}
-                    value={analytics?.turnaround?.slowest?.[0]?.turnaroundDays?.toFixed(1) || 'N/A'}
-                    suffix={analytics?.turnaround?.slowest?.[0] ? 'days' : ''}
+                    value={analytics?.turnaround?.slowest?.[0]?.turnaroundDays ? formatDaysAndHours(analytics.turnaround.slowest[0].turnaroundDays) : 'N/A'}
                     valueStyle={{ color: '#e74c3c', fontWeight: 'bold' }}
                     prefix={<AiOutlineFall />}
                   />
@@ -424,10 +464,12 @@ const AdvancedAnalytics = () => {
                       />
                       <YAxis stroke="#582f08" tick={{ fontSize: 12, fill: '#582f08' }} />
                       <RechartsTooltip
-                        formatter={(value, name) => [
-                          name === 'holdTime' ? `${value} days` : `${value} docs`,
-                          name === 'holdTime' ? 'Hold Time' : 'Documents',
-                        ]}
+                        formatter={(value, name, props) => {
+                          if (name === 'holdTime') {
+                            return [props.payload.holdTimeFormatted, 'Hold Time'];
+                          }
+                          return [`${Math.round(value)} docs`, 'Documents'];
+                        }}
                         contentStyle={{
                           backgroundColor: 'white',
                           border: '1px solid #e4c8ad',
@@ -440,7 +482,7 @@ const AdvancedAnalytics = () => {
                       <Bar 
                         dataKey="holdTime" 
                         fill="url(#holdTimeGradient)" 
-                        name="Avg Hold (days)" 
+                        name="Avg Hold Time" 
                         radius={[8, 8, 0, 0]}
                         barSize={35}
                       />
@@ -487,7 +529,7 @@ const AdvancedAnalytics = () => {
                           <div className="flex justify-between text-sm mb-1">
                             <span className="text-gray-600">Hold Time</span>
                             <span className="font-bold text-[#ce6d11]">
-                              {div.avgHoldTimeDays.toFixed(1)} days
+                              {formatDaysAndHours(div.avgHoldTimeDays)}
                             </span>
                           </div>
                           <Progress
@@ -855,8 +897,8 @@ const AdvancedAnalytics = () => {
             {
               icon: <GiSandsOfTime className="text-4xl" />,
               title: 'Avg Turnaround Time',
-              value: `${analytics?.turnaround?.averageTurnaroundDays?.toFixed(1) || 0}`,
-              suffix: 'days',
+              value: analytics?.turnaround?.averageTurnaroundDays ? formatDaysAndHours(analytics.turnaround.averageTurnaroundDays) : '0',
+              suffix: '',
               subtitle: `${analytics?.turnaround?.totalDocuments || 0} documents analyzed`,
               color: '#582f08',
               bgGradient: 'from-[#582f08]/10 to-[#582f08]/5',
@@ -973,6 +1015,14 @@ const AdvancedAnalytics = () => {
           box-shadow: 0 0 0 2px rgba(206, 109, 17, 0.1);
         }
       `}</style>
+
+      {/* Trail Modal */}
+      <Trail
+        trails={trailData?.data?.trails}
+        open={trailModalOpen}
+        handleCancel={handleCloseTrailModal}
+        loading={isTrailLoading}
+      />
     </div>
   );
 };
