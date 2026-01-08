@@ -268,18 +268,22 @@ const Incoming = () => {
   };
 
   const getItems = (selectedRecord) => {
+    // Check if CC recipient can forward (either not a CC or has enableForward permission)
+    const canForward = !selectedRecord.isCarbonCopy || selectedRecord.ccEnableForward;
+    
     return [
       {
         label: 'View',
         key: 0,
         onClick: () => {
-          selectedRecord.isCarbonCopy
+          // Show toolbar if not CC, or if CC with forward permission enabled
+          (selectedRecord.isCarbonCopy && !selectedRecord.ccEnableForward)
             ? setShowToolbar(false)
             : setShowToolbar(true);
           handleViewDocument(selectedRecord);
         },
       },
-      !selectedRecord.isCarbonCopy && {
+      canForward && {
         label: 'Forward',
         key: 1,
         onClick: () => handleClick(selectedRecord),
@@ -292,7 +296,7 @@ const Incoming = () => {
           key: 2,
           onClick: () => handleFile(selectedRecord),
         },
-      !selectedRecord.isCarbonCopy && {
+      canForward && {
         label: 'Trail',
         key: 3,
         onClick: () => handleView(selectedRecord),
@@ -318,11 +322,14 @@ const Incoming = () => {
       },
       render: (data) => {
         return (
-          <div className="flex items-start">
+          <div className="flex items-start gap-1">
             {data.document.subject}{' '}
             {data.isCarbonCopy ? (
-              <span>
+              <span className="flex gap-1">
                 <Tag color="warning">CC</Tag>
+                {data.ccEnableForward && (
+                  <Tag color="success">Can Forward</Tag>
+                )}
               </span>
             ) : (
               ''

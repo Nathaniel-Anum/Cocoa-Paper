@@ -47,7 +47,11 @@ export const useTrail = (type) => {
         if (Array.isArray(trail.carbonCopies)) {
           return trail.carbonCopies
             .filter((cc) => cc.copiedToUserId === user?.userId)
-            .map(() => ({ ...trail, isCarbonCopy: true }));
+            .map((cc) => ({ 
+              ...trail, 
+              isCarbonCopy: true,
+              ccEnableForward: cc.enableForward || false,
+            }));
         }
         return [];
       });

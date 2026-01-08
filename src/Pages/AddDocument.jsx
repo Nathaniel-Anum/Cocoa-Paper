@@ -51,6 +51,7 @@ const AddDocument = () => {
   const [isPhysical, setIsPhysical] = useState(false);
   const [budgetUnits, setBudgetUnits] = useState({});
   const [isPrivate, setIsPrivate] = useState(false);
+  const [ccEnableForward, setCcEnableForward] = useState(false);
 
   const { data: userGroups, isLoading: loadingUserGroups } =
     useGetAllUserGroups();
@@ -199,7 +200,7 @@ const AddDocument = () => {
       const values = form.getFieldsValue();
       // Remove file and attachments fields as they are not needed in the document payload
       const { file, attachments, ...documentData } = values;
-      startDocument({ ...documentData, fileId, isPrivate });
+      startDocument({ ...documentData, fileId, isPrivate, ccEnableForward });
     },
     onError: (error) => {
       setLoading(false);
@@ -250,6 +251,7 @@ const AddDocument = () => {
           fileId: mainFileId,
           attachmentIds: fileIds,
           isPrivate,
+          ccEnableForward,
         });
       },
       onError: (error) => {
@@ -316,6 +318,7 @@ const AddDocument = () => {
       ...values,
       physicalDoc: isPhysical,
       isPrivate,
+      ccEnableForward,
     };
     if (isPhysical) {
       startDocument(submissionData);
@@ -766,6 +769,22 @@ const AddDocument = () => {
                   ]}
                 />
               </Form.Item>
+
+              {/* Enable Forward for CC Recipients */}
+              <Form.Item>
+                <Checkbox
+                  checked={ccEnableForward}
+                  onChange={(e) => setCcEnableForward(e.target.checked)}
+                >
+                  Enable Forward for CC Recipients
+                </Checkbox>
+                <div className="text-gray-500 text-sm mt-1">
+                  {ccEnableForward
+                    ? 'CC recipients will be able to forward and comment on this document'
+                    : 'CC recipients will only be able to view this document'}
+                </div>
+              </Form.Item>
+
               {/* Comment */}
 
               <Form.Item>

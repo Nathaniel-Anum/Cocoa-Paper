@@ -15,7 +15,10 @@ const useStore = create(
     {
       name: 'document-location',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ showToolbar: state.showToolbar }),
+      partialize: (state) => ({ 
+        showToolbar: state.showToolbar,
+        chosenRecord: state.chosenRecord,
+      }),
     }
   )
 );

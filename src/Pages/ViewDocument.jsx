@@ -59,6 +59,7 @@ function ViewDocument() {
 
   // State management
   const openFileViewer = useStore((state) => state.openFileViewer);
+  const chosenRecord = useStore((state) => state.chosenRecord);
 
   const [fileUrl, setFileUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -635,16 +636,22 @@ function ViewDocument() {
                 </div>
               )}
             </div>
+            {/* Forward Form - Show for regular receivers or CC recipients with enableForward permission */}
             {document &&
               document.data.document.trail[
                 document.data.document.trail.length - 1
               ].status === 'Received' &&
-              document.data.document.trail[
-                document.data.document.trail.length - 1
-              ].receiverId === user.userId &&
-              document.data.document.trail[
-                document.data.document.trail.length - 1
-              ].carbonCopies.length < 1 && (
+              (
+                // Regular receiver (not CC)
+                (document.data.document.trail[
+                  document.data.document.trail.length - 1
+                ].receiverId === user.userId &&
+                document.data.document.trail[
+                  document.data.document.trail.length - 1
+                ].carbonCopies.length < 1) ||
+                // CC recipient with enableForward permission
+                (chosenRecord?.isCarbonCopy && chosenRecord?.ccEnableForward)
+              ) && (
                 <Form
                   onFinish={handleSubmit}
                   layout="vertical"
