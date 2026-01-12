@@ -141,7 +141,7 @@ const RetentionPolicy = () => {
   ];
 
   return (
-    <div className="p-4">
+    <div className="px-[240px] pt-[50px]">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-800">Document Retention Policy</h2>
         <div className="flex gap-2">
@@ -161,7 +161,7 @@ const RetentionPolicy = () => {
       </div>
 
       {/* Status Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card className="shadow-sm">
           <Statistic
             title="Policy Status"

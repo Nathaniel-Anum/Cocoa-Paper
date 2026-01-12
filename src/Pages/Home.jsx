@@ -86,43 +86,47 @@ const Home = () => {
   };
 
   return (
-    <div className="h-screen relative flex items-center justify-center w-screen gap-[150px] overflow-hidden bg-[#966945]">
-      <div className="flex flex-col justify-end h-[82%] gap-[20px]">
-        <div className="text-white">
-          <p className="text-[49px] font-bold  ">COCOA PAPERS</p>
-          <p className="">The Paperless Solution.</p>
+    <div className="min-h-screen relative flex flex-col md:flex-row items-center justify-center w-screen gap-8 md:gap-[150px] overflow-hidden bg-[#966945] p-4 md:p-8">
+      <div className="hidden md:flex flex-col justify-end h-auto md:h-[82%] gap-[20px]">
+        <div className="text-white text-center md:text-left">
+          <p className="text-2xl md:text-[49px] font-bold">COCOA PAPERS</p>
+          <p className="text-sm md:text-base">The Paperless Solution.</p>
         </div>
         <div className="">
           <img
-            className="w-[530px] h-auto object-contain "
+            className="w-[300px] md:w-[530px] h-auto object-contain"
             src="/asset/login-image.9da40248fe499c8eb28c2a4efe3b916e.svg"
             alt=""
           />
         </div>
       </div>
 
-      <div className="bg-[#fff] text-[#9D4D01] p-[15px] rounded-[10px] py-[40px] ">
-        <div>
+      <div className="bg-[#fff] text-[#9D4D01] p-4 md:p-[15px] rounded-[10px] py-6 md:py-[40px] w-full max-w-[350px] md:max-w-none md:w-auto mx-4 md:mx-0">
+        <div className="md:hidden text-center mb-4">
+          <p className="text-xl font-bold text-[#9D4D01]">COCOA PAPERS</p>
+          <p className="text-sm text-[#9D4D01]">The Paperless Solution</p>
+        </div>
+        <div className="hidden md:block">
           <p className="text-center font-semibold">WELCOME TO </p>
         </div>
         <div>
-          <div className="flex items-center">
+          <div className="flex items-center justify-center md:justify-start">
             <img
-              className="w-[70px] h-auto"
+              className="w-[50px] md:w-[70px] h-auto"
               src="/asset/logo.9a18109e1c16584832d5.png"
               alt=""
             />
             <div className="h-[20px] w-[2px] bg-[#9D4D01] mr-2"></div>
             <div>
-              <p className="font-bold">Ghana Cocoa Board</p>
-              <p className="text-[9px] font-semibold">
+              <p className="font-bold text-sm md:text-base">Ghana Cocoa Board</p>
+              <p className="text-[8px] md:text-[9px] font-semibold">
                 Poised to Maintain Premium Quality Cocoa
               </p>
             </div>
           </div>
         </div>
         <div>
-          <p className="text-[14px] text-center pb-[15px] font-semibold">
+          <p className="text-[12px] md:text-[14px] text-center pb-[15px] font-semibold">
             Login to Proceed to your Dashboard
           </p>
         </div>
@@ -169,21 +173,21 @@ const Home = () => {
         </Form>
         <div className="text-center">
           <button
-            className="font-semibold"
+            className="font-semibold text-sm"
             onClick={() => navigate('/confirm-email')}
           >
             Forgot Password?
           </button>
         </div>
       </div>
-      <div className="absolute bottom-0 right-0 h-32 w-32">
+      <div className="absolute bottom-0 right-0 h-32 w-32 hidden md:block">
         <div className="relative">
           <div className="absolute left-0 -top-[380px] w-[38px] h-[610px] bg-[#c3a183] rotate-45"></div>
           <div className="absolute left-0 -top-[280px] w-[38px] h-[610px] bg-[#c3a183] rotate-45"></div>
           <div className="absolute left-0 -top-[180px] w-[38px] h-[610px] bg-[#c3a183] rotate-45"></div>
         </div>
       </div>
-      <div className="absolute left-0 h-32 w-32 top-0 ">
+      <div className="absolute left-0 h-32 w-32 top-0 hidden md:block">
         <div className="relative  w-32 h-32">
           <div className="absolute overflow-hidden rounded-full w-[260px] h-[260px] bg-[#c3a183] flex justify-center items-center -top-[80px] -left-[80px]">
             <div className="absolute overflow-hidden rounded-full w-[180px] h-[180px] bg-[#966945]  "></div>

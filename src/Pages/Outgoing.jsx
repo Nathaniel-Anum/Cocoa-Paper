@@ -11,6 +11,8 @@ import {
   Input,
   Select,
   Button,
+  Card,
+  Spin,
 } from 'antd';
 import { useTrail } from './CustomHook/useTrail';
 import { FaRegEye } from 'react-icons/fa';
@@ -112,6 +114,7 @@ const Outgoing = () => {
       title: 'Reference',
       dataIndex: 'document',
       key: 'ref',
+      responsive: ['md'],
       render: (document) => {
         return <div>{document.ref}</div>;
       },
@@ -120,11 +123,13 @@ const Outgoing = () => {
       title: 'Receiver',
       dataIndex: ['receiver', 'name'],
       key: 'receiver',
+      responsive: ['lg'],
     },
 
     {
       title: 'Division',
       key: 'division',
+      responsive: ['lg'],
       filters: divisions?.data?.map((div) => ({
         text: div.divisionName,
         value: div.divisionName,
@@ -140,6 +145,7 @@ const Outgoing = () => {
     {
       title: 'Department',
       key: 'department',
+      responsive: ['lg'],
       filters: allDepartments?.data?.map((dept) => ({
         text: dept.departmentName,
         value: dept.departmentName,
@@ -173,6 +179,7 @@ const Outgoing = () => {
       title: 'Date',
       key: 'action',
       dataIndex: 'createdAt',
+      responsive: ['md'],
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         return <div>{dateTime.toDateString()}</div>;
@@ -182,6 +189,7 @@ const Outgoing = () => {
       title: 'Time',
       key: 'action',
       dataIndex: 'createdAt',
+      responsive: ['md'],
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         return <div>{dateTime.toLocaleTimeString()}</div>;
@@ -254,6 +262,22 @@ const Outgoing = () => {
     ...s,
     key: index,
   }));
+
+  // Filter data for mobile cards
+  const mobileFilteredData = _data.filter((record) => {
+    const search = searchText.toLowerCase();
+    const matchesSearch = !searchText || 
+      record.document?.subject?.toLowerCase().includes(search) ||
+      record.document?.ref?.toLowerCase().includes(search) ||
+      record.receiver?.name?.toLowerCase().includes(search) ||
+      record.document?.division?.divisionName?.toLowerCase().includes(search) ||
+      record.document?.department?.departmentName?.toLowerCase().includes(search);
+    
+    const matchesDivision = !filterDivision || record.document?.division?.divisionName === filterDivision;
+    const matchesDepartment = !filterDepartment || record.document?.department?.departmentName === filterDepartment;
+    
+    return matchesSearch && matchesDivision && matchesDepartment;
+  });
   // console.log(_data);
 
   const { mutate: callBackDoc } = useMutation({
@@ -273,10 +297,10 @@ const Outgoing = () => {
 
   return (
     <div className="mt-8">
-      <div className="flex justify-end gap-2 mb-4">
+      <div className="flex flex-col md:flex-row md:justify-end gap-2 mb-4">
         <Input.Search
           placeholder="Search by subject, reference, receiver..."
-          className="w-[25rem]"
+          className="w-full md:w-[25rem]"
           allowClear
           onChange={(e) => setSearchText(e.target.value)}
         />
@@ -373,7 +397,80 @@ const Outgoing = () => {
         handleCancel={handleClose}
         trails={trailData?.data?.trails}
       />
-      <Table columns={columns} dataSource={_data} loading={isLoading} />
+
+      {/* Mobile Card View */}
+      <div className="md:hidden">
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Spin size="large" />
+          </div>
+        ) : mobileFilteredData.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">No documents found</div>
+        ) : (
+          <div className="space-y-3">
+            {mobileFilteredData.map((record) => (
+              <Card
+                key={record.key}
+                className="shadow-sm border border-gray-200"
+                bodyStyle={{ padding: '12px' }}
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-[#582F08] text-sm truncate">
+                      {record.document?.subject}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1">Ref: {record.document?.ref}</p>
+                    <p className="text-xs text-gray-600 mt-1">To: {record.receiver?.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {record?.document?.isApproved === true ? (
+                        <Tag color="green" className="text-xs">Approved</Tag>
+                      ) : record?.document?.isApproved === false && record?.document?.documentType === 'BudgetRelease' ? (
+                        <Tag color="orange" className="text-xs">Pending</Tag>
+                      ) : record?.document?.documentType !== 'BudgetRelease' ? (
+                        <Tag color="blue" className="text-xs">N/A</Tag>
+                      ) : null}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(record.createdAt).toLocaleDateString()} • {new Date(record.createdAt).toLocaleTimeString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        navigate(`/view-document/${record?.docID}`);
+                      }}
+                      className="p-2 hover:bg-gray-100 rounded-full"
+                    >
+                      <FaRegEye className="text-[#582F08]" />
+                    </button>
+                    <button
+                      onClick={() => handleView(record)}
+                      className="p-2 hover:bg-gray-100 rounded-full"
+                    >
+                      <IoLocationOutline className="text-[#582F08]" />
+                    </button>
+                    {hasPermission(allRolePermissions, [requiredPermissions.RECALL_TRAIL]) && (
+                      <Popconfirm
+                        title="Are you sure you want to recall this item?"
+                        onConfirm={() => callBackDoc(record.docID)}
+                      >
+                        <button className="p-2 hover:bg-gray-100 rounded-full">
+                          <GiRecycle className="text-[#582F08]" />
+                        </button>
+                      </Popconfirm>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto">
+        <Table columns={columns} dataSource={_data} loading={isLoading} />
+      </div>
     </div>
   );
 };

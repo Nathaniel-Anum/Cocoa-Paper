@@ -12,6 +12,8 @@ import {
   Checkbox,
   Tag,
   Input,
+  Card,
+  Spin,
 } from 'antd';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -342,6 +344,7 @@ const Incoming = () => {
       title: 'Reference',
       dataIndex: 'document',
       key: 'ref',
+      responsive: ['md'],
       render: (document) => {
         return <div>{document.ref}</div>;
       },
@@ -351,11 +354,13 @@ const Incoming = () => {
       title: 'Sender',
       dataIndex: ['sender', 'name'],
       key: 'receiver',
+      responsive: ['lg'],
     },
     {
       title: 'Intended Receipients',
       dataIndex: ['userIntendedFor', 'name'],
       key: 'userIntendedFor',
+      responsive: ['lg'],
     },
     hasPermission(allRolePermissions, [
       requiredPermissions.READ_AUDIT_STATUS,
@@ -374,6 +379,7 @@ const Incoming = () => {
     {
       title: 'Division',
       key: 'division',
+      responsive: ['lg'],
       filters: divisions?.data?.map((div) => ({
         text: div.divisionName,
         value: div.divisionName,
@@ -390,6 +396,7 @@ const Incoming = () => {
     {
       title: 'Department',
       key: 'department',
+      responsive: ['lg'],
       filters: allDepartments?.data?.map((dept) => ({
         text: dept.departmentName,
         value: dept.departmentName,
@@ -415,6 +422,7 @@ const Incoming = () => {
       title: 'Time',
       key: 'time',
       dataIndex: 'createdAt',
+      responsive: ['md'],
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
         return <div>{dateTime.toLocaleTimeString()}</div>;
@@ -444,14 +452,31 @@ const Incoming = () => {
     key: s.docId,
   }));
 
+  // Filter data for mobile cards
+  const filteredData = _data.filter((record) => {
+    const search = searchText.toLowerCase();
+    const matchesSearch = !searchText || 
+      record.document?.subject?.toLowerCase().includes(search) ||
+      record.document?.ref?.toLowerCase().includes(search) ||
+      record.sender?.name?.toLowerCase().includes(search) ||
+      record.userIntendedFor?.name?.toLowerCase().includes(search) ||
+      record.document?.division?.divisionName?.toLowerCase().includes(search) ||
+      record.sender?.department?.departmentName?.toLowerCase().includes(search);
+    
+    const matchesDivision = !filterDivision || record.document?.division?.divisionName === filterDivision;
+    const matchesDepartment = !filterDepartment || record.sender?.department?.departmentName === filterDepartment;
+    
+    return matchesSearch && matchesDivision && matchesDepartment;
+  });
+
   console.log(_data);
 
   return (
     <div className="mt-8">
-      <div className="flex justify-end gap-2 mb-4">
+      <div className="flex flex-col md:flex-row md:justify-end gap-2 mb-4">
         <Input.Search
           placeholder="Search by subject, reference, sender..."
-          className="w-[25rem]"
+          className="w-full md:w-[25rem]"
           allowClear
           onChange={(e) => setSearchText(e.target.value)}
         />
@@ -543,7 +568,61 @@ const Incoming = () => {
         </div>
       </Modal>
 
-      <Table columns={columns} dataSource={_data} loading={isLoading} />
+      {/* Mobile Card View */}
+      <div className="md:hidden">
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Spin size="large" />
+          </div>
+        ) : filteredData.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">No documents found</div>
+        ) : (
+          <div className="space-y-3">
+            {filteredData.map((record) => (
+              <Card
+                key={record.key}
+                className="shadow-sm border border-gray-200"
+                bodyStyle={{ padding: '12px' }}
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-[#582F08] text-sm truncate">
+                        {record.document?.subject}
+                      </h3>
+                      {record.isCarbonCopy && (
+                        <Tag color="warning" className="text-xs">CC</Tag>
+                      )}
+                      {record.isCarbonCopy && record.ccEnableForward && (
+                        <Tag color="success" className="text-xs">Can Forward</Tag>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Ref: {record.document?.ref}</p>
+                    <p className="text-xs text-gray-600 mt-1">From: {record.sender?.name}</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(record.createdAt).toLocaleDateString()} • {new Date(record.createdAt).toLocaleTimeString()}
+                    </p>
+                  </div>
+                  <Dropdown
+                    menu={{ items: getItems(record) }}
+                    trigger={['click']}
+                    placement="bottomRight"
+                  >
+                    <button className="p-2 hover:bg-gray-100 rounded-full">
+                      <SlOptionsVertical className="text-[#582F08]" />
+                    </button>
+                  </Dropdown>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto">
+        <Table columns={columns} dataSource={_data} loading={isLoading} />
+      </div>
       {isModalOpen && (
         <Modal
           title="Forward Document"

@@ -124,20 +124,24 @@ const WorkHistory = () => {
           handleCancel={() => setShowModal(false)}
           trails={trails}
         />
-        <div className="flex justify-end mb-4 mt-8">
+        <div className="flex justify-end mb-4 mt-4 md:mt-8 px-2 md:px-0">
           <Input.Search
             placeholder="Search by subject, file name, reference..."
-            className="w-[30rem]"
+            className="w-full md:w-[30rem]"
             allowClear
             onChange={(e) => setSearchText(e.target.value)}
           />
         </div>
-        <Table
-          // loading={isLoading || isFetching}
-          dataSource={isArray(workHistory?.data) ? _data : []}
-          // dataSource={_data}
-          columns={columns}
-        />
+        <div className="overflow-x-auto">
+          <Table
+            // loading={isLoading || isFetching}
+            dataSource={isArray(workHistory?.data) ? _data : []}
+            // dataSource={_data}
+            columns={columns}
+            scroll={{ x: 600 }}
+            size="small"
+          />
+        </div>
         {/* </div> */}
       </>
     );

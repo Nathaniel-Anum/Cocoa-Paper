@@ -137,25 +137,25 @@ const Analytics = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="p-8 max-w-[1600px] mx-auto">
+      <div className="p-4 md:p-8 max-w-[1600px] mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-start mb-6">
+        <div className="mb-4 md:mb-8">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4 md:mb-6">
             <div>
-              <Title level={1} className="text-[#582f08] mb-2" style={{ fontSize: '2.5rem', fontWeight: 700 }}>
+              <Title level={1} className="text-[#582f08] mb-2 text-xl md:text-2xl lg:text-4xl" style={{ fontWeight: 700 }}>
                 Budget Analytics
               </Title>
-              <Text className="text-gray-600 text-base">
+              <Text className="text-gray-600 text-sm md:text-base">
                 Comprehensive overview of budget allocation and spending patterns
               </Text>
             </div>
-            <div className="bg-white rounded-xl shadow-md p-4 border border-[#e4c8ad]">
+            <div className="bg-white rounded-xl shadow-md p-3 md:p-4 border border-[#e4c8ad] w-full md:w-auto">
               <div className="flex items-center gap-3">
-                <FaBuilding className="text-[#ce6d11]" />
+                <FaBuilding className="text-[#ce6d11] hidden md:block" />
                 <Select
                   placeholder="Select Division"
                   allowClear
-                  style={{ width: 220 }}
+                  className="w-full md:w-[220px]"
                   onChange={setSelectedDivision}
                   value={selectedDivision}
                   size="large"
@@ -167,14 +167,14 @@ const Analytics = () => {
               </div>
             </div>
           </div>
-          <Divider className="my-6 border-[#e4c8ad]" />
+          <Divider className="my-4 md:my-6 border-[#e4c8ad]" />
         </div>
 
         {/* Summary Cards */}
-        <Row gutter={[24, 24]} className="mb-8">
+        <Row gutter={[16, 16]} className="mb-4 md:mb-8">
           {[
             {
-              icon: <GiMoneyStack className="text-4xl" />,
+              icon: <GiMoneyStack className="text-2xl md:text-4xl" />,
               title: 'Approved Budget',
               value: analytics?.approvedBudget || 0,
               prefix: 'GHS',
@@ -182,7 +182,7 @@ const Analytics = () => {
               bgGradient: 'from-green-100 to-green-50',
             },
             {
-              icon: <GiPayMoney className="text-4xl" />,
+              icon: <GiPayMoney className="text-2xl md:text-4xl" />,
               title: 'Total Spent',
               value: analytics?.totalMoneySpent || 0,
               prefix: 'GHS',
@@ -190,7 +190,7 @@ const Analytics = () => {
               bgGradient: 'from-[#ce6d11]/10 to-[#ce6d11]/5',
             },
             {
-              icon: <GiReceiveMoney className="text-4xl" />,
+              icon: <GiReceiveMoney className="text-2xl md:text-4xl" />,
               title: 'Balance',
               value: analytics?.balance || 0,
               prefix: 'GHS',
@@ -198,26 +198,25 @@ const Analytics = () => {
               bgGradient: 'from-[#582f08]/10 to-[#582f08]/5',
             },
           ].map((card, index) => (
-            <Col key={index} xs={24} sm={24} lg={8}>
+            <Col key={index} xs={24} sm={12} lg={8}>
               <Card
                 className="rounded-xl shadow-lg border-0 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
                 bodyStyle={{ padding: 0 }}
               >
-                <div className={`bg-gradient-to-br ${card.bgGradient} p-6`}>
-                  <div style={{ color: card.color }} className="mb-4">
+                <div className={`bg-gradient-to-br ${card.bgGradient} p-4 md:p-6`}>
+                  <div style={{ color: card.color }} className="mb-2 md:mb-4">
                     {card.icon}
                   </div>
-                  <Text className="text-gray-600 text-sm font-medium block mb-2">
+                  <Text className="text-gray-600 text-xs md:text-sm font-medium block mb-1 md:mb-2">
                     {card.title}
                   </Text>
-                  <div className="flex items-baseline gap-2">
-                    <Text className="text-gray-500 font-medium">{card.prefix}</Text>
+                  <div className="flex items-baseline gap-1 md:gap-2">
+                    <Text className="text-gray-500 font-medium text-xs md:text-sm">{card.prefix}</Text>
                     <Title
                       level={2}
-                      className="m-0"
+                      className="m-0 text-lg md:text-2xl lg:text-3xl"
                       style={{
                         color: card.color,
-                        fontSize: '2rem',
                         fontWeight: 700,
                       }}
                     >
@@ -231,23 +230,23 @@ const Analytics = () => {
         </Row>
 
         {/* Charts Section */}
-        <Row gutter={[24, 24]} className="mb-8">
+        <Row gutter={[16, 16]} className="mb-4 md:mb-8">
           <Col xs={24} lg={14}>
             <Card
               title={
                 <div className="flex items-center gap-2">
                   <FaChartBar className="text-[#ce6d11]" />
-                  <span className="text-[#582f08] font-bold">Budget vs Spending by Department</span>
+                  <span className="text-[#582f08] font-bold text-sm md:text-base">Budget vs Spending</span>
                 </div>
               }
               className="rounded-xl shadow-lg border-0"
             >
               {departmentChartData.length > 0 ? (
-                <div className="h-96">
+                <div className="h-64 md:h-96">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={departmentChartData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                      margin={{ top: 10, right: 10, left: 0, bottom: 60 }}
                     >
                       <defs>
                         <linearGradient id="budgetGradient" x1="0" y1="0" x2="0" y2="1">
@@ -263,15 +262,16 @@ const Analytics = () => {
                       <XAxis
                         dataKey="name"
                         stroke="#582f08"
-                        tick={{ fontSize: 11, fill: '#582f08' }}
+                        tick={{ fontSize: 9, fill: '#582f08' }}
                         angle={-45}
                         textAnchor="end"
                         height={80}
                       />
                       <YAxis
                         stroke="#582f08"
-                        tick={{ fontSize: 12, fill: '#582f08' }}
+                        tick={{ fontSize: 10, fill: '#582f08' }}
                         tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                        width={40}
                       />
                       <RechartsTooltip
                         formatter={(value) => [`GHS ${value.toLocaleString()}`, '']}
@@ -279,11 +279,12 @@ const Analytics = () => {
                           backgroundColor: 'white',
                           border: '1px solid #e4c8ad',
                           borderRadius: '12px',
-                          padding: '12px',
+                          padding: '8px',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          fontSize: '12px',
                         }}
                       />
-                      <Legend wrapperStyle={{ paddingTop: '10px' }} />
+                      <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '12px' }} />
                       <Bar
                         dataKey="budget"
                         fill="url(#budgetGradient)"
@@ -310,14 +311,14 @@ const Analytics = () => {
             <Card
               title={
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-8 bg-gradient-to-b from-[#582f08] to-[#ce6d11] rounded"></div>
-                  <span className="text-[#582f08] font-bold">Spending Distribution</span>
+                  <div className="w-2 h-6 md:h-8 bg-gradient-to-b from-[#582f08] to-[#ce6d11] rounded"></div>
+                  <span className="text-[#582f08] font-bold text-sm md:text-base">Spending Distribution</span>
                 </div>
               }
               className="rounded-xl shadow-lg border-0"
             >
               {spendingDistribution.length > 0 ? (
-                <div className="h-96">
+                <div className="h-64 md:h-96">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <defs>
@@ -333,12 +334,12 @@ const Analytics = () => {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        outerRadius={120}
-                        innerRadius={70}
+                        outerRadius={80}
+                        innerRadius={45}
                         paddingAngle={3}
                         dataKey="value"
                         label={({ name, percent }) =>
-                          `${name.substring(0, 10)} ${(percent * 100).toFixed(0)}%`
+                          `${name.substring(0, 8)} ${(percent * 100).toFixed(0)}%`
                         }
                       >
                         {spendingDistribution.map((entry, index) => (
@@ -346,7 +347,7 @@ const Analytics = () => {
                             key={`cell-${index}`}
                             fill={`url(#pieGradient${index % COLORS.length})`}
                             stroke="white"
-                            strokeWidth={3}
+                            strokeWidth={2}
                           />
                         ))}
                       </Pie>
@@ -356,8 +357,9 @@ const Analytics = () => {
                           backgroundColor: 'white',
                           border: '1px solid #e4c8ad',
                           borderRadius: '12px',
-                          padding: '12px',
+                          padding: '8px',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          fontSize: '12px',
                         }}
                       />
                       <Legend
@@ -365,7 +367,7 @@ const Analytics = () => {
                         verticalAlign="bottom"
                         align="center"
                         iconType="circle"
-                        wrapperStyle={{ paddingTop: '20px' }}
+                        wrapperStyle={{ paddingTop: '10px', fontSize: '11px' }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -382,21 +384,26 @@ const Analytics = () => {
           title={
             <div className="flex items-center gap-2">
               <FaUsers className="text-[#ce6d11]" />
-              <span className="text-[#582f08] font-bold">Budget Overview</span>
+              <span className="text-[#582f08] font-bold text-sm md:text-base">Budget Overview</span>
             </div>
           }
-          className="rounded-xl shadow-lg border-0"
+          className="rounded-xl shadow-lg border-0 overflow-x-auto"
         >
           {analytics?.spendingPerBudgets?.length > 0 ? (
-            <Table
-              columns={topSpendersColumns}
-              dataSource={analytics.spendingPerBudgets}
-              rowKey="name"
-              pagination={{ pageSize: 8, showSizeChanger: false }}
-              rowClassName={(_, index) =>
-                `${index % 2 === 0 ? 'bg-white' : 'bg-[#faf8f5]'} hover:bg-[#f0ebe5] transition-colors`
-              }
-            />
+            <div className="overflow-x-auto">
+              <Table
+                columns={topSpendersColumns}
+                dataSource={analytics.spendingPerBudgets}
+                rowKey="name"
+                pagination={{ pageSize: 8, showSizeChanger: false }}
+                scroll={{ x: 600 }}
+                size="small"
+                className="analytics-table"
+                rowClassName={(_, index) =>
+                  `${index % 2 === 0 ? 'bg-white' : 'bg-[#faf8f5]'} hover:bg-[#f0ebe5] transition-colors`
+                }
+              />
+            </div>
           ) : (
             <Empty description="No budget data available" />
           )}
@@ -409,11 +416,13 @@ const Analytics = () => {
           color: #582f08;
           font-weight: 600;
           border-bottom: 2px solid #e4c8ad;
-          padding: 16px;
+          padding: 12px 8px;
+          font-size: 12px;
         }
         .ant-table-tbody > tr > td {
-          padding: 16px;
+          padding: 12px 8px;
           border-bottom: 1px solid #f0ebe5;
+          font-size: 12px;
         }
         .ant-select-selector {
           border-radius: 8px !important;
@@ -435,6 +444,16 @@ const Analytics = () => {
         .ant-select-dropdown .ant-select-item-option-selected {
           background-color: #e4c8ad !important;
           color: #582f08 !important;
+        }
+        @media (min-width: 768px) {
+          .ant-table-thead > tr > th {
+            padding: 16px;
+            font-size: 14px;
+          }
+          .ant-table-tbody > tr > td {
+            padding: 16px;
+            font-size: 14px;
+          }
         }
       `}</style>
     </div>

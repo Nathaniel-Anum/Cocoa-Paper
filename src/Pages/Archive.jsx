@@ -506,15 +506,16 @@ const Archive = () => {
         )}
       />
 
-      <div className="flex justify-end my-4">
+      <div className="flex justify-end my-4 px-2 md:px-0">
         <Input.Search
           placeholder="Search by name, reference, subject..."
-          className="w-[30rem]"
+          className="w-full md:w-[30rem]"
           allowClear
           onChange={(e) => setSearchText(e.target.value)}
         />
       </div>
 
+      <div className="overflow-x-auto">
       <Table
         columns={columns}
         dataSource={Array.isArray(tableData) ? tableData : []}
@@ -530,7 +531,10 @@ const Archive = () => {
               record: rows[0],
             })),
         }}
+        scroll={{ x: 600 }}
+        size="small"
       />
+      </div>
       {/* Modals */}
       {modalStates.createFolder && (
         <CreateFolder
@@ -639,9 +643,9 @@ const Archive = () => {
             </Button>
           )}
 
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
             {isFetchingFolders ? (
-              <div className="col-span-5 flex justify-center items-center py-12">
+              <div className="col-span-2 md:col-span-3 lg:col-span-5 flex justify-center items-center py-12">
                 <div className="flex flex-col items-center gap-2">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#9D4D01]"></div>
                   <span className="text-gray-500">Loading folders...</span>

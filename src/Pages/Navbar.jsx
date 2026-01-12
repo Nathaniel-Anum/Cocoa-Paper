@@ -451,27 +451,25 @@ const Navbar = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center pt-[20px] fixed w-full  z-10 bg-[#eadfd5]  ">
-        <div className="pl-[200px]">
-          <p className="font-semibold text-[23px]">Dashboard</p>
-
-          <p className="font-semibold text-[#694421]">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center pt-4 md:pt-[20px] px-4 md:px-0 fixed w-full z-10 bg-[#eadfd5] gap-2 md:gap-0">
+        <div className="pl-0 md:pl-[200px] ml-12 md:ml-0">
+          <p className="font-semibold text-lg md:text-[23px]">Dashboard</p>
+          <p className="font-semibold text-[#694421] text-sm md:text-base">
             {currentDate.toDateString()}
           </p>
-          {/* <p>{currentDate.toLocaleTimeString()}</p> */}
         </div>
-        <div className="  flex flex-col bg-[#EADFD5]">
-          <div className="bg-white flex items-center rounded-t-lg px-[20px] h-full ">
+        <div className="flex flex-col bg-[#EADFD5] w-full md:w-auto">
+          <div className="bg-white flex items-center rounded-lg md:rounded-t-lg px-3 md:px-[20px] h-full">
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               type="search"
-              placeholder="Search files and documents"
-              className="w-[400px] h-[40px] px-[30px] rounded-[10px] outline-none"
+              placeholder="Search files..."
+              className="w-full md:w-[400px] h-[35px] md:h-[40px] px-3 md:px-[30px] rounded-[10px] outline-none text-sm md:text-base"
             />
             <div className="ml-2">
               {loading ? (
-                <LoadingOutlined style={{ fontSize: 24 }} spin /> // Loader next to search input
+                <LoadingOutlined style={{ fontSize: 20 }} spin />
               ) : (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -479,7 +477,7 @@ const Navbar = () => {
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
                   stroke="currentColor"
-                  className="w-5 h-5"
+                  className="w-4 h-4 md:w-5 md:h-5"
                 >
                   <path
                     strokeLinecap="round"
@@ -491,12 +489,11 @@ const Navbar = () => {
             </div>
           </div>
           <div className="">
-            <div className="absolute w-[468px]">
-              {/* Dropdown: only displays when searchTerm, results, and isOpen are true */}
+            <div className="absolute w-full md:w-[468px] left-0 md:left-auto px-4 md:px-0">
               {searchTerm && results && isOpen && (
                 <div
                   className="bg-white absolute z-50 w-full max-h-64 overflow-y-auto shadow-lg rounded-lg mt-2"
-                  ref={dropdownRef} // Ensure this is wrapped with the useOutsideClick hook
+                  ref={dropdownRef}
                 >
                   {renderMenuItems()}
                 </div>
@@ -506,45 +503,70 @@ const Navbar = () => {
         </div>
 
         {/* Notification Bell for Access Requests */}
-        <Popover
-          content={renderAccessRequestContent()}
-          title={
-            <div className="font-semibold text-[#582F08]">
-              Access Requests
-            </div>
-          }
-          trigger="click"
-          placement="bottomRight"
-        >
-          <div className="cursor-pointer">
-            <Badge count={accessRequestCount} size="small" offset={[-2, 2]}>
-              <BellOutlined className="text-2xl text-[#582F08] hover:text-[#9D4D01]" />
-            </Badge>
-          </div>
-        </Popover>
-
-        <div className="pr-[80px] flex gap-2 items-center">
-          <p className="bg-[#E3BC97] text-[#582F08] px-3 py-2 font-semibold rounded-md text-[18px]">
-            {user &&
-              user?.name
-                .split(' ')
-                .map((name) => name.charAt(0))
-                .reduce((a, b) => `${a}${b}`, '')}
-          </p>
-          <Dropdown
-            menu={{
-              items,
-            }}
-            trigger={['click']}
+        <div className="hidden md:flex items-center gap-4">
+          <Popover
+            content={renderAccessRequestContent()}
+            title={
+              <div className="font-semibold text-[#582F08]">
+                Access Requests
+              </div>
+            }
+            trigger="click"
+            placement="bottomRight"
           >
-            <a
-              className="font-semibold text-[#9D4D01] cursor-pointer"
-              onClick={(e) => e.preventDefault()}
+            <div className="cursor-pointer">
+              <Badge count={accessRequestCount} size="small" offset={[-2, 2]}>
+                <BellOutlined className="text-xl md:text-2xl text-[#582F08] hover:text-[#9D4D01]" />
+              </Badge>
+            </div>
+          </Popover>
+
+          <div className="pr-4 md:pr-[80px] flex gap-2 items-center">
+            <p className="bg-[#E3BC97] text-[#582F08] px-2 md:px-3 py-1 md:py-2 font-semibold rounded-md text-sm md:text-[18px]">
+              {user &&
+                user?.name
+                  .split(' ')
+                  .map((name) => name.charAt(0))
+                  .reduce((a, b) => `${a}${b}`, '')}
+            </p>
+            <Dropdown
+              menu={{
+                items,
+              }}
+              trigger={['click']}
             >
-              <Space>
-                {user?.name}
-                <DownOutlined />
-              </Space>
+              <a
+                className="font-semibold text-[#9D4D01] cursor-pointer text-sm md:text-base"
+                onClick={(e) => e.preventDefault()}
+              >
+                <Space>
+                  <span className="hidden md:inline">{user?.name}</span>
+                  <DownOutlined />
+                </Space>
+              </a>
+            </Dropdown>
+          </div>
+        </div>
+
+        {/* Mobile notification and user menu */}
+        <div className="fixed md:hidden top-4 right-4 flex items-center gap-3 z-50">
+          <Popover
+            content={renderAccessRequestContent()}
+            title={<div className="font-semibold text-[#582F08]">Access Requests</div>}
+            trigger="click"
+            placement="bottomRight"
+          >
+            <div className="cursor-pointer">
+              <Badge count={accessRequestCount} size="small" offset={[-2, 2]}>
+                <BellOutlined className="text-xl text-[#582F08]" />
+              </Badge>
+            </div>
+          </Popover>
+          <Dropdown menu={{ items }} trigger={['click']}>
+            <a className="cursor-pointer" onClick={(e) => e.preventDefault()}>
+              <p className="bg-[#E3BC97] text-[#582F08] px-2 py-1 font-semibold rounded-md text-sm">
+                {user?.name?.split(' ').map((name) => name.charAt(0)).reduce((a, b) => `${a}${b}`, '')}
+              </p>
             </a>
           </Dropdown>
         </div>

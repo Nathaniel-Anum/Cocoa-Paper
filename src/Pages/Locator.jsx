@@ -197,7 +197,7 @@ const Locator = () => {
   return (
     <div className="">
       {/* Toggle Button to Switch Views */}
-      <div className="mb-4 flex justify-end fixed top-[8rem] right-[4.5rem]">
+      <div className="mb-4 flex justify-end fixed top-[6rem] md:top-[8rem] right-4 md:right-[4.5rem] z-10">
         <Popover
           content={
             <div>
@@ -217,14 +217,14 @@ const Locator = () => {
       {console.log(trailDisplay && { trailDisplay })}
       {/* Conditional Rendering for Grid or Table View */}
       {isGridView ? (
-        <div className=" ">
-          <div className=" grid grid-cols-4 no-scrollbar h-screen">
+        <div className="">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 no-scrollbar min-h-screen pb-8">
             {isArray(trailDisplay?.data) ? (
               trailDisplay?.data?.map((trail) => (
-                  <div className=" flex items-center  p-6 cursor-pointer " key={trail.docID}>
+                  <div className="flex items-center p-2 md:p-4 lg:p-6 cursor-pointer" key={trail.docID}>
                   <div className="w-full max-w-2xl">
                     <div
-                      className="relative transition-all bg-[#c2773199] rounded-2xl p-8 shadow-2xl hover:bg-[#5f4a387d] overflow-hidden"
+                      className="relative transition-all bg-[#c2773199] rounded-2xl p-4 md:p-6 lg:p-8 shadow-2xl hover:bg-[#5f4a387d] overflow-hidden"
                       style={{
                         backgroundImage:
                           'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 25%, rgba(249, 238, 218, 0) 50%)',
@@ -334,18 +334,22 @@ const Locator = () => {
           <div className="flex justify-end mb-4">
             <Input.Search
               placeholder="Search by subject, recipient..."
-              className="w-[30rem]"
+              className="w-full md:w-[30rem]"
               allowClear
               onChange={(e) => setSearchText(e.target.value)}
             />
           </div>
-          <Table
-            dataSource={isArray(trailDisplay?.data) ? trailDisplay?.data : []}
-            columns={columns}
-            rowKey="docID"
-            pagination={{ pageSize: 10 }}
-            className="w-full" // Ensures the table takes full width
-          />
+          <div className="overflow-x-auto">
+            <Table
+              dataSource={isArray(trailDisplay?.data) ? trailDisplay?.data : []}
+              columns={columns}
+              rowKey="docID"
+              pagination={{ pageSize: 10 }}
+              scroll={{ x: 600 }}
+              size="small"
+              className="w-full"
+            />
+          </div>
         </div>
       )}
       {/* Locator Modal for Trail Steps */}

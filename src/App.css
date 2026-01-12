@@ -281,3 +281,198 @@ table th {
   -ms-overflow-style: none;
   scrollbar-width: none;   
 }
+
+/* ==================== MOBILE RESPONSIVE STYLES ==================== */
+
+/* Mobile breakpoints */
+@media screen and (max-width: 768px) {
+  /* Sidebar - hide on mobile */
+  .sidebar-container {
+    display: none;
+  }
+  
+  /* Main content adjustments */
+  .main-content {
+    margin-left: 0 !important;
+    padding: 1rem !important;
+  }
+  
+  /* Cards and containers */
+  .ant-card {
+    margin-bottom: 1rem;
+  }
+  
+  .ant-card-body {
+    padding: 12px !important;
+  }
+  
+  /* Tables - horizontal scroll */
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+  
+  .ant-table {
+    min-width: 600px;
+  }
+  
+  /* Typography */
+  h1, .ant-typography h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  h2, .ant-typography h2 {
+    font-size: 1.25rem !important;
+  }
+  
+  /* Form elements */
+  .ant-select {
+    width: 100% !important;
+  }
+  
+  .ant-picker {
+    width: 100% !important;
+  }
+  
+  /* Modal adjustments */
+  .ant-modal {
+    max-width: 95vw !important;
+    margin: 10px !important;
+  }
+  
+  .ant-modal-content {
+    padding: 16px !important;
+  }
+  
+  /* Tabs - scrollable on mobile */
+  .ant-tabs-nav {
+    overflow-x: auto;
+  }
+  
+  .ant-tabs-tab {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+  
+  /* Buttons */
+  .ant-btn {
+    padding: 4px 12px !important;
+    font-size: 13px !important;
+  }
+  
+  /* Date picker range */
+  .ant-picker-range {
+    flex-direction: column;
+  }
+  
+  /* Badge adjustments */
+  .ant-badge {
+    font-size: 11px !important;
+  }
+  
+  /* Progress bars */
+  .ant-progress {
+    max-width: 100%;
+  }
+  
+  /* Charts container */
+  .recharts-wrapper {
+    max-width: 100% !important;
+  }
+  
+  /* Divider */
+  .ant-divider {
+    margin: 12px 0 !important;
+  }
+  
+  /* Statistic cards */
+  .ant-statistic-title {
+    font-size: 12px !important;
+  }
+  
+  .ant-statistic-content {
+    font-size: 18px !important;
+  }
+}
+
+/* Small mobile (phones) */
+@media screen and (max-width: 480px) {
+  .ant-card-body {
+    padding: 8px !important;
+  }
+  
+  h1, .ant-typography h1 {
+    font-size: 1.25rem !important;
+  }
+  
+  .ant-table {
+    font-size: 12px;
+  }
+  
+  .ant-tabs-tab {
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+  }
+  
+  .ant-btn {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+  }
+  
+  /* Stack flex items vertically */
+  .flex-row-mobile {
+    flex-direction: column !important;
+  }
+  
+  /* Hide less important columns on small screens */
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
+/* Tablet adjustments */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .sidebar-container {
+    width: 80px !important;
+  }
+  
+  .main-content {
+    margin-left: 80px !important;
+  }
+  
+  .ant-card-body {
+    padding: 16px !important;
+  }
+}
+
+/* Ensure charts are responsive */
+.recharts-responsive-container {
+  width: 100% !important;
+  min-height: 250px;
+}
+
+/* Mobile-friendly spacing utilities */
+@media screen and (max-width: 768px) {
+  .p-8 {
+    padding: 1rem !important;
+  }
+  
+  .p-6 {
+    padding: 0.75rem !important;
+  }
+  
+  .gap-6 {
+    gap: 0.75rem !important;
+  }
+  
+  .gap-4 {
+    gap: 0.5rem !important;
+  }
+  
+  .mb-8 {
+    margin-bottom: 1rem !important;
+  }
+  
+  .mb-6 {
+    margin-bottom: 0.75rem !important;
+  }
+}

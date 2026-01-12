@@ -8,137 +8,150 @@ import {
 } from '../../utils/Roles';
 import { GiTakeMyMoney } from 'react-icons/gi';
 import { HiMiniPresentationChartLine } from 'react-icons/hi2';
-import { FaShieldAlt, FaChartPie } from 'react-icons/fa';
+import { FaShieldAlt, FaChartPie, FaBars, FaTimes } from 'react-icons/fa';
+import { useState } from 'react';
 
 const Sidebar = () => {
   const { user } = useUser();
   const allRolePermissions = getAllRolePermissions(user);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleSidebar = () => setIsOpen(!isOpen);
+  const closeSidebar = () => setIsOpen(false);
 
   return (
-    <div className="">
-      <div className="w-full h-full bg-center ">
-        <div className="w-[10rem] z-30 h-screen fixed  px-[15px] py-[19px] bg-[#582f08] overflow-y-auto no-scrollbar">
-          <div>
-            <img src="/asset/logo.9a18109e1c16584832d5.png" alt="" />
-          </div>
-          <ul className="list-none  px-[15px] py-[25px]  flex flex-col gap-[35px]  my-[20px] cursor-pointer ">
-            {hasPermission(allRolePermissions, [
-              requiredPermissions.READ_ANALYTICS,
-            ]) && (
-              <Link to="/analytics">
-                <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-                  <HiMiniPresentationChartLine
-                    className="w-[6rem] text-[#E3BC97]"
-                    size={50}
-                  />
+    <>
+      {/* Mobile hamburger button */}
+      <button 
+        onClick={toggleSidebar}
+        className="md:hidden fixed top-4 left-4 z-50 bg-[#582f08] text-[#E3BC97] p-3 rounded-lg shadow-lg hover:bg-[#6d3a0a] transition-colors"
+        aria-label="Toggle menu"
+      >
+        {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+      </button>
 
-                  <p>Analytics</p>
-                </li>
-              </Link>
-            )}
-            {hasPermission(allRolePermissions, [
-              requiredPermissions.READ_ANALYTICS,
-            ]) && (
-              <Link to="/advanced-analytics">
-                <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-                  <FaChartPie
-                    className="w-[6rem] text-[#E3BC97]"
-                    size={45}
-                  />
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={closeSidebar}
+        />
+      )}
 
-                  <p className="text-xs text-center">Dashboard</p>
-                </li>
-              </Link>
-            )}
-            <Link to="/">
-              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-                <img
-                  className="w-[43px]"
-                  src="/asset/home-icon.a1cb008ba41682badfae94e2877d0206.svg"
-                  alt=""
-                />
-                <p>Home</p>
-              </li>
-            </Link>
-
-            <Link to="/locator">
-              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-500 py-2 px-2 hover:scale-105 hover:rounded-md ">
-                <img
-                  className="w-[43px]"
-                  src="/asset/tracker-icon.6371fcdb202ad14b09e06a9391bf8cc2.svg"
-                  alt=""
-                />
-                <p>Locator</p>
-              </li>
-            </Link>
-
-            {hasPermission(allRolePermissions, [
-              requiredPermissions.CREATE_ARCHIVE,
-            ]) && (
-              <Link to="/archive">
-                <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-                  <img
-                    className="w-[43px]"
-                    src="/asset/archive.3b9ddd7f65d8f9353f8fd0efad0c45e5.svg"
-                    alt=""
-                  />
-
-                  <p>Archive</p>
-                </li>
-              </Link>
-            )}
-            {hasPermission(allRolePermissions, [
-              requiredPermissions.CREATE_ARCHIVE,
-            ]) && (
-              <Link to="/work-history">
-                <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-                  <img
-                    className="w-[43px]"
-                    src="/asset/work-history.c7047f9c0a21ca2ba896c6c73f75c562.svg"
-                    alt=""
-                  />
-
-                  <p>Work History</p>
-                </li>
-              </Link>
-            )}
-
-            {hasPermission(allRolePermissions, [
-              requiredPermissions.READ_BUDGET,
-            ]) && (
-              <Link to="/budget">
-                <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-                  <GiTakeMyMoney
-                    className="w-[6rem] text-[#E3BC97]"
-                    size={60}
-                  />
-
-                  <p>Budget</p>
-                </li>
-              </Link>
-            )}
-            <Link to="/trash">
-              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-                <img
-                  className="w-[43px]"
-                  src="/asset/full trash.6648e39921b830096f076502815f16eb.svg"
-                  alt=""
-                />
-
-                <p>Recycle Bin</p>
-              </li>
-            </Link>
-
-            {/* <Link to="/otp-settings">
-              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10  duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-                <FaShieldAlt className="w-[6rem] text-[#E3BC97]" size={40} />
-                <p>2FA Settings</p>
-              </li>
-            </Link> */}
-          </ul>
+      {/* Sidebar */}
+      <div className={`
+        fixed z-40 h-screen bg-[#582f08] overflow-y-auto no-scrollbar transition-transform duration-300 ease-in-out
+        w-[10rem] px-[15px] py-[19px]
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:translate-x-0
+      `}>
+        <div className="mt-8 md:mt-0">
+          <img src="/asset/logo.9a18109e1c16584832d5.png" alt="" />
         </div>
+        <ul className="list-none px-[10px] md:px-[15px] py-[20px] md:py-[25px] flex flex-col gap-[25px] md:gap-[35px] my-[15px] md:my-[20px] cursor-pointer">
+          {hasPermission(allRolePermissions, [
+            requiredPermissions.READ_ANALYTICS,
+          ]) && (
+            <Link to="/analytics" onClick={closeSidebar}>
+              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10 duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+                <HiMiniPresentationChartLine
+                  className="w-[4rem] md:w-[6rem] text-[#E3BC97]"
+                  size={40}
+                />
+                <p className="text-xs">Analytics</p>
+              </li>
+            </Link>
+          )}
+          {hasPermission(allRolePermissions, [
+            requiredPermissions.READ_ANALYTICS,
+          ]) && (
+            <Link to="/advanced-analytics" onClick={closeSidebar}>
+              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10 duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+                <FaChartPie
+                  className="w-[4rem] md:w-[6rem] text-[#E3BC97]"
+                  size={35}
+                />
+                <p className="text-xs text-center">Dashboard</p>
+              </li>
+            </Link>
+          )}
+          <Link to="/" onClick={closeSidebar}>
+            <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10 duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+              <img
+                className="w-[35px] md:w-[43px]"
+                src="/asset/home-icon.a1cb008ba41682badfae94e2877d0206.svg"
+                alt=""
+              />
+              <p className="text-xs">Home</p>
+            </li>
+          </Link>
+
+          <Link to="/locator" onClick={closeSidebar}>
+            <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10 duration-500 py-2 px-2 hover:scale-105 hover:rounded-md">
+              <img
+                className="w-[35px] md:w-[43px]"
+                src="/asset/tracker-icon.6371fcdb202ad14b09e06a9391bf8cc2.svg"
+                alt=""
+              />
+              <p className="text-xs">Locator</p>
+            </li>
+          </Link>
+
+          {hasPermission(allRolePermissions, [
+            requiredPermissions.CREATE_ARCHIVE,
+          ]) && (
+            <Link to="/archive" onClick={closeSidebar}>
+              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10 duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+                <img
+                  className="w-[35px] md:w-[43px]"
+                  src="/asset/archive.3b9ddd7f65d8f9353f8fd0efad0c45e5.svg"
+                  alt=""
+                />
+                <p className="text-xs">Archive</p>
+              </li>
+            </Link>
+          )}
+          {hasPermission(allRolePermissions, [
+            requiredPermissions.CREATE_ARCHIVE,
+          ]) && (
+            <Link to="/work-history" onClick={closeSidebar}>
+              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10 duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+                <img
+                  className="w-[35px] md:w-[43px]"
+                  src="/asset/work-history.c7047f9c0a21ca2ba896c6c73f75c562.svg"
+                  alt=""
+                />
+                <p className="text-xs">Work History</p>
+              </li>
+            </Link>
+          )}
+
+          {hasPermission(allRolePermissions, [
+            requiredPermissions.READ_BUDGET,
+          ]) && (
+            <Link to="/budget" onClick={closeSidebar}>
+              <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10 duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+                <GiTakeMyMoney
+                  className="w-[4rem] md:w-[6rem] text-[#E3BC97]"
+                  size={45}
+                />
+                <p className="text-xs">Budget</p>
+              </li>
+            </Link>
+          )}
+          <Link to="/trash" onClick={closeSidebar}>
+            <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10 duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
+              <img
+                className="w-[35px] md:w-[43px]"
+                src="/asset/full trash.6648e39921b830096f076502815f16eb.svg"
+                alt=""
+              />
+              <p className="text-xs">Recycle Bin</p>
+            </li>
+          </Link>
+        </ul>
       </div>
-    </div>
+    </>
   );
 };
 

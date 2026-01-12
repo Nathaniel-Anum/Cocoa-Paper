@@ -302,8 +302,8 @@ const BudgetIndex = () => {
         </div>
       </Modal>
 
-      <div className="flex justify-end gap-2 items-center">
-        <Input.Search placeholder="Search...." className="w-[20rem]" />
+      <div className="flex flex-col md:flex-row justify-end gap-2 items-stretch md:items-center px-2 md:px-0">
+        <Input.Search placeholder="Search...." className="w-full md:w-[20rem]" />
         {hasPermission(allRolePermissions, [
           requiredPermissions.CREATE_BUDGET,
         ]) && (
@@ -322,22 +322,30 @@ const BudgetIndex = () => {
         </Tooltip>
       </div>
 
-      <Table
-        columns={budgetColumns}
-        expandable={{
-          expandedRowRender: (record) => (
-            <Table
-              columns={budgetData}
-              dataSource={record.budgetItems}
-              pagination={false}
-              bordered={false}
-              className="custom-inner-table"
-            />
-          ),
-          rowExpandable: (record) => record?.budgetItems?.length > 0,
-        }}
-        dataSource={data}
-      />
+      <div className="overflow-x-auto mt-4">
+        <Table
+          columns={budgetColumns}
+          expandable={{
+            expandedRowRender: (record) => (
+              <div className="overflow-x-auto">
+                <Table
+                  columns={budgetData}
+                  dataSource={record.budgetItems}
+                  pagination={false}
+                  bordered={false}
+                  className="custom-inner-table"
+                  scroll={{ x: 400 }}
+                  size="small"
+                />
+              </div>
+            ),
+            rowExpandable: (record) => record?.budgetItems?.length > 0,
+          }}
+          dataSource={data}
+          scroll={{ x: 700 }}
+          size="small"
+        />
+      </div>
     </div>
   );
 };

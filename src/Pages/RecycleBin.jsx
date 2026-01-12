@@ -118,16 +118,23 @@ const RecycleBin = () => {
   ];
 
   return (
-    <div>
+    <div className="px-2 md:px-0">
       <div className="flex justify-end mb-4">
         <Input.Search
           placeholder="Search by name, subject, reference..."
-          className="w-[30rem]"
+          className="w-full md:w-[30rem]"
           allowClear
           onChange={(e) => setSearchText(e.target.value)}
         />
       </div>
-      <Table columns={columns} dataSource={formattedData} />
+      <div className="overflow-x-auto">
+        <Table 
+          columns={columns} 
+          dataSource={formattedData} 
+          scroll={{ x: 500 }}
+          size="small"
+        />
+      </div>
     </div>
   );
 };
