@@ -437,6 +437,7 @@ const Outgoing = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
+                        setShowToolbar(false);
                         navigate(`/view-document/${record?.docID}`);
                       }}
                       className="p-2 hover:bg-gray-100 rounded-full"

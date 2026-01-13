@@ -120,18 +120,9 @@ function ViewDocument() {
     }
   }, [docId]);
 
-  // Ensure toolbar is shown for PDFs
-  useEffect(() => {
-    if (document?.data?.document?.file?.fileName) {
-      const fileName = document.data.document.file.fileName;
-      const fileType = getFileType(fileName);
-      
-      // Show toolbar for PDFs and images
-      if (fileType === 'pdf' || fileType === 'image') {
-        setShowToolbar(true);
-      }
-    }
-  }, [document?.data?.document?.file?.fileName, setShowToolbar]);
+  // Note: Toolbar visibility is controlled by the source page:
+  // - Incoming: setShowToolbar(true) for documents that can be annotated
+  // - Outgoing: setShowToolbar(false) since senders shouldn't annotate their own docs
 
   // Mutations
   const { mutate: forwardDocument, isPending: submitLoading } = useMutation({

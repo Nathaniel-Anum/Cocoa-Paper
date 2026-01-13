@@ -324,7 +324,36 @@ const AddDocument = () => {
       startDocument(submissionData);
       return;
     }
-    if (values.file === undefined && values.attachments) {
+
+    // Debug: Log the file structure to understand how Ant Design Upload stores it
+    console.log('File value structure:', values.file);
+    console.log('File keys:', values.file ? Object.keys(values.file) : 'undefined');
+
+    // Get the main file from the upload component
+    // Ant Design Upload stores files in different ways depending on the structure
+    let mainFile = null;
+    
+    if (values.file) {
+      // Check various possible structures
+      if (values.file.file?.originFileObj) {
+        mainFile = values.file.file.originFileObj;
+        console.log('Found file at: file.file.originFileObj');
+      } else if (values.file.fileList?.[0]?.originFileObj) {
+        mainFile = values.file.fileList[0].originFileObj;
+        console.log('Found file at: file.fileList[0].originFileObj');
+      } else if (values.file.originFileObj) {
+        mainFile = values.file.originFileObj;
+        console.log('Found file at: file.originFileObj');
+      } else if (values.file.file) {
+        mainFile = values.file.file;
+        console.log('Found file at: file.file');
+      } else if (values.file instanceof File) {
+        mainFile = values.file;
+        console.log('Found file as direct File instance');
+      }
+    }
+
+    if (!mainFile && values.attachments) {
       showErrorNotification(
         'Missing File',
         'Please upload a main document file.'
@@ -338,7 +367,7 @@ const AddDocument = () => {
     // For physical documents, no file uploads needed
 
     // For electronic documents, check if main file exists
-    if (!values.file || !values.file.file) {
+    if (!mainFile) {
       setLoading(false);
       showErrorNotification(
         'Missing File',
@@ -349,7 +378,7 @@ const AddDocument = () => {
 
     // First upload the main document file
     const mainFormData = new FormData();
-    mainFormData.append('file', values.file.file);
+    mainFormData.append('file', mainFile);
     mainFormData.append('ref', values.ref || '');
     mainFormData.append('subject', values.subject || '');
 
@@ -400,6 +429,8 @@ const AddDocument = () => {
     beforeUpload: () => false, // Prevent auto upload
     onChange(info) {
       console.log('Main file selected:', info.file.name);
+      // Manually update form field value since beforeUpload returns false
+      form.setFieldsValue({ file: info });
     },
     accept: '.pdf,.doc,.docx,.xls,.xlsx',
   };

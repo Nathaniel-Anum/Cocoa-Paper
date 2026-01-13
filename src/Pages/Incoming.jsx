@@ -278,8 +278,8 @@ const Incoming = () => {
         label: 'View',
         key: 0,
         onClick: () => {
-          // Show toolbar if not CC, or if CC with forward permission enabled
-          (selectedRecord.isCarbonCopy && !selectedRecord.ccEnableForward)
+          // Hide toolbar for all CC documents (copied documents should not have annotation toolbar)
+          selectedRecord.isCarbonCopy
             ? setShowToolbar(false)
             : setShowToolbar(true);
           handleViewDocument(selectedRecord);
