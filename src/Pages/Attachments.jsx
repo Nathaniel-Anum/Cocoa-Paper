@@ -5,10 +5,11 @@ import pdf from '../assets/pdf.svg';
 
 import useStore from '../store/store';
 import { EyeOutlined } from '@ant-design/icons';
-import { Table, Input } from 'antd';
+import { Table, Input, Modal, Spin } from 'antd';
 import { create } from 'lodash';
 import dayjs from 'dayjs';
 import PDFViewer, { PDFViewerContent } from '../Components/PDFViewer/PdfViewer';
+import { WordViewer, ExcelViewer, getFileType } from '../Components/DocumentViewers';
 import axiosInstance from '../Components/axiosInstance';
 
 const Attachments = () => {
@@ -97,16 +98,73 @@ const Attachments = () => {
     setFileUrl(fileUrl);
   }
 
+  // Get the file type for the selected file
+  const selectedFileType = selectedFile ? getFileType(selectedFile.fileName) : null;
+
+  // Render the appropriate viewer based on file type
+  const renderFileViewer = () => {
+    if (!fileUrl || !selectedFile) return null;
+
+    switch (selectedFileType) {
+      case 'word':
+        return (
+          <Modal
+            open={openFileViewer}
+            onCancel={() => setOpenFileViewer(false)}
+            footer={null}
+            width="80%"
+            style={{ top: 20 }}
+            bodyStyle={{ height: '80vh', overflow: 'auto' }}
+          >
+            <WordViewer fileUrl={fileUrl} fileName={selectedFile.fileName} />
+          </Modal>
+        );
+      case 'excel':
+        return (
+          <Modal
+            open={openFileViewer}
+            onCancel={() => setOpenFileViewer(false)}
+            footer={null}
+            width="90%"
+            style={{ top: 20 }}
+            bodyStyle={{ height: '80vh', overflow: 'auto' }}
+          >
+            <ExcelViewer fileUrl={fileUrl} fileName={selectedFile.fileName} />
+          </Modal>
+        );
+      case 'image':
+        return (
+          <Modal
+            open={openFileViewer}
+            onCancel={() => setOpenFileViewer(false)}
+            footer={null}
+            width="80%"
+            style={{ top: 20 }}
+            bodyStyle={{ height: '80vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+          >
+            <img
+              src={fileUrl}
+              alt={selectedFile.fileName}
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            />
+          </Modal>
+        );
+      case 'pdf':
+      default:
+        return (
+          <PDFViewer
+            pdfUrl={fileUrl}
+            fileId={selectedFile?.fileId}
+            fileName={selectedFile.fileName}
+            documentId={selectedFile?.fileId}
+          />
+        );
+    }
+  };
+
   return (
     <div className="mt-8 w-[95%] mx-auto">
-      {openFileViewer && (
-        <PDFViewer
-          pdfUrl={fileUrl}
-          fileId={selectedFile?.fileId}
-          fileName={selectedFile.fileName}
-          documentId={selectedFile?.fileId}
-        />
-      )}
+      {openFileViewer && renderFileViewer()}
       <div className="flex justify-end mb-4">
         <Input.Search
           placeholder="Search by file name, uploader, department..."

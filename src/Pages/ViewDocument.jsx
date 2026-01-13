@@ -42,6 +42,7 @@ import ArchiveFiles from '../Components/modals/Archive/ArchiveFiles';
 import { updateBudgetAmount } from '../http/budget';
 import Loader from '../Components/Loader/Loader';
 import { PDFViewerContent } from '../Components/PDFViewer/PdfViewer';
+import { WordViewer, ExcelViewer, getFileType } from '../Components/DocumentViewers';
 import TextArea from 'antd/es/input/TextArea';
 import OTPVerificationModal from '../Components/OTPVerificationModal';
 import { useGetAllUserGroups, useGetAllUsers } from '../queryHooks/user';
@@ -498,11 +499,48 @@ function ViewDocument() {
             <div className="flex-1 overflow-hidden rounded-lg mb-4 bg-white">
               {fileUrl ? (
                 <Spin spinning={isLoading} tip="Loading document...">
-                  <PDFViewerContent
-                    pdfUrl={fileUrl}
-                    documentId={docId}
-                    fileId={document.data.document.file.fileId}
-                  />
+                  {(() => {
+                    const fileName = document.data.document.file?.fileName || '';
+                    const fileType = getFileType(fileName);
+                    
+                    switch (fileType) {
+                      case 'word':
+                        return (
+                          <WordViewer
+                            fileUrl={fileUrl}
+                            fileName={fileName}
+                          />
+                        );
+                      case 'excel':
+                        return (
+                          <ExcelViewer
+                            fileUrl={fileUrl}
+                            fileName={fileName}
+                          />
+                        );
+                      case 'image':
+                        return (
+                          <div className="image-viewer">
+                            <div className="image-viewer-content" style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px' }}>
+                              <img
+                                src={fileUrl}
+                                alt={fileName}
+                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      case 'pdf':
+                      default:
+                        return (
+                          <PDFViewerContent
+                            pdfUrl={fileUrl}
+                            documentId={docId}
+                            fileId={document.data.document.file.fileId}
+                          />
+                        );
+                    }
+                  })()}
                 </Spin>
               ) : (
                 <div className="flex flex-col gap-7 justify-center items-center w-full h-full">

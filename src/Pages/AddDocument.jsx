@@ -401,7 +401,7 @@ const AddDocument = () => {
     onChange(info) {
       console.log('Main file selected:', info.file.name);
     },
-    accept: '.pdf',
+    accept: '.pdf,.doc,.docx,.xls,.xlsx',
   };
 
   const attachmentUploadProps = {
@@ -416,7 +416,7 @@ const AddDocument = () => {
       // The fileList will be stored in the form
       form.setFieldsValue({ attachments: { fileList: info.fileList } });
     },
-    accept: '.pdf',
+    accept: '.pdf,.doc,.docx,.xls,.xlsx',
   };
 
   // Loading state

@@ -266,7 +266,7 @@ const Incoming = () => {
       // The fileList will be stored in the form
       form.setFieldsValue({ attachments: { fileList: info.fileList } });
     },
-    accept: '.pdf',
+    accept: '.pdf,.doc,.docx,.xls,.xlsx',
   };
 
   const getItems = (selectedRecord) => {
