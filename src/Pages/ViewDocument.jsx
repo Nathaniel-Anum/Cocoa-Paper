@@ -120,6 +120,19 @@ function ViewDocument() {
     }
   }, [docId]);
 
+  // Ensure toolbar is shown for PDFs
+  useEffect(() => {
+    if (document?.data?.document?.file?.fileName) {
+      const fileName = document.data.document.file.fileName;
+      const fileType = getFileType(fileName);
+      
+      // Show toolbar for PDFs and images
+      if (fileType === 'pdf' || fileType === 'image') {
+        setShowToolbar(true);
+      }
+    }
+  }, [document?.data?.document?.file?.fileName, setShowToolbar]);
+
   // Mutations
   const { mutate: forwardDocument, isPending: submitLoading } = useMutation({
     mutationKey: ['forwardDocument', docId],

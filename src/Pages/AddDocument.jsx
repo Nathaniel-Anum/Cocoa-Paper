@@ -845,9 +845,12 @@ const AddDocument = () => {
                         icon={<UploadOutlined />}
                         className="w-full cursor-pointer"
                       >
-                        Upload PDF
+                        Upload Document
                       </Button>
                     </Upload>
+                    <div className="text-gray-500 text-sm mt-1">
+                      Supports PDF, Word, and Excel files. Word/Excel files will be converted to PDF for annotation.
+                    </div>
                   </Form.Item>
 
                   <Form.Item name="attachments" label="Attachments">
@@ -865,7 +868,7 @@ const AddDocument = () => {
                       </Button>
                     </Upload>
                     <div className="text-gray-500 text-sm mt-1">
-                      You can upload multiple attachment files
+                      You can upload multiple files. Word/Excel files will be converted to PDF.
                     </div>
                   </Form.Item>
                 </>
