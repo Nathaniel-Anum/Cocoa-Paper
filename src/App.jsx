@@ -47,6 +47,7 @@ import Stamp from './Components/BackOffice/Stamp';
 import OTPSettings from './Components/OTPSettings';
 import { socket } from './utils/socket';
 import useStore from './store/store';
+import { isPushSupported, subscribeToPush, isSubscribedToPush } from './utils/pushNotifications';
 
 function App() {
   // API call for the users.
@@ -62,7 +63,27 @@ function App() {
       axiosInstance
         .get('/user')
         .then((res) => {
-          setUser(res?.data?.user);
+          const user = res?.data?.user;
+          setUser(user);
+          
+          // Identify user to socket server so they receive targeted notifications
+          if (user?.userId) {
+            socket.emit('identify', user.userId);
+            console.log('User identified to socket server:', user.userId);
+            
+            // Subscribe to push notifications if supported
+            if (isPushSupported()) {
+              isSubscribedToPush().then(isSubscribed => {
+                if (!isSubscribed) {
+                  subscribeToPush()
+                    .then(() => console.log('✅ Push notifications enabled'))
+                    .catch(err => console.log('Push subscription skipped:', err.message));
+                } else {
+                  console.log('✅ Already subscribed to push notifications');
+                }
+              });
+            }
+          }
         })
         .finally(() => setIsLoading(false));
     };
@@ -73,19 +94,53 @@ function App() {
     if (window.Notification && Notification.permission !== 'granted') {
       Notification.requestPermission();
     }
-  }, []);
-
-  // Get the store function to add new documents
-  const addNewDocument = useStore((state) => state.addNewDocument);
+    
+    // Listen for socket connection/reconnection
+    const handleConnect = () => {
+      console.log('Socket connected:', socket.id);
+      // Re-identify user when reconnected
+      const userId = user?.userId;
+      if (userId) {
+        socket.emit('identify', userId);
+        console.log('Re-identified user after socket reconnection:', userId);
+      }
+    };
+    
+    const handleDisconnect = () => {
+      console.log('Socket disconnected');
+    };
+    
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+    
+    return () => {
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+    };
+  }, [user?.userId]);
 
   useEffect(() => {
     function handleDocumentSent(data) {
       console.log('New doc received ...', data);
+      console.log('📨 Adding document to store');
       
-      // Add to notification store
-      addNewDocument({
-        sentBy: data.sentBy || 'Unknown',
-        subject: data.subject || 'No subject',
+      // Add to notification store using setState
+      useStore.setState((state) => {
+        const exists = state.newDocuments.some(d => d.subject === data.subject && d.sentBy === data.sentBy);
+        if (exists) {
+          console.log('Document already exists in notifications');
+          return state;
+        }
+        const newDoc = { 
+          id: Date.now(), 
+          sentBy: data.sentBy || 'Unknown',
+          subject: data.subject || 'No subject',
+          receivedAt: new Date().toISOString() 
+        };
+        console.log('✅ Document added:', newDoc);
+        return { 
+          newDocuments: [newDoc, ...state.newDocuments] 
+        };
       });
       
       // Also show browser notification
@@ -98,13 +153,13 @@ function App() {
         });
       }
     }
-    console.log('document-sent listening....');
+    console.log('🎧 Listening for document-sent events....');
 
     socket.on('document-sent', handleDocumentSent);
     return () => {
       socket.off('document-sent', handleDocumentSent);
     };
-  }, [addNewDocument]);
+  }, []);
 
   const allRolePermissions = getAllRolePermissions(user);
 
