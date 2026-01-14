@@ -46,13 +46,6 @@ const Navbar = () => {
     setIsModalOpen(false);
   };
 
-  // Debug: Log new documents
-  useEffect(() => {
-    if (newDocuments && newDocuments.length > 0) {
-      console.log('📬 New documents in Navbar:', newDocuments);
-    }
-  }, [newDocuments]);
-
   useEffect(() => {
     if (term) {
       // console.log(term);
