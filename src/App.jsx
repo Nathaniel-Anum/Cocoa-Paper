@@ -46,6 +46,7 @@ import UserGroups from './Components/BackOffice/UserGroups';
 import Stamp from './Components/BackOffice/Stamp';
 import OTPSettings from './Components/OTPSettings';
 import { socket } from './utils/socket';
+import useStore from './store/store';
 
 function App() {
   // API call for the users.
@@ -74,9 +75,20 @@ function App() {
     }
   }, []);
 
+  // Get the store function to add new documents
+  const addNewDocument = useStore((state) => state.addNewDocument);
+
   useEffect(() => {
     function handleDocumentSent(data) {
       console.log('New doc received ...', data);
+      
+      // Add to notification store
+      addNewDocument({
+        sentBy: data.sentBy || 'Unknown',
+        subject: data.subject || 'No subject',
+      });
+      
+      // Also show browser notification
       if (window.Notification && Notification.permission === 'granted') {
         new Notification('New Document Received', {
           body: `From: ${data.sentBy || 'Unknown'}\nSubject: ${
@@ -92,7 +104,7 @@ function App() {
     return () => {
       socket.off('document-sent', handleDocumentSent);
     };
-  }, []);
+  }, [addNewDocument]);
 
   const allRolePermissions = getAllRolePermissions(user);
 

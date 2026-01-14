@@ -1,5 +1,5 @@
-import { DownOutlined, LoadingOutlined, BellOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Dropdown, Space, Modal, Button, Steps, Badge, Popover, List, Empty, DatePicker, Form, message } from 'antd';
+import { DownOutlined, LoadingOutlined, BellOutlined, CheckOutlined, CloseOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Dropdown, Space, Modal, Button, Steps, Badge, Popover, List, Empty, DatePicker, Form, message, Tabs } from 'antd';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useUser } from './CustomHook/useUser';
@@ -13,6 +13,7 @@ import DocViewer, { DocViewerRenderers } from 'react-doc-viewer';
 import useOutsideClick from './CustomHook/useOutsideClick';
 import { getAllRolePermissions, hasPermission, requiredPermissions } from '../../utils/Roles';
 import { useGetAccessRequests, useGrantAccess, useDenyAccess, useRequestAccess } from './CustomHook/useAccessRequests';
+import useStore from '../store/store';
 
 const Navbar = () => {
   //Searching files components
@@ -105,6 +106,12 @@ const Navbar = () => {
   const { mutate: denyAccessMutation, isPending: denyingAccess } = useDenyAccess();
   const { mutate: requestAccessMutation, isPending: requestingAccess } = useRequestAccess();
 
+  // New documents from store
+  const newDocuments = useStore((state) => state.newDocuments);
+  const removeNewDocument = useStore((state) => state.removeNewDocument);
+  const clearNewDocuments = useStore((state) => state.clearNewDocuments);
+  const setShowToolbar = useStore((state) => state.setShowToolbar);
+
   // Get the actual array from the response (handle both data.data and data formats)
   const accessRequestsList = Array.isArray(accessRequests?.data) 
     ? accessRequests.data 
@@ -113,6 +120,103 @@ const Navbar = () => {
       : [];
   
   const accessRequestCount = accessRequestsList.length || 0;
+  const newDocumentCount = newDocuments?.length || 0;
+  const totalNotificationCount = accessRequestCount + newDocumentCount;
+
+  // Render new document notifications
+  const renderNewDocumentsContent = () => {
+    if (!newDocuments || newDocuments.length === 0) {
+      return <Empty description="No new documents" className="p-4" />;
+    }
+
+    return (
+      <div>
+        <div className="flex justify-between items-center px-4 py-2 border-b">
+          <span className="text-sm text-gray-500">{newDocumentCount} new document(s)</span>
+          <Button size="small" type="link" onClick={clearNewDocuments}>
+            Clear all
+          </Button>
+        </div>
+        <List
+          className="max-h-60 overflow-y-auto"
+          style={{ width: 350 }}
+          dataSource={newDocuments}
+          renderItem={(doc) => (
+            <List.Item
+              key={doc.id}
+              actions={[
+                <Button
+                  type="primary"
+                  size="small"
+                  className="bg-[#582F08]"
+                  onClick={() => {
+                    setShowToolbar(true);
+                    navigate('/incoming');
+                    removeNewDocument(doc.id);
+                  }}
+                >
+                  View
+                </Button>,
+                <Button
+                  size="small"
+                  onClick={() => removeNewDocument(doc.id)}
+                >
+                  Dismiss
+                </Button>,
+              ]}
+            >
+              <List.Item.Meta
+                avatar={<FileTextOutlined className="text-2xl text-[#582F08]" />}
+                title={<span className="font-semibold">{doc.subject}</span>}
+                description={
+                  <div>
+                    <div className="text-xs text-gray-500">
+                      From: <strong>{doc.sentBy}</strong>
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {new Date(doc.receivedAt).toLocaleString()}
+                    </div>
+                  </div>
+                }
+              />
+            </List.Item>
+          )}
+        />
+      </div>
+    );
+  };
+
+  // Render combined notification content with tabs
+  const renderNotificationContent = () => {
+    return (
+      <div style={{ width: 380 }}>
+        <Tabs
+          defaultActiveKey="documents"
+          size="small"
+          items={[
+            {
+              key: 'documents',
+              label: (
+                <span>
+                  <FileTextOutlined /> Documents {newDocumentCount > 0 && <Badge count={newDocumentCount} size="small" />}
+                </span>
+              ),
+              children: renderNewDocumentsContent(),
+            },
+            {
+              key: 'access',
+              label: (
+                <span>
+                  Access Requests {accessRequestCount > 0 && <Badge count={accessRequestCount} size="small" />}
+                </span>
+              ),
+              children: renderAccessRequestContent(),
+            },
+          ]}
+        />
+      </div>
+    );
+  };
 
   // Render access request notifications
   const renderAccessRequestContent = () => {
@@ -502,20 +606,20 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Notification Bell for Access Requests */}
+        {/* Notification Bell for Documents and Access Requests */}
         <div className="hidden md:flex items-center gap-4">
           <Popover
-            content={renderAccessRequestContent()}
+            content={renderNotificationContent()}
             title={
               <div className="font-semibold text-[#582F08]">
-                Access Requests
+                Notifications
               </div>
             }
             trigger="click"
             placement="bottomRight"
           >
             <div className="cursor-pointer">
-              <Badge count={accessRequestCount} size="small" offset={[-2, 2]}>
+              <Badge count={totalNotificationCount} size="small" offset={[-2, 2]}>
                 <BellOutlined className="text-xl md:text-2xl text-[#582F08] hover:text-[#9D4D01]" />
               </Badge>
             </div>
@@ -551,13 +655,13 @@ const Navbar = () => {
         {/* Mobile notification and user menu */}
         <div className="fixed md:hidden top-4 right-4 flex items-center gap-3 z-50">
           <Popover
-            content={renderAccessRequestContent()}
-            title={<div className="font-semibold text-[#582F08]">Access Requests</div>}
+            content={renderNotificationContent()}
+            title={<div className="font-semibold text-[#582F08]">Notifications</div>}
             trigger="click"
             placement="bottomRight"
           >
             <div className="cursor-pointer">
-              <Badge count={accessRequestCount} size="small" offset={[-2, 2]}>
+              <Badge count={totalNotificationCount} size="small" offset={[-2, 2]}>
                 <BellOutlined className="text-xl text-[#582F08]" />
               </Badge>
             </div>
