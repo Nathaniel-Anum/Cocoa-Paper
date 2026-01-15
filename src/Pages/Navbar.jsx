@@ -126,29 +126,43 @@ const Navbar = () => {
   // Render new document notifications
   const renderNewDocumentsContent = () => {
     if (!newDocuments || newDocuments.length === 0) {
-      return <Empty description="No new documents" className="p-4" />;
+      return (
+        <div className="py-8">
+          <Empty 
+            description={<span className="text-gray-400">No new documents</span>} 
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        </div>
+      );
     }
 
     return (
       <div>
-        <div className="flex justify-between items-center px-4 py-2 border-b">
-          <span className="text-sm text-gray-500">{newDocumentCount} new document(s)</span>
-          <Button size="small" type="link" onClick={clearNewDocuments}>
+        <div className="flex justify-between items-center px-4 py-3 bg-gray-50 border-b">
+          <span className="text-sm font-medium text-gray-600">
+            {newDocumentCount} new document{newDocumentCount > 1 ? 's' : ''}
+          </span>
+          <Button 
+            size="small" 
+            type="text" 
+            onClick={clearNewDocuments}
+            className="text-gray-500 hover:text-[#9D4D01]"
+          >
             Clear all
           </Button>
         </div>
         <List
-          className="max-h-60 overflow-y-auto"
-          style={{ width: 350 }}
+          className="max-h-72 overflow-y-auto"
           dataSource={newDocuments}
           renderItem={(doc) => (
             <List.Item
               key={doc.id}
+              className="hover:bg-gray-50 transition-colors px-4"
               actions={[
                 <Button
                   type="primary"
                   size="small"
-                  className="bg-[#582F08]"
+                  className="bg-[#9D4D01] hover:bg-[#582F08] border-none"
                   onClick={() => {
                     setShowToolbar(true);
                     navigate('/incoming');
@@ -159,19 +173,29 @@ const Navbar = () => {
                 </Button>,
                 <Button
                   size="small"
+                  type="text"
+                  className="text-gray-400 hover:text-gray-600"
                   onClick={() => removeNewDocument(doc.id)}
                 >
-                  Dismiss
+                  <CloseOutlined />
                 </Button>,
               ]}
             >
               <List.Item.Meta
-                avatar={<FileTextOutlined className="text-2xl text-[#582F08]" />}
-                title={<span className="font-semibold">{doc.subject}</span>}
+                avatar={
+                  <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
+                    <FileTextOutlined className="text-lg text-[#9D4D01]" />
+                  </div>
+                }
+                title={
+                  <span className="font-medium text-gray-800 text-sm line-clamp-1">
+                    {doc.subject}
+                  </span>
+                }
                 description={
-                  <div>
+                  <div className="space-y-0.5">
                     <div className="text-xs text-gray-500">
-                      From: <strong>{doc.sentBy}</strong>
+                      From: <span className="font-medium text-gray-600">{doc.sentBy}</span>
                     </div>
                     <div className="text-xs text-gray-400">
                       {new Date(doc.receivedAt).toLocaleString()}
@@ -187,18 +211,28 @@ const Navbar = () => {
   };
 
   // Render combined notification content with tabs
-  const renderNotificationContent = () => {
+  const renderNotificationContent = (isMobile = false) => {
     return (
-      <div style={{ width: 380 }}>
+      <div style={{ width: isMobile ? 'calc(100vw - 32px)' : 380, maxWidth: isMobile ? 320 : 380 }}>
         <Tabs
           defaultActiveKey="documents"
           size="small"
+          className="notification-tabs"
           items={[
             {
               key: 'documents',
               label: (
-                <span>
-                  <FileTextOutlined /> Documents {newDocumentCount > 0 && <Badge count={newDocumentCount} size="small" />}
+                <span className="flex items-center gap-2 px-1">
+                  <FileTextOutlined />
+                  <span>Documents</span>
+                  {newDocumentCount > 0 && (
+                    <Badge 
+                      count={newDocumentCount} 
+                      size="small" 
+                      className="ml-1"
+                      style={{ backgroundColor: '#9D4D01' }}
+                    />
+                  )}
                 </span>
               ),
               children: renderNewDocumentsContent(),
@@ -206,8 +240,16 @@ const Navbar = () => {
             {
               key: 'access',
               label: (
-                <span>
-                  Access Requests {accessRequestCount > 0 && <Badge count={accessRequestCount} size="small" />}
+                <span className="flex items-center gap-2 px-1">
+                  <span>Access Requests</span>
+                  {accessRequestCount > 0 && (
+                    <Badge 
+                      count={accessRequestCount} 
+                      size="small" 
+                      className="ml-1"
+                      style={{ backgroundColor: '#9D4D01' }}
+                    />
+                  )}
                 </span>
               ),
               children: renderAccessRequestContent(),
@@ -221,61 +263,90 @@ const Navbar = () => {
   // Render access request notifications
   const renderAccessRequestContent = () => {
     if (accessRequestsLoading) {
-      return <div className="p-4 text-center"><LoadingOutlined /></div>;
+      return (
+        <div className="py-8 flex justify-center">
+          <LoadingOutlined className="text-xl text-[#9D4D01]" />
+        </div>
+      );
     }
 
     if (!accessRequestsList || accessRequestsList.length === 0) {
-      return <Empty description="No pending access requests" className="p-4" />;
+      return (
+        <div className="py-8">
+          <Empty 
+            description={<span className="text-gray-400">No pending access requests</span>}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        </div>
+      );
     }
 
     return (
-      <List
-        className="max-h-80 overflow-y-auto"
-        style={{ width: 350 }}
-        dataSource={accessRequestsList}
-        renderItem={(request) => (
-          <List.Item
-            key={request.id}
-            actions={[
-              <Button
-                type="primary"
-                size="small"
-                icon={<CheckOutlined />}
-                className="bg-green-600"
-                onClick={() => {
-                  setSelectedRequest(request);
-                  setIsGrantModalOpen(true);
-                }}
-              >
-                Grant
-              </Button>,
-              <Button
-                danger
-                size="small"
-                icon={<CloseOutlined />}
-                loading={denyingAccess}
-                onClick={() => denyAccessMutation(request.id)}
-              >
-                Deny
-              </Button>,
-            ]}
-          >
-            <List.Item.Meta
-              title={<span className="font-semibold">{request.requester?.name}</span>}
-              description={
-                <div>
-                  <div className="text-xs text-gray-500">
-                    Requesting access to: <strong>{request.document?.subject}</strong>
+      <div>
+        <div className="flex justify-between items-center px-4 py-3 bg-gray-50 border-b">
+          <span className="text-sm font-medium text-gray-600">
+            {accessRequestCount} pending request{accessRequestCount > 1 ? 's' : ''}
+          </span>
+        </div>
+        <List
+          className="max-h-72 overflow-y-auto"
+          dataSource={accessRequestsList}
+          renderItem={(request) => (
+            <List.Item
+              key={request.id}
+              className="hover:bg-gray-50 transition-colors px-4"
+              actions={[
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<CheckOutlined />}
+                  className="bg-green-600 hover:bg-green-700 border-none"
+                  onClick={() => {
+                    setSelectedRequest(request);
+                    setIsGrantModalOpen(true);
+                  }}
+                >
+                  Grant
+                </Button>,
+                <Button
+                  danger
+                  size="small"
+                  type="text"
+                  icon={<CloseOutlined />}
+                  loading={denyingAccess}
+                  onClick={() => denyAccessMutation(request.id)}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                />,
+              ]}
+            >
+              <List.Item.Meta
+                avatar={
+                  <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                    <span className="text-sm font-semibold text-blue-600">
+                      {request.requester?.name?.charAt(0)}
+                    </span>
                   </div>
-                  <div className="text-xs text-gray-400">
-                    Ref: {request.document?.ref}
+                }
+                title={
+                  <span className="font-medium text-gray-800 text-sm">
+                    {request.requester?.name}
+                  </span>
+                }
+                description={
+                  <div className="space-y-0.5">
+                    <div className="text-xs text-gray-500 line-clamp-1">
+                      <span className="font-medium text-gray-600">{request.document?.subject}</span>
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      Ref: {request.document?.ref}
+                    </div>
                   </div>
-                </div>
-              }
-            />
-          </List.Item>
-        )}
-      />
+                }
+              />
+            </List.Item>
+          )}
+        />
+      </div>
     );
   };
 
@@ -319,7 +390,15 @@ const Navbar = () => {
       inaccessibleDocuments.length > 0;
 
     if (!results || !hasResults) {
-      return <div className="text-gray-500 p-4">No results found</div>;
+      return (
+        <div className="flex flex-col items-center justify-center py-8 px-4">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <p className="text-gray-500 text-sm font-medium">No results found</p>
+          <p className="text-gray-400 text-xs mt-1">Try a different search term</p>
+        </div>
+      );
     }
 
     const uniqueItemsMap = new Map();
@@ -404,38 +483,46 @@ const Navbar = () => {
           return (
             <div
               key={`full-${index}`}
-              className="p-4 border-b last:border-none border-gray-200 bg-white hover:bg-gray-100 transition-colors"
+              className="p-3 md:p-4 border-b last:border-none border-gray-100 bg-white hover:bg-[#FDF8F4] transition-all cursor-pointer group"
             >
-              <div className="text-lg font-semibold">{item.subject}</div>
-              <div className="text-sm text-gray-500">Ref: {item.ref}</div>
-              <div className="flex gap-2 flex-wrap">
-                {item.hasFile && (
-                  <Button
-                    type="primary"
-                    className="mt-2 bg-[#582F08] mr-2"
-                    onClick={() => handleButtonClick(item, 'View')}
-                  >
-                    View
-                  </Button>
-                )}
-                {showTrailButton && (
-                  <Button
-                    type="primary"
-                    className="mt-2 bg-[#582F08]"
-                    onClick={() => handleButtonClick(item, 'Trail')}
-                  >
-                    Trail
-                  </Button>
-                )}
-                {showTrackButton && (
-                  <Button
-                    type="primary"
-                    className="mt-2 bg-[#582F08]"
-                    onClick={() => handleButtonClick(item, 'Track')}
-                  >
-                    Track
-                  </Button>
-                )}
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-[#FDF4ED] rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-[#9D4D01]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-semibold text-[#582F08] line-clamp-1 group-hover:text-[#9D4D01] transition-colors">
+                    {item.subject}
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-0.5 font-medium">{item.ref}</p>
+                  <div className="flex gap-1.5 flex-wrap mt-2">
+                    {item.hasFile && (
+                      <button
+                        className="px-3 py-1 text-xs font-medium bg-[#582F08] text-white rounded-md hover:bg-[#6d3a0a] transition-colors"
+                        onClick={(e) => { e.stopPropagation(); handleButtonClick(item, 'View'); }}
+                      >
+                        View
+                      </button>
+                    )}
+                    {showTrailButton && (
+                      <button
+                        className="px-3 py-1 text-xs font-medium bg-[#E3BC97] text-[#582F08] rounded-md hover:bg-[#d4a574] transition-colors"
+                        onClick={(e) => { e.stopPropagation(); handleButtonClick(item, 'Trail'); }}
+                      >
+                        Trail
+                      </button>
+                    )}
+                    {showTrackButton && (
+                      <button
+                        className="px-3 py-1 text-xs font-medium bg-[#E3BC97] text-[#582F08] rounded-md hover:bg-[#d4a574] transition-colors"
+                        onClick={(e) => { e.stopPropagation(); handleButtonClick(item, 'Track'); }}
+                      >
+                        Track
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           );
@@ -445,26 +532,37 @@ const Navbar = () => {
         {grantedAccessItems.length > 0 && (
           <>
             {fullAccessItems.length > 0 && (
-              <div className="px-4 py-2 bg-blue-50 text-xs font-semibold text-blue-600 uppercase">
-                Granted Access (View Only)
+              <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-transparent border-l-2 border-blue-400">
+                <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Granted Access</span>
               </div>
             )}
             {grantedAccessItems.map((item, index) => (
               <div
                 key={`granted-${index}`}
-                className="p-4 border-b last:border-none border-gray-200 bg-blue-50 hover:bg-blue-100 transition-colors"
+                className="p-3 md:p-4 border-b last:border-none border-gray-100 bg-blue-50/50 hover:bg-blue-50 transition-all cursor-pointer group"
               >
-                <div className="text-lg font-semibold">{item.subject}</div>
-                <div className="text-sm text-gray-500">Ref: {item.ref}</div>
-                <div className="text-xs text-blue-500">View-only access granted</div>
-                <div className="flex gap-2 flex-wrap mt-2">
-                  <Button
-                    type="primary"
-                    className="bg-[#582F08]"
-                    onClick={() => handleButtonClick(item, 'View')}
-                  >
-                    View
-                  </Button>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-[#582F08] line-clamp-1 group-hover:text-blue-600 transition-colors">
+                      {item.subject}
+                    </h4>
+                    <p className="text-xs text-gray-500 mt-0.5 font-medium">{item.ref}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-[10px] text-blue-500 bg-blue-100 px-2 py-0.5 rounded-full">View Only</span>
+                      <button
+                        className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        onClick={(e) => { e.stopPropagation(); handleButtonClick(item, 'View'); }}
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -475,31 +573,44 @@ const Navbar = () => {
         {noAccessItems.length > 0 && (
           <>
             {(fullAccessItems.length > 0 || grantedAccessItems.length > 0) && (
-              <div className="px-4 py-2 bg-gray-100 text-xs font-semibold text-gray-600 uppercase">
-                Documents You Don't Have Access To
+              <div className="px-4 py-2 bg-gradient-to-r from-gray-100 to-transparent border-l-2 border-gray-400">
+                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Request Access</span>
               </div>
             )}
             {noAccessItems.map((item, index) => (
               <div
                 key={`inaccessible-${index}`}
-                className="p-4 border-b last:border-none border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="p-3 md:p-4 border-b last:border-none border-gray-100 bg-gray-50/50 hover:bg-gray-100 transition-all"
               >
-                <div className="text-lg font-semibold">{item.subject}</div>
-                <div className="text-sm text-gray-500">Ref: {item.ref}</div>
-                {item.currentHolder && (
-                  <div className="text-xs text-gray-400">
-                    Held by: {item.currentHolder.name}
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
                   </div>
-                )}
-                <div className="flex gap-2 flex-wrap mt-2">
-                  <Button
-                    type="default"
-                    className="border-[#582F08] text-[#582F08]"
-                    loading={requestingAccess}
-                    onClick={() => requestAccessMutation(item.docID)}
-                  >
-                    Request Access
-                  </Button>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-gray-700 line-clamp-1">
+                      {item.subject}
+                    </h4>
+                    <p className="text-xs text-gray-500 mt-0.5 font-medium">{item.ref}</p>
+                    {item.currentHolder && (
+                      <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Held by: {item.currentHolder.name}
+                      </p>
+                    )}
+                    <div className="mt-2">
+                      <button
+                        className="px-3 py-1 text-xs font-medium border border-[#582F08] text-[#582F08] rounded-md hover:bg-[#582F08] hover:text-white transition-colors disabled:opacity-50"
+                        disabled={requestingAccess}
+                        onClick={(e) => { e.stopPropagation(); requestAccessMutation(item.docID); }}
+                      >
+                        {requestingAccess ? 'Requesting...' : 'Request Access'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -555,33 +666,21 @@ const Navbar = () => {
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center pt-4 md:pt-[20px] px-4 md:px-0 fixed w-full z-10 bg-[#eadfd5] gap-2 md:gap-0">
-        <div className="pl-0 md:pl-[200px] ml-12 md:ml-0">
-          <p className="font-semibold text-lg md:text-[23px]">Dashboard</p>
-          <p className="font-semibold text-[#694421] text-sm md:text-base">
-            {currentDate.toDateString()}
-          </p>
-        </div>
-        <div className="flex flex-col bg-[#EADFD5] w-full md:w-auto">
-          <div className="bg-white flex items-center rounded-lg md:rounded-t-lg px-3 md:px-[20px] h-full">
-            <input
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              type="search"
-              placeholder="Search files..."
-              className="w-full md:w-[400px] h-[35px] md:h-[40px] px-3 md:px-[30px] rounded-[10px] outline-none text-sm md:text-base"
-            />
-            <div className="ml-2">
-              {loading ? (
-                <LoadingOutlined style={{ fontSize: 20 }} spin />
-              ) : (
+      {/* Desktop Navbar */}
+      <nav className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-[#EADFD5] border-b border-[#D4C4B5]">
+        <div className="flex items-center justify-between h-16 px-6 pl-[220px]">
+
+          {/* Center Section - Search Bar */}
+          <div className="flex flex-1 max-w-md mx-8">
+            <div className="relative w-full">
+              <div className="flex items-center bg-white border border-[#D4C4B5] rounded-lg px-4 py-2 focus-within:border-[#9D4D01] focus-within:ring-1 focus-within:ring-[#9D4D01] transition-all shadow-sm">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
                   stroke="currentColor"
-                  className="w-4 h-4 md:w-5 md:h-5"
+                  className="w-5 h-5 text-[#9D4D01]"
                 >
                   <path
                     strokeLinecap="round"
@@ -589,92 +688,175 @@ const Navbar = () => {
                     d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
                   />
                 </svg>
-              )}
-            </div>
-          </div>
-          <div className="">
-            <div className="absolute w-full md:w-[468px] left-0 md:left-auto px-4 md:px-0">
+                <input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  type="search"
+                  placeholder="Search documents..."
+                  className="w-full bg-transparent ml-3 text-sm text-[#582F08] placeholder-[#9D4D01]/60 outline-none"
+                />
+                {loading && (
+                  <LoadingOutlined className="text-[#9D4D01]" spin />
+                )}
+              </div>
+              
+              {/* Search Results Dropdown */}
               {searchTerm && results && isOpen && (
                 <div
-                  className="bg-white absolute z-50 w-full max-h-64 overflow-y-auto shadow-lg rounded-lg mt-2"
+                  className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 max-h-96 overflow-hidden z-50"
                   ref={dropdownRef}
                 >
-                  {renderMenuItems()}
+                  <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Search Results</span>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {renderMenuItems()}
+                  </div>
                 </div>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Notification Bell for Documents and Access Requests */}
-        <div className="hidden md:flex items-center gap-4">
-          <Popover
-            content={renderNotificationContent()}
-            title={
-              <div className="font-semibold text-[#582F08]">
-                Notifications
-              </div>
-            }
-            trigger="click"
-            placement="bottomRight"
-          >
-            <div className="cursor-pointer">
-              <Badge count={totalNotificationCount} size="small" offset={[-2, 2]}>
-                <BellOutlined className="text-xl md:text-2xl text-[#582F08] hover:text-[#9D4D01]" />
-              </Badge>
-            </div>
-          </Popover>
-
-          <div className="pr-4 md:pr-[80px] flex gap-2 items-center">
-            <p className="bg-[#E3BC97] text-[#582F08] px-2 md:px-3 py-1 md:py-2 font-semibold rounded-md text-sm md:text-[18px]">
-              {user &&
-                user?.name
-                  .split(' ')
-                  .map((name) => name.charAt(0))
-                  .reduce((a, b) => `${a}${b}`, '')}
-            </p>
-            <Dropdown
-              menu={{
-                items,
-              }}
-              trigger={['click']}
+          {/* Right Section - Notifications & User */}
+          <div className="flex items-center gap-6">
+            {/* Notification Bell */}
+            <Popover
+              content={renderNotificationContent()}
+              title={
+                <span className="font-semibold text-[#582F08]">
+                  Notifications
+                </span>
+              }
+              trigger="click"
+              placement="bottomRight"
             >
-              <a
-                className="font-semibold text-[#9D4D01] cursor-pointer text-sm md:text-base"
-                onClick={(e) => e.preventDefault()}
+              <button className="relative p-2 text-[#582F08] hover:text-[#9D4D01] hover:bg-[#E3BC97]/50 rounded-full transition-colors">
+                <Badge count={totalNotificationCount} size="small" offset={[-2, 2]}>
+                  <BellOutlined className="text-xl" />
+                </Badge>
+              </button>
+            </Popover>
+
+            {/* Divider */}
+            <div className="h-8 w-px bg-[#D4C4B5]" />
+
+            {/* User Profile */}
+            <div className="flex items-center gap-3">
+              <Dropdown
+                menu={{ items }}
+                trigger={['click']}
               >
-                <Space>
-                  <span className="hidden md:inline">{user?.name}</span>
-                  <DownOutlined />
-                </Space>
-              </a>
+                <button
+                  className="flex items-center gap-2 text-[#582F08] hover:text-[#9D4D01] transition-colors"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  <div className="w-9 h-9 bg-[#E3BC97] text-[#582F08] flex items-center justify-center rounded-full font-semibold text-sm border-2 border-[#9D4D01]">
+                    {user?.name
+                      ?.split(' ')
+                      .map((name) => name.charAt(0))
+                      .reduce((a, b) => `${a}${b}`, '')}
+                  </div>
+                  <span className="text-sm font-semibold max-w-[120px] truncate">
+                    {user?.name}
+                  </span>
+                  <DownOutlined className="text-xs" />
+                </button>
+              </Dropdown>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Navbar */}
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white">
+        {/* Top Bar */}
+        <div className="flex items-center justify-between h-14 px-4 border-b border-gray-100">
+          {/* Menu Placeholder for sidebar */}
+          <div className="w-10" />
+          
+          {/* Logo/Title */}
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-lg text-[#582F08]">Cocoa Papers</span>
+          </div>
+          
+          {/* Right Actions */}
+          <div className="flex items-center gap-2">
+            <Popover
+              content={renderNotificationContent(true)}
+              title={<span className="font-semibold text-[#582F08] text-sm">Notifications</span>}
+              trigger="click"
+              placement="bottom"
+              overlayStyle={{ maxWidth: 'calc(100vw - 16px)', right: 8 }}
+              overlayClassName="mobile-notification-popover"
+            >
+              <button className="relative p-2 text-[#582F08]">
+                <Badge count={totalNotificationCount} size="small" offset={[-2, 2]}>
+                  <BellOutlined className="text-lg" />
+                </Badge>
+              </button>
+            </Popover>
+            
+            <Dropdown menu={{ items }} trigger={['click']}>
+              <button className="p-1" onClick={(e) => e.preventDefault()}>
+                <div className="w-8 h-8 bg-[#E3BC97] text-[#582F08] flex items-center justify-center rounded-full font-semibold text-xs border border-[#9D4D01]">
+                  {user?.name
+                    ?.split(' ')
+                    .map((name) => name.charAt(0))
+                    .reduce((a, b) => `${a}${b}`, '')}
+                </div>
+              </button>
             </Dropdown>
           </div>
         </div>
-
-        {/* Mobile notification and user menu */}
-        <div className="fixed md:hidden top-4 right-4 flex items-center gap-3 z-50">
-          <Popover
-            content={renderNotificationContent()}
-            title={<div className="font-semibold text-[#582F08]">Notifications</div>}
-            trigger="click"
-            placement="bottomRight"
-          >
-            <div className="cursor-pointer">
-              <Badge count={totalNotificationCount} size="small" offset={[-2, 2]}>
-                <BellOutlined className="text-xl text-[#582F08]" />
-              </Badge>
+        
+        {/* Mobile Search Bar */}
+        <div className="px-3 py-2.5 bg-white border-b border-gray-100">
+          <div className="relative">
+            <div className="flex items-center bg-gray-50 rounded-xl px-4 py-2.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#E3BC97] transition-all">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="w-5 h-5 text-[#9D4D01]"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                />
+              </svg>
+              <input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                type="search"
+                placeholder="Search documents..."
+                className="w-full bg-transparent ml-3 text-sm text-[#582F08] placeholder-gray-400 outline-none font-medium"
+              />
+              {loading && <LoadingOutlined className="text-[#9D4D01]" spin />}
             </div>
-          </Popover>
-          <Dropdown menu={{ items }} trigger={['click']}>
-            <a className="cursor-pointer" onClick={(e) => e.preventDefault()}>
-              <p className="bg-[#E3BC97] text-[#582F08] px-2 py-1 font-semibold rounded-md text-sm">
-                {user?.name?.split(' ').map((name) => name.charAt(0)).reduce((a, b) => `${a}${b}`, '')}
-              </p>
-            </a>
-          </Dropdown>
+            
+            {/* Mobile Search Results */}
+            {searchTerm && results && isOpen && (
+              <div
+                className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 max-h-[60vh] overflow-hidden z-50"
+                ref={dropdownRef}
+              >
+                <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 sticky top-0">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Results</span>
+                </div>
+                <div className="max-h-[calc(60vh-40px)] overflow-y-auto">
+                  {renderMenuItems()}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </nav>
+
+      {/* Spacer for fixed navbar */}
+      <div className="h-[104px] md:h-16" />
 
       <Modal
         title="Locator"

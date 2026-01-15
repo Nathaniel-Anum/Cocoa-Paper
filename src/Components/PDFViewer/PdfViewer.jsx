@@ -112,32 +112,36 @@ const PDFViewerContent = ({ pdfUrl, documentId, fileId, onPageChange, onZoom, hi
             );
           })}
           <div className="pdf-controls">
-            <button
-              onClick={() => changePage(-1)}
-              disabled={pageNumber <= 1}
-              className="control-button"
-            >
-              Previous
-            </button>
-            <span className="page-info">
-              Page {pageNumber} of {numPages || '--'}
-            </span>
-            <button
-              onClick={() => changePage(1)}
-              disabled={pageNumber >= numPages}
-              className="control-button"
-            >
-              Next
-            </button>
+            <div className="flex items-center gap-1 md:gap-2">
+              <button
+                onClick={() => changePage(-1)}
+                disabled={pageNumber <= 1}
+                className="control-button text-xs md:text-sm"
+              >
+                <span className="hidden md:inline">Previous</span>
+                <span className="md:hidden">←</span>
+              </button>
+              <span className="page-info text-xs md:text-sm">
+                <span className="hidden md:inline">Page </span>{pageNumber}<span className="hidden md:inline"> of</span><span className="md:hidden">/</span> {numPages || '--'}
+              </span>
+              <button
+                onClick={() => changePage(1)}
+                disabled={pageNumber >= numPages}
+                className="control-button text-xs md:text-sm"
+              >
+                <span className="hidden md:inline">Next</span>
+                <span className="md:hidden">→</span>
+              </button>
+            </div>
             <div className="zoom-controls">
               <button
                 onClick={() => handleZoom(scale - 0.1)}
                 disabled={scale <= 0.5}
                 className="control-button"
               >
-                -
+                −
               </button>
-              <span className="zoom-level">{Math.round(scale * 100)}%</span>
+              <span className="zoom-level text-xs md:text-sm">{Math.round(scale * 100)}%</span>
               <button
                 disabled={scale >= 2}
                 className="control-button"

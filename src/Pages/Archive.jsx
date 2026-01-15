@@ -443,98 +443,185 @@ const Archive = () => {
 
   console.log(moveFolderData);
   return (
-    <div className="">
-      <div className="border-b-2 border-black/40 mb-4 mt-4">
-        <div className="flex gap-6 pl-6 pb-2   ">
-          <div className="duration-500 hover:rounded-lg hover:scale-110 ">
-            <button
-              onClick={() =>
-                setModalStates((prev) => ({ ...prev, createFolder: true }))
-              }
-              className="flex items-center"
-            >
-              <MdOutlineCreateNewFolder className="text-[1.3rem]" />
-              <p className="font-semibold text-[#582F08]"> New Folder</p>
-            </button>
-          </div>
-          <div className="duration-500 hover:rounded-lg hover:scale-110">
-            <button
-              onClick={() =>
-                setModalStates((prev) => ({ ...prev, uploadFile: true }))
-              }
-              className="flex items-center"
-            >
-              <UploadOutlined className="text-[1.3rem]" />
-              <p className="font-semibold text-[#582F08]"> Upload File</p>
-            </button>
-          </div>
+    <div className="pb-8">
+      {/* Page Title */}
+      <div className="mb-2">
+        <h1 className="text-xl md:text-2xl font-bold text-[#582F08]">Archive</h1>
+        <p className="text-sm text-gray-500 mt-1">Manage your files and folders</p>
+      </div>
+
+      {/* Clean Header with Actions */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() =>
+              setModalStates((prev) => ({ ...prev, createFolder: true }))
+            }
+            className="flex items-center gap-2 px-3 py-2 bg-[#582F08] text-white rounded-lg hover:bg-[#6d3a0a] transition-colors text-sm font-medium"
+          >
+            <MdOutlineCreateNewFolder className="text-base" />
+            <span className="hidden sm:inline">New Folder</span>
+          </button>
+          
+          <button
+            onClick={() =>
+              setModalStates((prev) => ({ ...prev, uploadFile: true }))
+            }
+            className="flex items-center gap-2 px-3 py-2 border border-[#582F08] text-[#582F08] rounded-lg hover:bg-[#582F08] hover:text-white transition-colors text-sm font-medium"
+          >
+            <UploadOutlined className="text-base" />
+            <span className="hidden sm:inline">Upload</span>
+          </button>
 
           {selectedItem.rowKeys.length > 0 && (
             <button
-              className="flex items-center"
+              className="flex items-center gap-2 px-3 py-2 text-[#582F08] hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium"
               onClick={() => {
                 setModalStates((prev) => ({ ...prev, moveModal: true }));
-                // Set initial folder ID based on selected item's parent
                 setMoveModalState((prev) => ({
                   ...prev,
                   currentFolderId: selectedItem.record?.parentFolderId || null,
                 }));
-                // Manual refetch after state is set
-                // setTimeout(() => refetchMoveFolder(), 0);
-                // refetchMoveFolder();
               }}
             >
-              <MdDriveFileMoveOutline className="text-[1.3rem]" />
-              <p className="font-semibold text-[#582F08]"> Move</p>
+              <MdDriveFileMoveOutline className="text-base" />
+              <span>Move</span>
             </button>
           )}
         </div>
-      </div>
-      <Breadcrumb
-        items={breadcrumbs}
-        itemRender={(route, _, routes) => (
-          <Link
-            to={
-              route.path === '/archive' ? '/archive' : `/archive${route.path}`
-            }
-            onClick={() =>
-              setBreadcrumbs(routes.slice(0, routes.indexOf(route) + 1))
-            }
-          >
-            {route.title}
-          </Link>
-        )}
-      />
 
-      <div className="flex justify-end my-4 px-2 md:px-0">
-        <Input.Search
-          placeholder="Search by name, reference, subject..."
-          className="w-full md:w-[30rem]"
-          allowClear
-          onChange={(e) => setSearchText(e.target.value)}
+        {/* Search */}
+        <div className="w-full md:w-72">
+          <Input.Search
+            placeholder="Search..."
+            allowClear
+            onChange={(e) => setSearchText(e.target.value)}
+            size="middle"
+          />
+        </div>
+      </div>
+
+      {/* Breadcrumb */}
+      <div className="mb-4 text-sm">
+        <Breadcrumb
+          items={breadcrumbs}
+          itemRender={(route, _, routes) => (
+            <Link
+              to={route.path === '/archive' ? '/archive' : `/archive${route.path}`}
+              onClick={() => setBreadcrumbs(routes.slice(0, routes.indexOf(route) + 1))}
+              className="text-gray-600 hover:text-[#582F08]"
+            >
+              {route.title}
+            </Link>
+          )}
         />
       </div>
 
-      <div className="overflow-x-auto">
-      <Table
-        columns={columns}
-        dataSource={Array.isArray(tableData) ? tableData : []}
-        showExpandColumn={false}
-        rowSelection={{
-          hideSelectAll: true,
-          type: 'radio',
-          selectedRowKeys: selectedItem.rowKeys,
-          onChange: (keys, rows) =>
-            setSelectedItem((prev) => ({
-              ...prev,
-              rowKeys: keys,
-              record: rows[0],
-            })),
-        }}
-        scroll={{ x: 600 }}
-        size="small"
-      />
+      {/* Desktop Table */}
+      <div className="hidden md:block">
+        <Table
+          columns={columns}
+          dataSource={Array.isArray(tableData) ? tableData : []}
+          showExpandColumn={false}
+          rowSelection={{
+            hideSelectAll: true,
+            type: 'radio',
+            selectedRowKeys: selectedItem.rowKeys,
+            onChange: (keys, rows) =>
+              setSelectedItem((prev) => ({
+                ...prev,
+                rowKeys: keys,
+                record: rows[0],
+              })),
+          }}
+          scroll={{ x: 600 }}
+          size="small"
+          pagination={{ pageSize: 15, size: 'small' }}
+        />
       </div>
+
+      {/* Mobile List */}
+      <div className="md:hidden">
+        {Array.isArray(tableData) && tableData.length > 0 ? (
+          <div className="divide-y divide-gray-100">
+            {tableData.map((record) => (
+              <div
+                key={record.key}
+                className={`py-3 px-1 flex items-center gap-3 ${
+                  selectedItem.rowKeys.includes(record.key) ? 'bg-[#FDF8F4]' : ''
+                }`}
+                onClick={() =>
+                  setSelectedItem((prev) => ({
+                    ...prev,
+                    rowKeys: [record.key],
+                    record: record,
+                  }))
+                }
+              >
+                {/* Icon */}
+                {record.type === 'Folder' ? (
+                  <FolderFilled className="text-2xl text-[#FFAC28] flex-shrink-0" />
+                ) : (
+                  <FilePdfFilled className="text-2xl text-[#eb3b3b] flex-shrink-0" />
+                )}
+                
+                {/* Content */}
+                <div 
+                  className="flex-1 min-w-0 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (record.type === 'Folder') {
+                      handleBreadcrumbUpdate(record);
+                    } else {
+                      handleFileClick(record);
+                    }
+                  }}
+                >
+                  <p className="text-sm font-medium text-[#582F08] truncate">
+                    {record.type === 'Folder' ? record.folderName : record.fileName}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {record.ref || record.type} · {new Date(record.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedItem((prev) => ({ ...prev, record }));
+                      setModalStates((prev) => ({ ...prev, editModal: true }));
+                    }}
+                    className="p-2 text-gray-400 hover:text-[#582F08]"
+                  >
+                    <EditTwoTone />
+                  </button>
+                  <Popconfirm
+                    title={`Delete ${record.type.toLowerCase()}?`}
+                    onConfirm={() => mutations.delete.mutate(record)}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <button 
+                      className="p-2 text-gray-400 hover:text-red-500"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <DeleteTwoTone twoToneColor="#FF0000" />
+                    </button>
+                  </Popconfirm>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 text-gray-400">
+            <FolderFilled className="text-4xl mb-2" />
+            <p>No items</p>
+          </div>
+        )}
+      </div>
+
       {/* Modals */}
       {modalStates.createFolder && (
         <CreateFolder
@@ -554,130 +641,95 @@ const Archive = () => {
           id={id}
         />
       )}
+
+      {/* Edit Modal */}
       <Modal
-        title={`Edit ${selectedItem.record?.type}`}
+        title={`Edit ${selectedItem.record?.type || 'Item'}`}
         open={modalStates.editModal}
         onCancel={() =>
           setModalStates((prev) => ({ ...prev, editModal: false }))
         }
         footer={null}
+        width={400}
       >
-        <Form form={form} onFinish={(values) => mutations.edit.mutate(values)}>
+        <Form form={form} onFinish={(values) => mutations.edit.mutate(values)} layout="vertical" className="mt-4">
           {selectedItem.record?.type === 'Folder' ? (
             <Form.Item
               name="folderName"
+              label="Folder Name"
               rules={[{ required: true, message: 'Please input folder name' }]}
             >
               <Input placeholder="Enter folder name" />
             </Form.Item>
           ) : (
             <>
-              <Form.Item
-                name="fileName"
-                label="File Name"
-                rules={[{ required: true }]}
-              >
+              <Form.Item name="fileName" label="File Name" rules={[{ required: true }]}>
                 <Input placeholder="File name" />
               </Form.Item>
-              <Form.Item
-                name="subject"
-                label="Subject"
-                rules={[{ required: true }]}
-              >
+              <Form.Item name="subject" label="Subject" rules={[{ required: true }]}>
                 <Input placeholder="Subject" />
               </Form.Item>
-              <Form.Item
-                name="ref"
-                label="Reference"
-                rules={[{ required: true }]}
-              >
+              <Form.Item name="ref" label="Reference" rules={[{ required: true }]}>
                 <Input placeholder="Reference" />
               </Form.Item>
             </>
           )}
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className="w-full bg-[#9D4D01]"
-            >
-              Submit
+          <Form.Item className="mb-0">
+            <Button type="primary" htmlType="submit" className="w-full bg-[#582F08]">
+              Save
             </Button>
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Move Modal */}
       <Modal
-        title="Move Item"
+        title="Move to..."
         open={modalStates.moveModal}
         onCancel={handleCloseMoveModal}
         footer={[
-          <div className="">
-            <button
-              key="cancel"
-              className="border mr-1 border-[#9D4D01] py-2 px-2 rounded-lg text-[#9D4D01] font-semibold hover:bg-[#9D4D01] hover:text-white"
-              onClick={handleCloseMoveModal}
-            >
-              Cancel
-            </button>
-            <Button
-              key="move"
-              type="primary"
-              onClick={() => mutations.move.mutate()}
-              className="bg-[#9D4D01] "
-              // disabled={!moveModalState.currentFolderId}
-            >
-              Move Here
-            </Button>
-          </div>,
+          <Button key="cancel" onClick={handleCloseMoveModal}>Cancel</Button>,
+          <Button key="move" type="primary" onClick={() => mutations.move.mutate()} className="bg-[#582F08]">
+            Move Here
+          </Button>
         ]}
-        width={900}
+        width={600}
       >
-        <div className="flex flex-col gap-4">
+        <div className="mt-4">
           {moveFolderData?.data?.archive?.parentFolderId && (
-            <Button
-              icon={<ArrowLeftOutlined />}
+            <button
               onClick={handleBackClick}
-              className="w-24"
+              className="flex items-center gap-1 text-sm text-gray-600 hover:text-[#582F08] mb-4"
             >
+              <ArrowLeftOutlined />
               Back
-            </Button>
+            </button>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {isFetchingFolders ? (
-              <div className="col-span-2 md:col-span-3 lg:col-span-5 flex justify-center items-center py-12">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#9D4D01]"></div>
-                  <span className="text-gray-500">Loading folders...</span>
+              <div className="col-span-full py-8 text-center text-gray-400">Loading...</div>
+            ) : onlyFolders?.length > 0 ? (
+              onlyFolders.map((folder) => (
+                <div
+                  key={folder.folderId}
+                  onClick={() => handleFolderClick(folder)}
+                  className="p-3 cursor-pointer hover:bg-gray-50 rounded-lg flex flex-col items-center text-center"
+                >
+                  <FolderFilled className="text-3xl text-[#FFAC28]" />
+                  <p className="text-xs mt-1 text-gray-700 truncate w-full">{folder.folderName}</p>
                 </div>
-              </div>
+              ))
             ) : (
-              <>
-                {onlyFolders?.map((folder) => (
-                  <div
-                    key={folder.folderId}
-                    onClick={() => handleFolderClick(folder)}
-                    className="p-3 cursor-pointer hover:bg-gray-100 rounded-lg flex items-center flex-col"
-                  >
-                    <FolderFilled className="text-[3rem] text-[#FFAC28]" />
-                    <p className="text-center mt-2 text-sm truncate w-full">
-                      {folder.folderName}
-                    </p>
-                  </div>
-                ))}
-                {onlyFolders?.length === 0 && (
-                  <div className="col-span-5 text-center py-8 text-gray-500">
-                    No folders available in this location
-                  </div>
-                )}
-              </>
+              <div className="col-span-full py-8 text-center text-gray-400">No folders</div>
             )}
           </div>
         </div>
       </Modal>
 
+      {/* File Viewer Modal */}
       <Modal
-        title={selectedItem.file?.fileName || 'Document Viewer'}
+        title={selectedItem.file?.fileName || 'Document'}
         open={modalStates.fileViewer}
         onCancel={() => {
           setModalStates((prev) => ({ ...prev, fileViewer: false }));

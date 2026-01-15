@@ -33,6 +33,16 @@ import { useNavigate } from 'react-router-dom';
 import useStore from '../store/store';
 import { FiFilter } from 'react-icons/fi';
 
+// Helper function to capitalize each word
+const capitalizeWords = (str) => {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 const Outgoing = () => {
   const { trails, isLoading } = useTrail('outgoing');
   const [trailId, setTrailId] = useState('');
@@ -107,7 +117,7 @@ const Outgoing = () => {
       },
       render: (document) => {
         //   console.log(document);
-        return <div>{document.subject}</div>;
+        return <div className="font-medium text-[#582F08]">{capitalizeWords(document.subject)}</div>;
       },
     },
     {
@@ -116,7 +126,7 @@ const Outgoing = () => {
       key: 'ref',
       responsive: ['md'],
       render: (document) => {
-        return <div>{document.ref}</div>;
+        return <div className="text-gray-600 font-mono text-sm">{document.ref}</div>;
       },
     },
     {
@@ -124,6 +134,7 @@ const Outgoing = () => {
       dataIndex: ['receiver', 'name'],
       key: 'receiver',
       responsive: ['lg'],
+      render: (name) => <span>{capitalizeWords(name)}</span>,
     },
 
     {
@@ -139,7 +150,7 @@ const Outgoing = () => {
         return record.document?.division?.divisionName === value;
       },
       render: (document) => {
-        return <div>{document.document.division.divisionName}</div>;
+        return <div>{capitalizeWords(document.document.division.divisionName)}</div>;
       },
     },
     {
@@ -155,7 +166,7 @@ const Outgoing = () => {
         return record.document?.department?.departmentName === value;
       },
       render: (document) => {
-        return <div>{document.document.department.departmentName}</div>;
+        return <div>{capitalizeWords(document.document.department.departmentName)}</div>;
       },
     },
     {
@@ -182,7 +193,7 @@ const Outgoing = () => {
       responsive: ['md'],
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
-        return <div>{dateTime.toDateString()}</div>;
+        return <div className="text-gray-600">{dateTime.toDateString()}</div>;
       },
     },
     {
@@ -192,7 +203,7 @@ const Outgoing = () => {
       responsive: ['md'],
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
-        return <div>{dateTime.toLocaleTimeString()}</div>;
+        return <div className="text-gray-600">{dateTime.toLocaleTimeString()}</div>;
       },
     },
     {
@@ -296,29 +307,44 @@ const Outgoing = () => {
   });
 
   return (
-    <div className="mt-8">
-      <div className="flex flex-col md:flex-row md:justify-end gap-2 mb-4">
-        <Input.Search
-          placeholder="Search by subject, reference, receiver..."
-          className="w-full md:w-[25rem]"
-          allowClear
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-        <button
-          onClick={() => {
-            setTempFilterDivision(filterDivision);
-            setTempFilterDepartment(filterDepartment);
-            setIsFilterModalOpen(true);
-          }}
-          className="relative flex items-center justify-center w-[32px] h-[32px] border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-        >
-          <FiFilter className="text-[#582F08] text-lg" />
-          {(filterDivision || filterDepartment) && (
-            <span className="absolute -top-1 -right-1 bg-[#582F08] text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
-              {(filterDivision ? 1 : 0) + (filterDepartment ? 1 : 0)}
-            </span>
-          )}
-        </button>
+    <div className="">
+      {/* Page Title */}
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#582F08]">Outgoing Documents</h1>
+        <p className="text-sm text-gray-500 mt-1">Documents you have sent</p>
+      </div>
+
+      {/* Search and Filter Bar */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span className="font-medium text-[#582F08]">{mobileFilteredData.length}</span> documents found
+          </div>
+          <div className="flex flex-col md:flex-row gap-2">
+            <Input.Search
+              placeholder="Search by subject, reference, receiver..."
+              className="w-full md:w-[25rem]"
+              allowClear
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+            <button
+              onClick={() => {
+                setTempFilterDivision(filterDivision);
+                setTempFilterDepartment(filterDepartment);
+                setIsFilterModalOpen(true);
+              }}
+              className="relative flex items-center justify-center gap-2 px-4 h-[32px] border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              <FiFilter className="text-[#582F08] text-lg" />
+              <span className="text-sm text-[#582F08] hidden md:inline">Filter</span>
+              {(filterDivision || filterDepartment) && (
+                <span className="absolute -top-1 -right-1 bg-[#582F08] text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                  {(filterDivision ? 1 : 0) + (filterDepartment ? 1 : 0)}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Filter Modal */}
@@ -409,68 +435,105 @@ const Outgoing = () => {
         ) : (
           <div className="space-y-3">
             {mobileFilteredData.map((record) => (
-              <Card
+              <div
                 key={record.key}
-                className="shadow-sm border border-gray-200"
-                bodyStyle={{ padding: '12px' }}
+                className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden active:scale-[0.99] transition-transform"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-[#582F08] text-sm truncate">
-                      {record.document?.subject}
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-1">Ref: {record.document?.ref}</p>
-                    <p className="text-xs text-gray-600 mt-1">To: {record.receiver?.name}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      {record?.document?.isApproved === true ? (
-                        <Tag color="green" className="text-xs">Approved</Tag>
-                      ) : record?.document?.isApproved === false && record?.document?.documentType === 'BudgetRelease' ? (
-                        <Tag color="orange" className="text-xs">Pending</Tag>
-                      ) : record?.document?.documentType !== 'BudgetRelease' ? (
-                        <Tag color="blue" className="text-xs">N/A</Tag>
-                      ) : null}
+                {/* Clickable Card Body */}
+                <div
+                  className="p-4 cursor-pointer"
+                  onClick={() => {
+                    setShowToolbar(false);
+                    navigate(`/view-document/${record?.docID}`);
+                  }}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Icon */}
+                    <div className="w-10 h-10 bg-[#E8F5E9] rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-[#4CAF50]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {new Date(record.createdAt).toLocaleDateString()} • {new Date(record.createdAt).toLocaleTimeString()}
-                    </p>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <h3 className="font-semibold text-[#582F08] text-sm leading-tight line-clamp-2">
+                          {capitalizeWords(record.document?.subject)}
+                        </h3>
+                      </div>
+                      <p className="text-xs text-gray-500 font-mono">{record.document?.ref}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs text-gray-400">To:</span>
+                        <div className="w-5 h-5 bg-[#E3BC97] rounded-full flex items-center justify-center">
+                          <span className="text-[8px] font-bold text-[#582F08] uppercase">
+                            {record.receiver?.name?.charAt(0)}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-600">{capitalizeWords(record.receiver?.name)}</span>
+                      </div>
+                    </div>
+                    {/* Arrow */}
+                    <div className="flex-shrink-0 text-gray-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
+                </div>
+                {/* Card Footer */}
+                <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400">
+                      {new Date(record.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                    {record?.document?.isApproved === true ? (
+                      <Tag color="green" className="text-[10px] m-0 leading-none" style={{ fontSize: '10px', padding: '2px 6px' }}>Approved</Tag>
+                    ) : record?.document?.isApproved === false && record?.document?.documentType === 'BudgetRelease' ? (
+                      <Tag color="orange" className="text-[10px] m-0 leading-none" style={{ fontSize: '10px', padding: '2px 6px' }}>Pending</Tag>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center gap-1">
                     <button
-                      onClick={() => {
-                        setShowToolbar(false);
-                        navigate(`/view-document/${record?.docID}`);
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleView(record);
                       }}
-                      className="p-2 hover:bg-gray-100 rounded-full"
+                      className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"
+                      title="Track"
                     >
-                      <FaRegEye className="text-[#582F08]" />
-                    </button>
-                    <button
-                      onClick={() => handleView(record)}
-                      className="p-2 hover:bg-gray-100 rounded-full"
-                    >
-                      <IoLocationOutline className="text-[#582F08]" />
+                      <IoLocationOutline className="text-[#582F08] text-sm" />
                     </button>
                     {hasPermission(allRolePermissions, [requiredPermissions.RECALL_TRAIL]) && (
                       <Popconfirm
                         title="Are you sure you want to recall this item?"
                         onConfirm={() => callBackDoc(record.docID)}
                       >
-                        <button className="p-2 hover:bg-gray-100 rounded-full">
-                          <GiRecycle className="text-[#582F08]" />
+                        <button
+                          className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                          title="Recall"
+                        >
+                          <GiRecycle className="text-[#582F08] text-sm" />
                         </button>
                       </Popconfirm>
                     )}
                   </div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block overflow-x-auto">
-        <Table columns={columns} dataSource={_data} loading={isLoading} />
+      <div className="hidden md:block bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <Table 
+          columns={columns} 
+          dataSource={_data} 
+          loading={isLoading}
+          className="outgoing-table"
+          rowClassName="hover:bg-[#FDF4ED] transition-colors"
+        />
       </div>
     </div>
   );

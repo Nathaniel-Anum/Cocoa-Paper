@@ -158,6 +158,12 @@ const PhysicalDocs = () => {
   // console.log(_data);
   return (
     <div className="">
+      {/* Page Title */}
+      <div className="mb-4">
+        <h1 className="text-xl md:text-2xl font-bold text-[#582F08]">Physical Documents</h1>
+        <p className="text-sm text-gray-500 mt-1">Track physical document locations</p>
+      </div>
+
       <div className="flex justify-end mb-4">
         <Input.Search
           placeholder="Search by subject, reference, sender, department..."

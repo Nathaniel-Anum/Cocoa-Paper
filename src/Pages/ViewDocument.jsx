@@ -467,29 +467,30 @@ function ViewDocument() {
       </Modal>
       <div></div>
 
-      <Content className="p-4 h-full mb-10">
-        <div className="w-5/6 mx-auto mb-4 ">
-          <h1 className=" text-center font-semibold text-xl text-slate-500 ">
+      <Content className="p-2 md:p-4 h-full mb-10">
+        <div className="w-full md:w-5/6 mx-auto mb-3 md:mb-4 px-2">
+          <h1 className="text-center font-semibold text-base md:text-xl text-slate-500 line-clamp-2">
             {document.data.document.subject}
           </h1>
         </div>
 
-        <div className="h-full  mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="h-full mx-auto flex flex-col lg:grid lg:grid-cols-2 gap-3 md:gap-4">
           {/* Document Preview Section */}
           <Card
             bordered={false}
-            className="h-full"
+            className="h-[60vh] md:h-full min-h-[400px] order-1"
             bodyStyle={{
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
-              padding: '16px',
+              padding: '8px',
             }}
+            styles={{ body: { padding: '8px' } }}
           >
-            <div className="flex justify-between items-center mb-3">
+            <div className="flex justify-between items-center mb-2 md:mb-3 px-1">
               {document.data.document.attachments?.length > 0 && (
                 <span
-                  className="text-blue-400 cursor-pointer underline"
+                  className="text-blue-400 cursor-pointer underline text-sm"
                   onClick={() => {
                     setShowToolbar(false);
                     navigate(`/view-attachment/${docId}`);
@@ -560,17 +561,22 @@ function ViewDocument() {
 
             <Card
               bordered={false}
-              className="bg-[#582F08]/5 flex-shrink-0"
-              bodyStyle={{ padding: '16px' }}
+              className="bg-[#582F08]/5 flex-shrink-0 mt-2 md:mt-0"
+              bodyStyle={{ padding: '12px' }}
+              styles={{ body: { padding: '12px' } }}
             >
               {document.data.document.documentType === 'BudgetRelease' && (
-                <Table
-                  dataSource={budgetData}
-                  columns={budgetColumns}
-                  pagination={false}
-                  loading={isLoading}
-                  locale={{ emptyText: 'No budget data available' }}
-                />
+                <div className="overflow-x-auto -mx-2">
+                  <Table
+                    dataSource={budgetData}
+                    columns={budgetColumns}
+                    pagination={false}
+                    loading={isLoading}
+                    locale={{ emptyText: 'No budget data available' }}
+                    size="small"
+                    scroll={{ x: 'max-content' }}
+                  />
+                </div>
               )}
 
               {hasPermission(getAllRolePermissions(user), [
@@ -583,7 +589,7 @@ function ViewDocument() {
                     htmlType="button"
                     loading={approvalLoading}
                     icon={<FaHandshake className="w-4 h-4" />}
-                    className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-6"
+                    className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-4 md:mt-6"
                     onClick={handleApproveDocument}
                   >
                     Approve
@@ -613,27 +619,28 @@ function ViewDocument() {
           {/* Comments Section */}
           <Card
             bordered={false}
-            className="h-full"
+            className="h-full order-2"
             bodyStyle={{
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
-              padding: '16px',
+              padding: '12px',
             }}
+            styles={{ body: { padding: '12px' } }}
           >
-            <div className="flex items-center gap-2 mb-4 flex-shrink-0">
-              <LuMessageSquare className="w-6 h-6" />
-              <Title level={4} style={{ margin: 0 }}>
+            <div className="flex items-center gap-2 mb-3 md:mb-4 flex-shrink-0">
+              <LuMessageSquare className="w-5 h-5 md:w-6 md:h-6" />
+              <Title level={4} style={{ margin: 0 }} className="text-base md:text-lg">
                 Comments
               </Title>
             </div>
 
             <div
-              className="flex-1 bg-[#e4c8ad] rounded-lg p-4 overflow-y-auto mb-4"
+              className="flex-1 bg-[#e4c8ad] rounded-lg p-3 md:p-4 overflow-y-auto mb-3 md:mb-4"
               style={{
-                height: 'calc(100vh - 20rem)',
-                minHeight: '200px',
-                maxHeight: 'calc(100vh - 20rem)',
+                height: 'calc(100vh - 24rem)',
+                minHeight: '150px',
+                maxHeight: 'calc(100vh - 24rem)',
               }}
             >
               {commentsToShow.length > 0 ? (
@@ -644,28 +651,28 @@ function ViewDocument() {
                       comment.userId === user?.userId
                         ? 'justify-end'
                         : 'justify-start'
-                    } mb-4`}
+                    } mb-3 md:mb-4`}
                   >
                     <div
-                      className={`flex gap-3 max-w-[80%] ${
+                      className={`flex gap-2 md:gap-3 max-w-[85%] md:max-w-[80%] ${
                         comment.userId === user?.userId
                           ? 'flex-row-reverse'
                           : 'flex-row'
                       }`}
                     >
-                      <Avatar icon={<LuUser className="w-5 h-5" />} />
+                      <Avatar icon={<LuUser className="w-4 h-4 md:w-5 md:h-5" />} size="small" className="flex-shrink-0" />
                       <div
-                        className={`rounded-lg p-4 ${
+                        className={`rounded-lg p-3 md:p-4 ${
                           comment.userId === user?.userId
                             ? 'bg-[#582F08] text-white'
                             : 'bg-[#9d4d01] text-white'
                         }`}
                       >
-                        <p className="font-medium text-sm">
+                        <p className="font-medium text-xs md:text-sm">
                           {comment.user?.name || 'Unknown User'}
                         </p>
-                        <p className="mt-1">{comment.body}</p>
-                        <p className="text-xs mt-2 opacity-75">
+                        <p className="mt-1 text-sm md:text-base">{comment.body}</p>
+                        <p className="text-[10px] md:text-xs mt-2 opacity-75">
                           {dayjs(comment.createdAt).format('YYYY-MM-DD HH:mm')}
                         </p>
                       </div>
@@ -674,7 +681,7 @@ function ViewDocument() {
                 ))
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <p>No comments yet</p>
+                  <p className="text-sm">No comments yet</p>
                 </div>
               )}
             </div>

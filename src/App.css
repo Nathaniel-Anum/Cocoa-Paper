@@ -450,6 +450,61 @@ table th {
   min-height: 250px;
 }
 
+/* Mobile notification popover */
+@media screen and (max-width: 768px) {
+  .mobile-notification-popover {
+    max-width: calc(100vw - 16px) !important;
+    left: 8px !important;
+    right: 8px !important;
+  }
+  
+  .mobile-notification-popover .ant-popover-inner {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  .mobile-notification-popover .ant-popover-inner-content {
+    padding: 8px !important;
+  }
+  
+  .mobile-notification-popover .ant-tabs-tab {
+    padding: 8px 4px !important;
+    font-size: 12px !important;
+  }
+  
+  .mobile-notification-popover .ant-list-item {
+    padding: 8px !important;
+  }
+  
+  .mobile-notification-popover .ant-list-item-meta-avatar {
+    margin-right: 8px !important;
+  }
+}
+
+/* Archive page styles */
+.archive-search .ant-input-search-button {
+  background-color: #582F08 !important;
+  border-color: #582F08 !important;
+}
+
+.archive-search .ant-input-search-button:hover {
+  background-color: #6d3a0a !important;
+  border-color: #6d3a0a !important;
+}
+
+.archive-search .ant-input {
+  border-radius: 8px 0 0 8px !important;
+}
+
+.archive-modal .ant-modal-header {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+}
+
+.archive-modal .ant-modal-content {
+  border-radius: 16px;
+}
+
 /* Mobile-friendly spacing utilities */
 @media screen and (max-width: 768px) {
   .p-8 {

@@ -13,7 +13,7 @@ const Layout = () => {
     <div>
       <Navbar />
       <Sidebar />
-      <div className="pt-24 md:pt-[10rem] min-h-screen w-full pl-4 md:pl-[200px] pr-4 md:pr-[72px] pb-8">
+      <div className="  min-h-screen w-full pl-4 md:pl-[200px] pr-4 md:pr-[72px] pb-8">
         {/* {pathname !== '/' && (
           <span
             className="flex items-center gap-2  pl-[20px] w-[100px] cursor-pointer font-semibold text-[#694422]"

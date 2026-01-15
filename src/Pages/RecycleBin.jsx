@@ -119,6 +119,12 @@ const RecycleBin = () => {
 
   return (
     <div className="px-2 md:px-0">
+      {/* Page Title */}
+      <div className="mb-4">
+        <h1 className="text-xl md:text-2xl font-bold text-[#582F08]">Recycle Bin</h1>
+        <p className="text-sm text-gray-500 mt-1">Deleted items can be restored</p>
+      </div>
+
       <div className="flex justify-end mb-4">
         <Input.Search
           placeholder="Search by name, subject, reference..."

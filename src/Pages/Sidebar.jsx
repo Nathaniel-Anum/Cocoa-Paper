@@ -21,13 +21,19 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile hamburger button */}
+      {/* Mobile hamburger button - Clean minimal design */}
       <button 
         onClick={toggleSidebar}
-        className="md:hidden fixed top-4 left-4 z-50 bg-[#582f08] text-[#E3BC97] p-3 rounded-lg shadow-lg hover:bg-[#6d3a0a] transition-colors"
+        className="md:hidden fixed top-[13px] left-3 z-50 w-9 h-9 flex items-center justify-center rounded-lg text-[#582F08] hover:bg-gray-100 active:bg-gray-200 transition-colors"
         aria-label="Toggle menu"
       >
-        {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+        {isOpen ? (
+          <FaTimes size={18} />
+        ) : (
+          <svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1H19M1 7H19M1 13H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        )}
       </button>
 
       {/* Overlay for mobile */}
@@ -45,10 +51,11 @@ const Sidebar = () => {
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0
       `}>
-        <div className="mt-8 md:mt-0">
-          <img src="/asset/logo.9a18109e1c16584832d5.png" alt="" />
+        {/* Logo */}
+        <div className="flex justify-center mb-4">
+          <img src="/asset/logo.9a18109e1c16584832d5.png" alt="Cocoa Papers" className="h-12 w-auto" />
         </div>
-        <ul className="list-none px-[10px] md:px-[15px] py-[20px] md:py-[25px] flex flex-col gap-[25px] md:gap-[35px] my-[15px] md:my-[20px] cursor-pointer">
+        <ul className="list-none px-[10px] md:px-[15px] py-[10px] flex flex-col gap-[20px] md:gap-[30px] cursor-pointer">
           {hasPermission(allRolePermissions, [
             requiredPermissions.READ_ANALYTICS,
           ]) && (

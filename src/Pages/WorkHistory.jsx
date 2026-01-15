@@ -124,7 +124,13 @@ const WorkHistory = () => {
           handleCancel={() => setShowModal(false)}
           trails={trails}
         />
-        <div className="flex justify-end mb-4 mt-4 md:mt-8 px-2 md:px-0">
+        {/* Page Title */}
+        <div className="mb-4 px-2 md:px-0">
+          <h1 className="text-xl md:text-2xl font-bold text-[#582F08]">Work History</h1>
+          <p className="text-sm text-gray-500 mt-1">Your document activity and history</p>
+        </div>
+
+        <div className="flex justify-end mb-4 px-2 md:px-0">
           <Input.Search
             placeholder="Search by subject, file name, reference..."
             className="w-full md:w-[30rem]"

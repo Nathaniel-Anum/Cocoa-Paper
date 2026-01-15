@@ -42,6 +42,16 @@ import Trail from '../Components/Trail/Trail';
 import { useGetAllUserGroups, useGetAllUsers } from '../queryHooks/user';
 import { FiFilter } from 'react-icons/fi';
 
+// Helper function to capitalize each word
+const capitalizeWords = (str) => {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 const Incoming = () => {
   const navigate = useNavigate();
   const { trails, isLoading } = useTrail('incoming');
@@ -325,7 +335,7 @@ const Incoming = () => {
       render: (data) => {
         return (
           <div className="flex items-start gap-1">
-            {data.document.subject}{' '}
+            <span className="font-medium text-[#582F08]">{capitalizeWords(data.document.subject)}</span>{' '}
             {data.isCarbonCopy ? (
               <span className="flex gap-1">
                 <Tag color="warning">CC</Tag>
@@ -346,7 +356,7 @@ const Incoming = () => {
       key: 'ref',
       responsive: ['md'],
       render: (document) => {
-        return <div>{document.ref}</div>;
+        return <div className="text-gray-600 font-mono text-sm">{document.ref}</div>;
       },
     },
 
@@ -355,12 +365,14 @@ const Incoming = () => {
       dataIndex: ['sender', 'name'],
       key: 'receiver',
       responsive: ['lg'],
+      render: (name) => <span>{capitalizeWords(name)}</span>,
     },
     {
       title: 'Intended Receipients',
       dataIndex: ['userIntendedFor', 'name'],
       key: 'userIntendedFor',
       responsive: ['lg'],
+      render: (name) => <span>{capitalizeWords(name)}</span>,
     },
     hasPermission(allRolePermissions, [
       requiredPermissions.READ_AUDIT_STATUS,
@@ -389,7 +401,7 @@ const Incoming = () => {
         return record.document?.division?.divisionName === value;
       },
       render: (document) => {
-        return <div>{document.document.division.divisionName}</div>;
+        return <div>{capitalizeWords(document.document.division.divisionName)}</div>;
       },
     },
 
@@ -406,7 +418,7 @@ const Incoming = () => {
         return record.sender?.department?.departmentName === value;
       },
       render: (document) => {
-        return <div>{document.sender.department.departmentName}</div>;
+        return <div>{capitalizeWords(document.sender.department.departmentName)}</div>;
       },
     },
     {
@@ -415,7 +427,7 @@ const Incoming = () => {
       dataIndex: 'createdAt',
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
-        return <div>{dateTime.toDateString()}</div>;
+        return <div className="text-gray-600">{dateTime.toDateString()}</div>;
       },
     },
     {
@@ -425,7 +437,7 @@ const Incoming = () => {
       responsive: ['md'],
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
-        return <div>{dateTime.toLocaleTimeString()}</div>;
+        return <div className="text-gray-600">{dateTime.toLocaleTimeString()}</div>;
       },
     },
     {
@@ -472,29 +484,44 @@ const Incoming = () => {
   console.log(_data);
 
   return (
-    <div className="mt-8">
-      <div className="flex flex-col md:flex-row md:justify-end gap-2 mb-4">
-        <Input.Search
-          placeholder="Search by subject, reference, sender..."
-          className="w-full md:w-[25rem]"
-          allowClear
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-        <button
-          onClick={() => {
-            setTempFilterDivision(filterDivision);
-            setTempFilterDepartment(filterDepartment);
-            setIsFilterModalOpen(true);
-          }}
-          className="relative flex items-center justify-center w-[32px] h-[32px] border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-        >
-          <FiFilter className="text-[#582F08] text-lg" />
-          {(filterDivision || filterDepartment) && (
-            <span className="absolute -top-1 -right-1 bg-[#582F08] text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
-              {(filterDivision ? 1 : 0) + (filterDepartment ? 1 : 0)}
-            </span>
-          )}
-        </button>
+    <div className="">
+      {/* Page Title */}
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#582F08]">Incoming Documents</h1>
+        <p className="text-sm text-gray-500 mt-1">Documents received and pending action</p>
+      </div>
+
+      {/* Search and Filter Bar */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span className="font-medium text-[#582F08]">{filteredData.length}</span> documents found
+          </div>
+          <div className="flex flex-col md:flex-row gap-2">
+            <Input.Search
+              placeholder="Search by subject, reference, sender..."
+              className="w-full md:w-[25rem]"
+              allowClear
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+            <button
+              onClick={() => {
+                setTempFilterDivision(filterDivision);
+                setTempFilterDepartment(filterDepartment);
+                setIsFilterModalOpen(true);
+              }}
+              className="relative flex items-center justify-center gap-2 px-4 h-[32px] border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              <FiFilter className="text-[#582F08] text-lg" />
+              <span className="text-sm text-[#582F08] hidden md:inline">Filter</span>
+              {(filterDivision || filterDepartment) && (
+                <span className="absolute -top-1 -right-1 bg-[#582F08] text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                  {(filterDivision ? 1 : 0) + (filterDepartment ? 1 : 0)}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Filter Modal */}
@@ -579,49 +606,91 @@ const Incoming = () => {
         ) : (
           <div className="space-y-3">
             {filteredData.map((record) => (
-              <Card
+              <div
                 key={record.key}
-                className="shadow-sm border border-gray-200"
-                bodyStyle={{ padding: '12px' }}
+                className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden active:scale-[0.99] transition-transform"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-[#582F08] text-sm truncate">
-                        {record.document?.subject}
-                      </h3>
-                      {record.isCarbonCopy && (
-                        <Tag color="warning" className="text-xs">CC</Tag>
-                      )}
-                      {record.isCarbonCopy && record.ccEnableForward && (
-                        <Tag color="success" className="text-xs">Can Forward</Tag>
-                      )}
+                {/* Clickable Card Body */}
+                <div
+                  className="p-4 cursor-pointer"
+                  onClick={() => {
+                    setShowToolbar(false);
+                    navigate(`/view-document/${record?.docID}`);
+                  }}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Icon */}
+                    <div className="w-10 h-10 bg-[#FDF4ED] rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-[#9D4D01]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Ref: {record.document?.ref}</p>
-                    <p className="text-xs text-gray-600 mt-1">From: {record.sender?.name}</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {new Date(record.createdAt).toLocaleDateString()} • {new Date(record.createdAt).toLocaleTimeString()}
-                    </p>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <h3 className="font-semibold text-[#582F08] text-sm leading-tight line-clamp-2">
+                          {capitalizeWords(record.document?.subject)}
+                        </h3>
+                      </div>
+                      <p className="text-xs text-gray-500 font-mono">{record.document?.ref}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="w-5 h-5 bg-[#E3BC97] rounded-full flex items-center justify-center">
+                          <span className="text-[8px] font-bold text-[#582F08] uppercase">
+                            {record.sender?.name?.charAt(0)}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-600">{capitalizeWords(record.sender?.name)}</span>
+                      </div>
+                    </div>
+                    {/* Arrow */}
+                    <div className="flex-shrink-0 text-gray-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                {/* Card Footer */}
+                <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400">
+                      {new Date(record.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                    {record.isCarbonCopy && (
+                      <Tag color="warning" className="text-[10px] m-0 leading-none" style={{ fontSize: '10px', padding: '2px 6px' }}>CC</Tag>
+                    )}
+                    {record.isCarbonCopy && record.ccEnableForward && (
+                      <Tag color="success" className="text-[10px] m-0 leading-none" style={{ fontSize: '10px', padding: '2px 6px' }}>Forward</Tag>
+                    )}
                   </div>
                   <Dropdown
                     menu={{ items: getItems(record) }}
                     trigger={['click']}
                     placement="bottomRight"
                   >
-                    <button className="p-2 hover:bg-gray-100 rounded-full">
-                      <SlOptionsVertical className="text-[#582F08]" />
+                    <button
+                      className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SlOptionsVertical className="text-[#582F08] text-sm" />
                     </button>
                   </Dropdown>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block overflow-x-auto">
-        <Table columns={columns} dataSource={_data} loading={isLoading} />
+      <div className="hidden md:block bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <Table 
+          columns={columns} 
+          dataSource={_data} 
+          loading={isLoading}
+          className="incoming-table"
+          rowClassName="hover:bg-[#FDF4ED] transition-colors"
+        />
       </div>
       {isModalOpen && (
         <Modal
