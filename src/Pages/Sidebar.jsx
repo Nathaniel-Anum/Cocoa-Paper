@@ -135,6 +135,7 @@ const Sidebar = () => {
 
           {hasPermission(allRolePermissions, [
             requiredPermissions.READ_BUDGET,
+            requiredPermissions.APPROVE_DOCUMENT,
           ]) && (
             <Link to="/budget" onClick={closeSidebar}>
               <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10 duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
