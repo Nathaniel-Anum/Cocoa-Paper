@@ -141,9 +141,9 @@ const RetentionPolicy = () => {
   ];
 
   return (
-    <div className="px-[240px] pt-[50px]">
+    <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Document Retention Policy</h2>
+        <h2 className="text-lg font-bold text-[#582F08]">Document Retention Policy</h2>
         <div className="flex gap-2">
           <Button
             icon={<SyncOutlined spin={statusLoading} />}
@@ -225,6 +225,8 @@ const RetentionPolicy = () => {
             columns={expiredDocColumns}
             pagination={{ pageSize: 10 }}
             loading={statusLoading}
+            className="backoffice-table"
+            rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
           />
         </Card>
       )}

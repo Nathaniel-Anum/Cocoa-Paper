@@ -13,7 +13,7 @@ import {
 import { useUser } from './CustomHook/useUser';
 
 const PhysicalDocs = () => {
-  const { trails, isLoading } = useTrail();
+  const { trails, isLoading } = useTrail('physical');
   const navigate = useNavigate();
   const { user } = useUser();
   const allRolePermissions = getAllRolePermissions(user);

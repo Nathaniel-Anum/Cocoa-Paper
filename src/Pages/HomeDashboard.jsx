@@ -1,18 +1,19 @@
-import Badge from '../Components/Badge';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { useTrail } from './CustomHook/useTrail';
-import {
-  hasPermission,
-  requiredPermissions,
-  getAllRolePermissions,
-} from '../../utils/Roles';
-import { useUser } from './CustomHook/useUser';
+import { useQuery } from '@tanstack/react-query';
+import axiosInstance from '../Components/axiosInstance';
 
 const HomeDashboard = () => {
-  const { outgoingLength, incomingLength, physicalLength } = useTrail();
-  const { user } = useUser();
-  const allRolePermissions = getAllRolePermissions(user);
+  const { data: summary } = useQuery({
+    queryKey: ['trailSummary'],
+    queryFn: async () => {
+      const response = await axiosInstance.get('/trail-summary');
+      return response.data;
+    },
+  });
+
+  const incomingLength = summary?.incomingLength ?? 0;
+  const outgoingLength = summary?.outgoingLength ?? 0;
 
   return (
     <>

@@ -48,6 +48,7 @@ import OTPSettings from './Components/OTPSettings';
 import { socket } from './utils/socket';
 import useStore from './store/store';
 import { isPushSupported, subscribeToPush, isSubscribedToPush } from './utils/pushNotifications';
+import { ConfigProvider } from 'antd';
 
 function App() {
   // API call for the users.
@@ -180,6 +181,16 @@ function App() {
   // );
 
   return (
+    <ConfigProvider
+      theme={{
+        token: {
+          fontFamily: "'Quicksand', sans-serif",
+          colorPrimary: '#9D4D01',
+          colorLink: '#9D4D01',
+          borderRadius: 8,
+        },
+      }}
+    >
     <div>
       <Router>
         <Routes>
@@ -599,6 +610,7 @@ function App() {
         </Routes>
       </Router>
     </div>
+    </ConfigProvider>
   );
 }
 

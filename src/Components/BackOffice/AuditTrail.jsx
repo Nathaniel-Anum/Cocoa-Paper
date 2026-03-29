@@ -104,35 +104,40 @@ const AuditTrail = () => {
   ];
 
   return (
-    <div className="px-[240px] pt-[50px] mx-auto ">
-      <h2 className="text-2xl font-bold mb-4">Audit Trail</h2>
-      <div className="flex justify-end mb-4">
-        <Input.Search
-          placeholder="Search by user, action, resource, method, IP..."
-          className="w-[30rem]"
-          allowClear
-          onChange={(e) => setSearchText(e.target.value)}
-        />
+    <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+      <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e6da]">
+          <h2 className="text-lg font-bold text-[#582F08]">Audit Trail</h2>
+          <Input.Search
+            placeholder="Search by user, action, resource, method, IP..."
+            className="w-80"
+            allowClear
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </div>
+        <div className="p-4">
+          <Table
+            columns={columns}
+            loading={loading}
+            dataSource={rows}
+            rowKey="id"
+            size="middle"
+            className="backoffice-table"
+            rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
+            pagination={{
+              current: page,
+              pageSize,
+              total,
+              showSizeChanger: true,
+              onChange: (current, size) => {
+                setPage(current);
+                setPageSize(size);
+              },
+            }}
+            scroll={{ x: true }}
+          />
+        </div>
       </div>
-      <Table
-        columns={columns}
-        loading={loading}
-        dataSource={rows}
-        rowKey="id"
-        bordered
-        size="middle"
-        pagination={{
-          current: page,
-          pageSize,
-          total,
-          showSizeChanger: true,
-          onChange: (current, size) => {
-            setPage(current);
-            setPageSize(size);
-          },
-        }}
-        scroll={{ x: true }}
-      />
     </div>
   );
 };

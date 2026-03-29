@@ -28,7 +28,7 @@ import TextArea from 'antd/es/input/TextArea';
 import { useGetAllBudgets } from '../queryHooks/budget';
 import { useNavigate } from 'react-router-dom';
 import { multiply } from 'lodash';
-import { capitalize } from '../../utils/typography';
+import { capitalize, formatMoney } from '../../utils/typography';
 import { useGetAllUserGroups, useGetAllUsers } from '../queryHooks/user';
 
 // Set up notification configuration
@@ -50,6 +50,7 @@ const AddDocument = () => {
   const [requestType, setRequestType] = useState('');
   const [isPhysical, setIsPhysical] = useState(false);
   const [budgetUnits, setBudgetUnits] = useState({});
+  const [selectedItemBalances, setSelectedItemBalances] = useState({});
   const [isPrivate, setIsPrivate] = useState(false);
   const [ccEnableForward, setCcEnableForward] = useState(false);
 
@@ -303,6 +304,13 @@ const AddDocument = () => {
         [fieldKey]: options,
       }));
 
+      // Clear any previously shown balance for this row
+      setSelectedItemBalances((prev) => {
+        const updated = { ...prev };
+        delete updated[fieldKey];
+        return updated;
+      });
+
       // Reset the budgetItemId for this row
       const budgetAllocations = form.getFieldValue('budgetAllocations') || [];
       if (budgetAllocations[fieldKey]) {
@@ -310,6 +318,23 @@ const AddDocument = () => {
         form.setFieldValue('budgetAllocations', budgetAllocations);
       }
     }
+  };
+
+  const handleBudgetItemChange = (itemId, fieldKey) => {
+    let found = null;
+    for (const budget of budgetaryItems?.data?.data || []) {
+      const item = budget.budgetItems?.find((u) => u.id === itemId);
+      if (item) {
+        const allocations = item.budgetAllocation || [];
+        const sorted = [...allocations].sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        const balance = sorted[0]?.balance ?? item.amount;
+        found = { amount: item.amount, balance };
+        break;
+      }
+    }
+    setSelectedItemBalances((prev) => ({ ...prev, [fieldKey]: found }));
   };
 
   // Form submission handler
@@ -624,8 +649,25 @@ const AddDocument = () => {
                                       'itemCategory',
                                     ])
                                   }
+                                  onChange={(itemId) =>
+                                    handleBudgetItemChange(itemId, field.name)
+                                  }
                                 />
                               </Form.Item>
+                              {selectedItemBalances[field.name] != null && (
+                                <div className="-mt-4 mb-3 px-1 text-xs">
+                                  <span className="text-gray-500">Remaining balance: </span>
+                                  <span
+                                    className={`font-semibold ${
+                                      selectedItemBalances[field.name].balance <= 0
+                                        ? 'text-red-600'
+                                        : 'text-green-700'
+                                    }`}
+                                  >
+                                    ₵{formatMoney(selectedItemBalances[field.name].balance)}
+                                  </span>
+                                </div>
+                              )}
                             </Col>
                             <Col span={5}>
                               <Form.Item

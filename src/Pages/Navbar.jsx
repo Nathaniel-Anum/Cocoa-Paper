@@ -668,7 +668,19 @@ const Navbar = () => {
     <div>
       {/* Desktop Navbar */}
       <nav className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-[#EADFD5] border-b border-[#D4C4B5]">
-        <div className="flex items-center justify-between h-16 px-6 pl-[220px]">
+        <div className="flex items-center justify-between h-16 px-6">
+
+          {/* Logo — left side, home link */}
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 flex-shrink-0 w-[200px] cursor-pointer border-none bg-transparent p-0 outline-none"
+          >
+            <img
+              src="/asset/logo.9a18109e1c16584832d5.png"
+              alt="Cocoa Papers"
+              className="h-12 w-auto object-contain"
+            />
+          </button>
 
           {/* Center Section - Search Bar */}
           <div className="flex flex-1 max-w-md mx-8">
@@ -774,10 +786,17 @@ const Navbar = () => {
           {/* Menu Placeholder for sidebar */}
           <div className="w-10" />
           
-          {/* Logo/Title */}
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-lg text-[#582F08]">Cocoa Papers</span>
-          </div>
+          {/* Logo/Title — home link */}
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 cursor-pointer border-none bg-transparent p-0 outline-none"
+          >
+            <img
+              src="/asset/logo.9a18109e1c16584832d5.png"
+              alt="Cocoa Papers"
+              className="h-10 w-auto object-contain"
+            />
+          </button>
           
           {/* Right Actions */}
           <div className="flex items-center gap-2">

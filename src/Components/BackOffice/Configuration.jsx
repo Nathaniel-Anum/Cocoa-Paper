@@ -193,23 +193,35 @@ const Configuration = () => {
           </Button>
         </Form>
       </Modal>
-      <div className="w-[80%] mx-auto">
-        <div className=" px-[240px] pt-[50px] ">
-          <div className="flex justify-end gap-4 mb-2">
-            <Input.Search
-              placeholder="Search by name or value..."
-              className="w-[20rem]"
-              allowClear
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-            <Button
-              className="bg-[#694421] text-white"
-              onClick={() => setOpenModal(true)}
-            >
-              Add
-            </Button>
+      <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+        <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e6da]">
+            <h2 className="text-lg font-bold text-[#582F08]">Configuration</h2>
+            <div className="flex gap-3 items-center">
+              <Input.Search
+                placeholder="Search by name or value..."
+                className="w-72"
+                allowClear
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+              <Button
+                type="primary"
+                onClick={() => setOpenModal(true)}
+                style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
+              >
+                Add
+              </Button>
+            </div>
           </div>
-          <Table columns={columns} dataSource={_data} loading={isLoading} />
+          <div className="p-4">
+            <Table
+              columns={columns}
+              dataSource={_data}
+              loading={isLoading}
+              className="backoffice-table"
+              rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
+            />
+          </div>
         </div>
       </div>
     </>

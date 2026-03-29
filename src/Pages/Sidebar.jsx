@@ -51,10 +51,7 @@ const Sidebar = () => {
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0
       `}>
-        {/* Logo */}
-        <div className="flex justify-center mb-4">
-          <img src="/asset/logo.9a18109e1c16584832d5.png" alt="Cocoa Papers" className="h-12 w-auto" />
-        </div>
+
         <ul className="list-none px-[10px] md:px-[15px] py-[10px] flex flex-col gap-[20px] md:gap-[30px] cursor-pointer">
           {hasPermission(allRolePermissions, [
             requiredPermissions.READ_ANALYTICS,
@@ -134,8 +131,7 @@ const Sidebar = () => {
           )}
 
           {hasPermission(allRolePermissions, [
-            requiredPermissions.READ_BUDGET,
-            requiredPermissions.APPROVE_DOCUMENT,
+           
           ]) && (
             <Link to="/budget" onClick={closeSidebar}>
               <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10 duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">

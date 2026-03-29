@@ -5,14 +5,9 @@ import { Outlet } from "react-router-dom";
 
 const BackOfficeDashboard = () => {
   return (
-    <div>
+    <div className="min-h-screen bg-[#f8f4ef]">
       <Navbar />
       <Sidebar />
-      <div className=" px-[240px] pt-[20px]  ">
-        <h2 className="font-bold text-[30px] text-center text-[#582f08] ">
-          Cocoa Papers Admin Panel
-        </h2>
-      </div>
       <Outlet />
     </div>
   );

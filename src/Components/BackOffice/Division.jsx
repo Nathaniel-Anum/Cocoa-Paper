@@ -35,17 +35,25 @@ const Division = () => {
   ];
 
   return (
-    <div>
-      <div className=" px-[240px] pt-[50px] ">
-        <div className="flex justify-end mb-4">
+    <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+      <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e6da]">
+          <h2 className="text-lg font-bold text-[#582F08]">Divisions</h2>
           <Input.Search
             placeholder="Search divisions..."
-            className="w-[30rem]"
+            className="w-72"
             allowClear
             onChange={(e) => setSearchText(e.target.value)}
           />
         </div>
-        <Table columns={columns} dataSource={_data} />
+        <div className="p-4">
+          <Table
+            columns={columns}
+            dataSource={_data}
+            className="backoffice-table"
+            rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
+          />
+        </div>
       </div>
     </div>
   );

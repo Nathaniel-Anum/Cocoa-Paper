@@ -298,7 +298,7 @@ const Outgoing = () => {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries(['trails']);
+      queryClient.invalidateQueries({ queryKey: ['trail'] });
       message.success('Document has been successfully recalled!');
     },
     onError: (error) => {

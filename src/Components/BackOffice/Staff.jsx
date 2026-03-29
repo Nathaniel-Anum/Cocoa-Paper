@@ -232,25 +232,25 @@ const Staff = () => {
         });
       },
     },
-    {
-      title: '2FA Status',
-      key: 'otpStatus',
-      dataIndex: 'userId',
-      render: (userId, record) => (
-        <OTPToggleButton staffUserId={userId} staffName={record.name} />
-      ),
-    },
-    {
-      title: '2FA Scan Status',
-      key: 'otpScanStatus',
-      dataIndex: 'scanComplete',
-      render: (scanComplete) =>
-        scanComplete ? (
-          <Tag color="green">Scanned</Tag>
-        ) : (
-          <Tag color="red">Not Scanned</Tag>
-        ),
-    },
+    // {
+    //   title: '2FA Status',
+    //   key: 'otpStatus',
+    //   dataIndex: 'userId',
+    //   render: (userId, record) => (
+    //     <OTPToggleButton staffUserId={userId} staffName={record.name} />
+    //   ),
+    // },
+    // {
+    //   title: '2FA Scan Status',
+    //   key: 'otpScanStatus',
+    //   dataIndex: 'scanComplete',
+    //   render: (scanComplete) =>
+    //     scanComplete ? (
+    //       <Tag color="green">Scanned</Tag>
+    //     ) : (
+    //       <Tag color="red">Not Scanned</Tag>
+    //     ),
+    // },
 
     {
       title: 'Actions',
@@ -280,7 +280,7 @@ const Staff = () => {
 
   return (
     <div>
-      <div className=" px-[240px] pt-[50px] ">
+      <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
         <Modal
           open={open}
           title="Add Staff"
@@ -419,23 +419,36 @@ const Staff = () => {
             </Form.Item>
           </Form>
         </Modal>
-        <div className=" flex justify-end gap-4 py-[10px]">
-          <Input.Search
-            className="w-[30rem]"
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <Button
-            type="primary"
-            onClick={showModal}
-            className="bg-[#582F08] text-[#edd3bb] font-semibold "
-            loading={loading}
-          >
-            Add Staff
-          </Button>
+        <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e6da]">
+            <h2 className="text-lg font-bold text-[#582F08]">Staff Members</h2>
+            <div className="flex gap-3 items-center">
+              <Input.Search
+                className="w-72"
+                placeholder="Search staff..."
+                allowClear
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+              <Button
+                type="primary"
+                onClick={showModal}
+                style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
+                loading={loading}
+              >
+                Add Staff
+              </Button>
+            </div>
+          </div>
+          <div className="p-4">
+            <Table
+              columns={columns}
+              dataSource={_data}
+              loading={isLoading}
+              className="backoffice-table"
+              rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
+            />
+          </div>
         </div>
-
-        <Table columns={columns} dataSource={_data} loading={isLoading} />
-        {/* <Spin /> */}
       </div>
       <Edit
         popup={popup}

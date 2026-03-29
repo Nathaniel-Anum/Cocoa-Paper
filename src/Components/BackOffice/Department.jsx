@@ -131,22 +131,36 @@ const Department = () => {
   ];
   return (
     <div>
-      <div className=" px-[240px] pt-[50px] ">
-        <div className=" flex justify-end gap-4 py-[10px]">
-          <Input.Search
-            className="w-[30rem]"
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <Button
-            type="primary"
-            onClick={showModal}
-            className="bg-[#582F08] text-[#edd3bb] font-semibold "
-            // loading={loading}
-          >
-            Add Department
-          </Button>
+      <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+        <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e6da]">
+            <h2 className="text-lg font-bold text-[#582F08]">Departments</h2>
+            <div className="flex gap-3 items-center">
+              <Input.Search
+                className="w-72"
+                placeholder="Search departments..."
+                allowClear
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+              <Button
+                type="primary"
+                onClick={showModal}
+                style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
+              >
+                Add Department
+              </Button>
+            </div>
+          </div>
+          <div className="p-4">
+            <Table
+              columns={columns}
+              dataSource={_data}
+              loading={isLoading}
+              className="backoffice-table"
+              rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
+            />
+          </div>
         </div>
-        <Table columns={columns} dataSource={_data} loading={isLoading} />
       </div>
       <AddDepartment setOpen={setOpen} open={open} />
 

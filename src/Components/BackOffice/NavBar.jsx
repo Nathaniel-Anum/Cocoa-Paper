@@ -39,17 +39,17 @@ const BackOfficeNavBar = () => {
   // console.log(currentDate);
 
   return (
-    <div>
-      <div className="flex justify-between items-center pt-[20px] ">
-        <div className="pl-[230px]">
-          <p className="font-semibold text-[23px]">Dashboard</p>
+    <div className="bg-white border-b border-[#f0e6da] shadow-sm">
+      <div className="flex justify-between items-center py-3 ml-[220px]">
+        <div className="pl-6">
+          <p className="font-bold text-[18px] text-[#582F08]">Admin Panel</p>
 
-          <p className="font-semibold text-[#694421]">
+          <p className="text-xs font-medium text-[#9D4D01]">
             {currentDate.toDateString()}
           </p>
           {/* <p>{currentDate.toLocaleTimeString()}</p> */}
         </div>
-        <div className="bg-white flex items-center rounded-t-lg px-[20px] h-full">
+        <div className="bg-[#f9f5f1] flex items-center rounded-lg border border-[#e8d8c8] px-3 h-9">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -68,7 +68,7 @@ const BackOfficeNavBar = () => {
           <input
             type="search"
             placeholder="Search files and documents"
-            className="w-[400px] h-[40px] px-[30px] rounded-[10px] outline-none"
+            className="w-[280px] h-full px-3 bg-transparent rounded-lg outline-none text-sm"
           />
         </div>
         {/* <div>
@@ -87,9 +87,9 @@ const BackOfficeNavBar = () => {
             />
           </svg>
         </div> */}
-        <div className="pr-[80px] flex gap-2 items-center">
-          <p className="bg-[#E3BC97] text-[#582F08] px-3 py-2 font-semibold rounded-md text-[18px]">
-            IS
+        <div className="pr-6 flex gap-2 items-center">
+          <p className="bg-[#E3BC97] text-[#582F08] w-9 h-9 flex items-center justify-center font-bold rounded-full text-sm">
+            {user?.name?.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || 'U'}
           </p>
           <Dropdown
             menu={{

@@ -203,41 +203,7 @@ const UserGroups = () => {
   //   }
 
   return (
-    <div className="px-[240px] pt-[50px] ">
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginBottom: '16px',
-        }}
-      >
-        <Title level={2}>User Groups</Title>
-        <div className="flex gap-4">
-          <Input.Search
-            placeholder="Search by group name or users..."
-            className="w-[20rem]"
-            allowClear
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <Button
-            type="primary "
-            className="bg-[#582f08]"
-            icon={<PlusOutlined />}
-            onClick={() => showModal()}
-          >
-            Add New Group
-          </Button>
-        </div>
-      </div>
-
-      <Table
-        columns={columns}
-        dataSource={_data}
-        rowKey="id"
-        pagination={{ pageSize: 10 }}
-        loading={isLoadingGroups}
-      />
-
+    <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
       <Modal
         title={editingGroup ? 'Edit User Group' : 'Add New User Group'}
         open={isModalVisible}
@@ -299,6 +265,38 @@ const UserGroups = () => {
           </Button>
         </Form>
       </Modal>
+      <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e6da]">
+          <h2 className="text-lg font-bold text-[#582F08]">User Groups</h2>
+          <div className="flex gap-3 items-center">
+            <Input.Search
+              placeholder="Search by group name or users..."
+              className="w-72"
+              allowClear
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => showModal()}
+              style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
+            >
+              Add New Group
+            </Button>
+          </div>
+        </div>
+        <div className="p-4">
+          <Table
+            columns={columns}
+            dataSource={_data}
+            rowKey="id"
+            pagination={{ pageSize: 10 }}
+            loading={isLoadingGroups}
+            className="backoffice-table"
+            rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
+          />
+        </div>
+      </div>
     </div>
   );
 };

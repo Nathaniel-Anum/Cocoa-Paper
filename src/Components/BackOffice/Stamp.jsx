@@ -225,7 +225,7 @@ const Stamp = () => {
   };
 
   return (
-    <div className="px-[240px] pt-[50px]">
+    <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
       <Modal
         open={openModal}
         onCancel={() => {
@@ -307,12 +307,12 @@ const Stamp = () => {
               showSearch
               allowClear
               options={
-                (users &&
-                  users?.data?.map((user) => ({
-                    label: user?.name,
-                    value: user?.userId,
-                  }))) ||
-                []
+                Array.isArray(users?.data)
+                  ? users.data.map((user) => ({
+                      label: user?.name,
+                      value: user?.userId,
+                    }))
+                  : []
               }
               // onChange={handleUserChange}
             />
@@ -347,27 +347,37 @@ const Stamp = () => {
           </Form.Item>
         </Form>
       </Modal>
-      <div className="flex justify-end gap-4 mb-[20px] ">
-        <Input.Search
-          placeholder="Search by name or user..."
-          className="w-[20rem]"
-          allowClear
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-        <Button
-          className="bg-[#582F08] text-[#edd3bb]"
-          onClick={() => setOpenModal(true)}
-        >
-          Add Artifact
-        </Button>
+      <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e6da]">
+          <h2 className="text-lg font-bold text-[#582F08]">Artifacts</h2>
+          <div className="flex gap-3 items-center">
+            <Input.Search
+              placeholder="Search by name or user..."
+              className="w-72"
+              allowClear
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+            <Button
+              type="primary"
+              onClick={() => setOpenModal(true)}
+              style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
+            >
+              Add Artifact
+            </Button>
+          </div>
+        </div>
+        <div className="p-4">
+          <Table
+            columns={columns}
+            dataSource={
+              stamps &&
+              stamps?.data.map((stamp) => ({ ...stamp, key: stamp?.stampId }))
+            }
+            className="backoffice-table"
+            rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
+          />
+        </div>
       </div>
-      <Table
-        columns={columns}
-        dataSource={
-          stamps &&
-          stamps?.data.map((stamp) => ({ ...stamp, key: stamp?.stampId }))
-        }
-      />
     </div>
   );
 };

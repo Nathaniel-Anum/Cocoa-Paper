@@ -31,3 +31,16 @@ export const deleteBudget = (id) => {
 export const updateBudgetAmount = (id, values) => {
   return axiosInstance.patch(`/document/budget-allocation/${id}`, values);
 };
+
+export const downloadBudgetTemplate = () => {
+  return axiosInstance.get('/budget/template/download', { responseType: 'blob' });
+};
+
+export const uploadBudgetFile = (file, departmentId) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('departmentId', departmentId);
+  return axiosInstance.post('/budget/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
