@@ -558,18 +558,22 @@ const BudgetIndex = () => {
           />
 
           <div className="flex flex-wrap gap-2 justify-end items-center">
-            <Button
-              icon={<DownloadOutlined />}
-              onClick={handleDownloadTemplate}
-            >
-              Download Template
-            </Button>
-            <Button
-              icon={<UploadOutlined />}
-              onClick={() => setUploadModalOpen(true)}
-            >
-              Upload Template
-            </Button>
+            {hasPermission(allRolePermissions, [requiredPermissions.DISPLAY_BUDGET]) && (
+              <>
+                <Button
+                  icon={<DownloadOutlined />}
+                  onClick={handleDownloadTemplate}
+                >
+                  Download Template
+                </Button>
+                <Button
+                  icon={<UploadOutlined />}
+                  onClick={() => setUploadModalOpen(true)}
+                >
+                  Upload Template
+                </Button>
+              </>
+            )}
             {hasPermission(allRolePermissions, [requiredPermissions.CREATE_BUDGET]) && (
               <Button
                 style={{ background: '#9D4D01', color: '#fff', border: 'none' }}

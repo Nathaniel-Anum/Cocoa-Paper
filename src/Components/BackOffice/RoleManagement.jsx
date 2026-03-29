@@ -11,16 +11,18 @@ import {
   message,
   Popconfirm,
 } from 'antd';
-import { EditTwoTone, DeleteTwoTone } from '@ant-design/icons';
+import { EditTwoTone, DeleteTwoTone, PlusOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 
 const RoleManagement = () => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [wholeRecord, setWholeRecord] = useState({});
   const [searchText, setSearchText] = useState('');
 
   const [form] = Form.useForm();
+  const [createForm] = Form.useForm();
 
   const handleChange = (value) => {
     // console.log(`selected: ${value}`);
@@ -117,6 +119,27 @@ const RoleManagement = () => {
   const handleCancel = () => {
     setOpen(false);
   };
+
+  //UseMutation to create Role
+  const { mutate: createMutate, isPending: createLoading } = useMutation({
+    mutationKey: 'createRole',
+    mutationFn: (values) => {
+      return axiosInstance.post('/role', values);
+    },
+    onSuccess: () => {
+      setCreateOpen(false);
+      createForm.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      message.success('Role Created Successfully!');
+    },
+    onError: (error) => {
+      message.error(error?.response?.data?.error || 'Failed to create role');
+    },
+  });
+
+  const handleCreate = (values) => {
+    createMutate(values);
+  };
   const cancel = (e) => {
     // console.log(e);
   };
@@ -183,6 +206,7 @@ const RoleManagement = () => {
 
   return (
     <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+      {/* Edit Role Modal */}
       <Modal
           open={open}
           title="Edit Role Management"
@@ -249,6 +273,56 @@ const RoleManagement = () => {
             </Form.Item>
           </Form>
         </Modal>
+      {/* Create Role Modal */}
+      <Modal
+        open={createOpen}
+        title="Create New Role"
+        onCancel={() => { setCreateOpen(false); createForm.resetFields(); }}
+        footer={null}
+        maskClosable={false}
+      >
+        <Form
+          name="Create"
+          form={createForm}
+          layout="vertical"
+          onFinish={(values) => handleCreate(values)}
+        >
+          <Form.Item
+            name="role"
+            label="Role Title"
+            rules={[{ required: true, message: 'Please enter a role name!' }]}
+          >
+            <Input placeholder="e.g. MANAGER" />
+          </Form.Item>
+          <Form.Item
+            name="permissions"
+            label="Permissions"
+            rules={[{ required: true, message: 'Please select at least one permission!' }]}
+          >
+            <Select
+              placeholder="Select permissions"
+              mode="multiple"
+              showSearch
+              optionFilterProp="label"
+              options={permission?.data?.map((p) => ({
+                label: p?.permission,
+                value: p?.permissionsId,
+              }))}
+            />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              className="w-full"
+              type="primary"
+              htmlType="submit"
+              loading={createLoading}
+              style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
+            >
+              Create Role
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
       <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e6da]">
           <h2 className="text-lg font-bold text-[#582F08]">Role Management</h2>
@@ -259,6 +333,14 @@ const RoleManagement = () => {
               allowClear
               onChange={(e) => setSearchText(e.target.value)}
             />
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setCreateOpen(true)}
+              style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
+            >
+              Create Role
+            </Button>
           </div>
         </div>
         <div className="p-4">

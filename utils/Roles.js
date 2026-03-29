@@ -52,6 +52,7 @@ export const requiredPermissions = {
   UPDATE_ANNOTATION: 'UPDATE_ANNOTATION',
   DELETE_ANNOTATION: 'DELETE_ANNOTATION',
   READ_AUDIT_STATUS: 'READ_AUDIT_STATUS',
+  DISPLAY_BUDGET: 'DISPLAY_BUDGET',
 };
 
 export function getAllRolePermissions(user) {
