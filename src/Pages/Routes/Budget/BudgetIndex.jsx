@@ -614,7 +614,7 @@ const BudgetIndex = () => {
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-[#582f08]">Archived Budgets</span>
                 <Tag color="orange">
-                  {archivedBudgets?.data?.length ?? 0}
+                  {archivedBudgets?.data?.data?.length ?? 0}
                 </Tag>
               </div>
             ),
@@ -679,7 +679,7 @@ const BudgetIndex = () => {
                     rowExpandable: (record) => record?.budgetItems?.length > 0,
                   }}
                   dataSource={
-                    archivedBudgets?.data?.map((b) => ({ ...b, key: b.id })) ?? []
+                    archivedBudgets?.data?.data?.map((b) => ({ ...b, key: b.id })) ?? []
                   }
                   loading={archivedLoading}
                   scroll={{ x: 700 }}
