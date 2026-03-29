@@ -15,7 +15,7 @@ import {
   Upload,
 } from 'antd';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { capitalize, formatMoney } from '../../../../utils/typography';
 import { EditOutlined, DownloadOutlined, UploadOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { BiTrash } from 'react-icons/bi';
@@ -44,6 +44,7 @@ const BudgetIndex = () => {
   const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [reportFilters, setReportFilters] = useState({});
+  const [searchText, setSearchText] = useState('');
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadDivision, setUploadDivision] = useState('');
@@ -150,7 +151,7 @@ const BudgetIndex = () => {
     },
   ];
 
-  const { data: budgets, isLoading, refetch } = useGetAllBudgets(reportFilters);
+  const { data: budgets, isLoading } = useGetAllBudgets(reportFilters);
   const { data: archivedBudgets, isLoading: archivedLoading } = useGetArchivedBudgets();
   const { data: financialYear, isLoading: FinancialYearLoading } =
     useGetFinancialYear({
@@ -266,12 +267,6 @@ const BudgetIndex = () => {
     },
     enabled: !!uploadDivision,
   });
-
-  useEffect(() => {
-    if (reportFilters) {
-      refetch();
-    }
-  }, [reportFilters]);
 
   return (
     <div className="space-y-4">
@@ -427,7 +422,7 @@ const BudgetIndex = () => {
             name="budget-filter"
             layout="vertical"
             onFinish={(values) => {
-              setReportFilters(values);
+              setReportFilters({ ...values, search: searchText || undefined });
               setShowModal(false);
             }}
           >
@@ -537,9 +532,19 @@ const BudgetIndex = () => {
         {/* Controls row */}
         <div className="flex flex-col sm:flex-row justify-between gap-2 items-stretch sm:items-center">
           <Input.Search
-            placeholder="Search budgets..."
+            placeholder="Search by category or budget item..."
             className="w-full sm:w-72"
             allowClear
+            value={searchText}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSearchText(val);
+              setReportFilters((prev) => ({ ...prev, search: val || undefined }));
+            }}
+            onSearch={(val) => {
+              setSearchText(val);
+              setReportFilters((prev) => ({ ...prev, search: val || undefined }));
+            }}
           />
 
           <div className="flex flex-wrap gap-2 justify-end items-center">

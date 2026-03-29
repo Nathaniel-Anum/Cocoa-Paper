@@ -11,7 +11,7 @@ export const useGetFinancialYear = (options) => {
 
 export const useGetAllBudgets = (params) => {
   return useQuery({
-    queryKey: ['budgets'],
+    queryKey: ['budgets', params],
     queryFn: () => getAllBudgets(params),
   });
 };
