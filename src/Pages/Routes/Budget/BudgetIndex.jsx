@@ -45,6 +45,7 @@ const BudgetIndex = () => {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [reportFilters, setReportFilters] = useState({});
   const [searchText, setSearchText] = useState('');
+  const [archivedSearchText, setArchivedSearchText] = useState('');
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadDivision, setUploadDivision] = useState('');
@@ -153,6 +154,15 @@ const BudgetIndex = () => {
 
   const { data: budgets, isLoading } = useGetAllBudgets(reportFilters);
   const { data: archivedBudgets, isLoading: archivedLoading } = useGetArchivedBudgets();
+
+  const archivedData = (archivedBudgets?.data?.data ?? []).filter((b) => {
+    if (!archivedSearchText) return true;
+    const s = archivedSearchText.toLowerCase();
+    return (
+      b.name?.toLowerCase().includes(s) ||
+      b.budgetItems?.some((item) => item.item?.toLowerCase().includes(s))
+    );
+  });
   const { data: financialYear, isLoading: FinancialYearLoading } =
     useGetFinancialYear({
       enabled: showModal,
@@ -548,28 +558,26 @@ const BudgetIndex = () => {
           />
 
           <div className="flex flex-wrap gap-2 justify-end items-center">
+            <Button
+              icon={<DownloadOutlined />}
+              onClick={handleDownloadTemplate}
+            >
+              Download Template
+            </Button>
+            <Button
+              icon={<UploadOutlined />}
+              onClick={() => setUploadModalOpen(true)}
+            >
+              Upload Template
+            </Button>
             {hasPermission(allRolePermissions, [requiredPermissions.CREATE_BUDGET]) && (
-              <>
-                <Button
-                  icon={<DownloadOutlined />}
-                  onClick={handleDownloadTemplate}
-                >
-                  Download Template
-                </Button>
-                <Button
-                  icon={<UploadOutlined />}
-                  onClick={() => setUploadModalOpen(true)}
-                >
-                  Upload Template
-                </Button>
-                <Button
-                  style={{ background: '#9D4D01', color: '#fff', border: 'none' }}
-                  className="font-semibold"
-                  onClick={() => navigate('/add-budget-item')}
-                >
-                  + Add Budgetary Item
-                </Button>
-              </>
+              <Button
+                style={{ background: '#9D4D01', color: '#fff', border: 'none' }}
+                className="font-semibold"
+                onClick={() => navigate('/add-budget-item')}
+              >
+                + Add Budgetary Item
+              </Button>
             )}
             <Tooltip title="Filter">
               <Button
@@ -619,12 +627,22 @@ const BudgetIndex = () => {
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-[#582f08]">Archived Budgets</span>
                 <Tag color="orange">
-                  {archivedBudgets?.data?.data?.length ?? 0}
+                  {archivedData.length}
                 </Tag>
               </div>
             ),
             children: (
               <div className="overflow-x-auto rounded-xl shadow-sm">
+                <div className="mb-3">
+                  <Input.Search
+                    placeholder="Search by category or budget item..."
+                    className="w-full sm:w-72"
+                    allowClear
+                    value={archivedSearchText}
+                    onChange={(e) => setArchivedSearchText(e.target.value)}
+                    onSearch={(val) => setArchivedSearchText(val)}
+                  />
+                </div>
                 <Table
                   columns={[
                     {
@@ -684,7 +702,7 @@ const BudgetIndex = () => {
                     rowExpandable: (record) => record?.budgetItems?.length > 0,
                   }}
                   dataSource={
-                    archivedBudgets?.data?.data?.map((b) => ({ ...b, key: b.id })) ?? []
+                    archivedData.map((b) => ({ ...b, key: b.id }))
                   }
                   loading={archivedLoading}
                   scroll={{ x: 700 }}
