@@ -10,6 +10,7 @@ import {
   Popconfirm,
   Select,
   Table,
+  Tag,
   Tooltip,
   Upload,
 } from 'antd';
@@ -23,6 +24,7 @@ import useStore from '../../../store/store';
 import { LuFilter, LuFuel } from 'react-icons/lu';
 import {
   useGetAllBudgets,
+  useGetArchivedBudgets,
   useGetFinancialYear,
 } from '../../../queryHooks/budget';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -149,6 +151,7 @@ const BudgetIndex = () => {
   ];
 
   const { data: budgets, isLoading, refetch } = useGetAllBudgets(reportFilters);
+  const { data: archivedBudgets, isLoading: archivedLoading } = useGetArchivedBudgets();
   const { data: financialYear, isLoading: FinancialYearLoading } =
     useGetFinancialYear({
       enabled: showModal,
@@ -600,6 +603,94 @@ const BudgetIndex = () => {
           size="middle"
         />
       </div>
+
+      {/* ══ Archived Budgets ═══════════════════════════════════════════════ */}
+      <Collapse
+        ghost
+        items={[
+          {
+            key: 'archived',
+            label: (
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-[#582f08]">Archived Budgets</span>
+                <Tag color="orange">
+                  {archivedBudgets?.data?.length ?? 0}
+                </Tag>
+              </div>
+            ),
+            children: (
+              <div className="overflow-x-auto rounded-xl shadow-sm">
+                <Table
+                  columns={[
+                    {
+                      title: 'Budgetary Item',
+                      dataIndex: 'name',
+                      key: 'name',
+                      render: (value) => (
+                        <span className="font-bold">{value && capitalize(value)}</span>
+                      ),
+                    },
+                    hasPermission(allRolePermissions, [
+                      requiredPermissions.READ_BUDGET_GLOBAL,
+                    ]) && {
+                      title: 'Department',
+                      key: 'department',
+                      dataIndex: ['department', 'departmentName'],
+                      render: (value) => <span>{value && capitalize(value)}</span>,
+                    },
+                    hasPermission(allRolePermissions, [
+                      requiredPermissions.READ_BUDGET_GLOBAL,
+                    ]) && {
+                      title: 'Division',
+                      key: 'division',
+                      dataIndex: ['department', 'division', 'divisionName'],
+                      render: (value) => <span>{value && capitalize(value)}</span>,
+                    },
+                    {
+                      title: 'Financial Year',
+                      dataIndex: 'financialYear',
+                      key: 'financialYear',
+                      render: (value) => (
+                        <span className="font-bold">{`${new Date(
+                          value.startDate
+                        ).getFullYear()} – ${new Date(value.endDate).getFullYear()}`}</span>
+                      ),
+                    },
+                    {
+                      title: 'Status',
+                      key: 'status',
+                      render: () => <Tag color="orange">Archived</Tag>,
+                    },
+                  ].filter(Boolean)}
+                  expandable={{
+                    expandedRowRender: (record) => (
+                      <div className="overflow-x-auto px-2 py-1">
+                        <Table
+                          columns={budgetData}
+                          dataSource={record.budgetItems}
+                          pagination={false}
+                          bordered={false}
+                          className="custom-inner-table"
+                          scroll={{ x: 400 }}
+                          size="small"
+                        />
+                      </div>
+                    ),
+                    rowExpandable: (record) => record?.budgetItems?.length > 0,
+                  }}
+                  dataSource={
+                    archivedBudgets?.data?.map((b) => ({ ...b, key: b.id })) ?? []
+                  }
+                  loading={archivedLoading}
+                  scroll={{ x: 700 }}
+                  size="middle"
+                />
+              </div>
+            ),
+          },
+        ]}
+        className="border border-[#f0e6da] rounded-xl bg-white shadow-sm"
+      />
     </div>
   );
 };

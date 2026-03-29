@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getAllBudgets, getFinancialYears } from '../http/budget';
+import { getAllBudgets, getArchivedBudgets, getFinancialYears } from '../http/budget';
 
 export const useGetFinancialYear = (options) => {
   return useQuery({
@@ -13,5 +13,12 @@ export const useGetAllBudgets = (params) => {
   return useQuery({
     queryKey: ['budgets'],
     queryFn: () => getAllBudgets(params),
+  });
+};
+
+export const useGetArchivedBudgets = (params) => {
+  return useQuery({
+    queryKey: ['budgets-archived'],
+    queryFn: () => getArchivedBudgets(params),
   });
 };

@@ -24,6 +24,10 @@ export const getAllBudgets = (qParams) => {
   return axiosInstance.get('/budget', { params: qParams });
 };
 
+export const getArchivedBudgets = (qParams) => {
+  return axiosInstance.get('/budget/archived', { params: qParams });
+};
+
 export const deleteBudget = (id) => {
   return axiosInstance.delete(`/budget/${id}`);
 };
