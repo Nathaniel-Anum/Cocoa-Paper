@@ -187,7 +187,7 @@ const Locator = () => {
   ];
 
   return (
-    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen bg-[#faf7f4]">
+    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
 
       {/* ── Header ── */}
       <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
