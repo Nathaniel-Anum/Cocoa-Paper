@@ -5,7 +5,9 @@ import {
   Steps,
   Badge,
   Input,
+  Button,
 } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import {
   FileTextOutlined,
   InboxOutlined,
@@ -31,6 +33,7 @@ import {
   BellOutlined,
   PaperClipOutlined,
   PrinterOutlined,
+  ArrowLeftOutlined,
 } from '@ant-design/icons';
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
@@ -588,6 +591,7 @@ const guideData = [
 ───────────────────────────────────────────── */
 const UserGuide = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   const filteredFeatures = useMemo(() => {
     if (!searchQuery) return features;
@@ -617,7 +621,18 @@ const UserGuide = () => {
   }, [searchQuery]);
 
   return (
-    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen bg-[#faf7f4]">
+    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
+      {/* ── Back button ── */}
+      <div className="mb-4">
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1 text-[#582F08] border-[#582F08] hover:bg-[#fdf4ed]"
+        >
+          Back
+        </Button>
+      </div>
+
       {/* ── Header ── */}
       <div className="mb-8">
         <div className="bg-gradient-to-r from-[#582F08] to-[#9D4D01] rounded-2xl p-6 md:p-10 text-white shadow-lg relative overflow-hidden">

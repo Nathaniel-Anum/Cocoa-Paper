@@ -20,7 +20,7 @@ import dayjs from 'dayjs';
 import { FaHandshake } from 'react-icons/fa';
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { EditOutlined, UploadOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, EditOutlined, UploadOutlined } from '@ant-design/icons';
 import { LuArchive, LuMessageSquare, LuSend, LuUser } from 'react-icons/lu';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -427,8 +427,18 @@ function ViewDocument() {
       ? filteredComments
       : filteredComments.slice(0, lastUserCommentIndex + 1);
 
+  const documentRecord = document.data.document;
+  const latestTrail = documentRecord.trail[documentRecord.trail.length - 1];
+  const showForwardForm =
+    latestTrail.status === 'Received' &&
+    ((latestTrail.receiverId === user.userId &&
+      latestTrail.carbonCopies.length < 1) ||
+      (chosenRecord?.isCarbonCopy && chosenRecord?.ccEnableForward));
+  const fileName = documentRecord.file?.fileName || 'No file attached';
+  const attachmentCount = documentRecord.attachments?.length || 0;
+
   return (
-    <div className="h-full">
+    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
       <Modal
         open={showModal}
         onCancel={() => setShowModal(false)}
@@ -465,108 +475,174 @@ function ViewDocument() {
           </Button>
         </Form>
       </Modal>
-      <div></div>
-
-      <Content className="p-2 md:p-4 h-full mb-10">
-        <div className="w-full md:w-5/6 mx-auto mb-3 md:mb-4 px-2">
-          <h1 className="text-center font-semibold text-base md:text-xl text-slate-500 line-clamp-2">
-            {document.data.document.subject}
-          </h1>
+      <Content className="h-full mb-10">
+        <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
+          <div className="px-6 py-5 flex flex-col gap-5">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+              <div className="flex items-start gap-4 min-w-0">
+                <div className="w-14 h-14 flex-shrink-0">
+                  <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="28" cy="28" r="28" fill="#FDF4ED" />
+                    <path d="M19 16.5h12.5l5.5 5.5V39a2 2 0 0 1-2 2H19a2 2 0 0 1-2-2V18.5a2 2 0 0 1 2-2Z" fill="#FFF8F1" stroke="#9D4D01" strokeWidth="1.5" />
+                    <path d="M31.5 16.5V22h5.5" stroke="#9D4D01" strokeWidth="1.5" strokeLinejoin="round" />
+                    <path d="M22.5 28h9M22.5 32h11M22.5 36h8" stroke="#582F08" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <Button
+                    type="text"
+                    icon={<ArrowLeftOutlined />}
+                    className="px-0 mb-2 text-[#9D4D01]"
+                    onClick={() => navigate(-1)}
+                  >
+                    Back
+                  </Button>
+                  <h1 className="text-xl md:text-2xl font-bold text-[#582F08] leading-tight break-words">
+                    {documentRecord.subject}
+                  </h1>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Review the file, comments, approvals, and routing details in one place.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center rounded-full bg-[#FDF4ED] px-3 py-1 text-xs font-medium text-[#9D4D01] border border-[#f2d8bd]">
+                  {documentRecord.documentType || 'General'}
+                </span>
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border ${documentRecord.isApproved ? 'bg-[#eef8f0] text-[#2f6b3d] border-[#cbe5d1]' : 'bg-[#fff6eb] text-[#9D4D01] border-[#f2d8bd]'}`}>
+                  {documentRecord.isApproved ? 'Approved' : 'Awaiting action'}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-[#f0e6da] bg-[#fffaf6] px-6 py-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 text-sm">
+            <div>
+              <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">Reference</p>
+              <p className="font-medium text-[#582F08] break-all">{documentRecord.ref || '--'}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">File</p>
+              <p className="font-medium text-[#582F08] break-all">{fileName}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">Division</p>
+              <p className="font-medium text-[#582F08]">{documentRecord.division?.divisionName || '--'}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">Department</p>
+              <p className="font-medium text-[#582F08]">{documentRecord.department?.departmentName || '--'}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">Attachments</p>
+              <p className="font-medium text-[#582F08]">{attachmentCount}</p>
+            </div>
+          </div>
         </div>
 
-        <div className="h-full mx-auto flex flex-col lg:grid lg:grid-cols-2 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.9fr)] gap-6 items-start">
           {/* Document Preview Section */}
           <Card
             bordered={false}
-            className="h-[60vh] md:h-full min-h-[400px] order-1"
+            className="order-1 rounded-2xl border border-[#f0e6da] shadow-sm overflow-hidden"
             bodyStyle={{
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
-              padding: '8px',
+              padding: '0',
             }}
-            styles={{ body: { padding: '8px' } }}
+            styles={{ body: { padding: '0' } }}
           >
-            <div className="flex justify-between items-center mb-2 md:mb-3 px-1">
-              {document.data.document.attachments?.length > 0 && (
-                <span
-                  className="text-blue-400 cursor-pointer underline text-sm"
+            <div className="px-5 py-4 border-b border-[#f0e6da] bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-[#582F08]">Document Preview</h2>
+                <p className="text-sm text-gray-500 mt-1">Open the original file and inspect supporting data below.</p>
+              </div>
+              {attachmentCount > 0 && (
+                <button
+                  className="inline-flex items-center justify-center rounded-lg border border-[#E3BC97] px-3 py-2 text-sm font-medium text-[#9D4D01] hover:bg-[#fdf4ed] transition-colors"
                   onClick={() => {
                     setShowToolbar(false);
                     navigate(`/view-attachment/${docId}`);
                   }}
                 >
                   View Attachments
-                </span>
+                </button>
               )}
             </div>
 
-            <div className="flex-1 overflow-hidden rounded-lg mb-4 bg-white">
-              {fileUrl ? (
-                <Spin spinning={isLoading} tip="Loading document...">
-                  {(() => {
-                    const fileName = document.data.document.file?.fileName || '';
-                    const fileType = getFileType(fileName);
-                    
-                    switch (fileType) {
-                      case 'word':
-                        return (
-                          <WordViewer
-                            fileUrl={fileUrl}
-                            fileName={fileName}
-                          />
-                        );
-                      case 'excel':
-                        return (
-                          <ExcelViewer
-                            fileUrl={fileUrl}
-                            fileName={fileName}
-                          />
-                        );
-                      case 'image':
-                        return (
-                          <div className="image-viewer">
-                            <div className="image-viewer-content" style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px' }}>
-                              <img
-                                src={fileUrl}
-                                alt={fileName}
-                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                              />
+            <div className="p-5 bg-[#fffaf6]">
+              <div className="flex-1 overflow-hidden rounded-2xl border border-[#f0e6da] bg-white min-h-[480px]">
+                {fileUrl ? (
+                  <Spin spinning={isLoading} tip="Loading document...">
+                    {(() => {
+                      const fileType = getFileType(fileName);
+
+                      switch (fileType) {
+                        case 'word':
+                          return (
+                            <WordViewer
+                              fileUrl={fileUrl}
+                              fileName={fileName}
+                            />
+                          );
+                        case 'excel':
+                          return (
+                            <ExcelViewer
+                              fileUrl={fileUrl}
+                              fileName={fileName}
+                            />
+                          );
+                        case 'image':
+                          return (
+                            <div className="image-viewer">
+                              <div className="image-viewer-content" style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px' }}>
+                                <img
+                                  src={fileUrl}
+                                  alt={fileName}
+                                  style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      case 'pdf':
-                      default:
-                        return (
-                          <PDFViewerContent
-                            pdfUrl={fileUrl}
-                            documentId={docId}
-                            fileId={document.data.document.file.fileId}
-                          />
-                        );
-                    }
-                  })()}
-                </Spin>
-              ) : (
-                <div className="flex flex-col gap-7 justify-center items-center w-full h-full">
-                  <img
-                    src={pdf}
-                    className="w-[50%] h-[50%] cursor-not-allowed"
-                    alt="PDF icon"
-                  />
-                  <p className="text-[#582F08]">No File Attached</p>
-                </div>
-              )}
+                          );
+                        case 'pdf':
+                        default:
+                          return (
+                            <PDFViewerContent
+                              pdfUrl={fileUrl}
+                              documentId={docId}
+                              fileId={documentRecord.file.fileId}
+                            />
+                          );
+                      }
+                    })()}
+                  </Spin>
+                ) : (
+                  <div className="flex flex-col gap-7 justify-center items-center w-full h-full min-h-[480px]">
+                    <img
+                      src={pdf}
+                      className="w-[50%] h-[50%] cursor-not-allowed"
+                      alt="PDF icon"
+                    />
+                    <p className="text-[#582F08]">No File Attached</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             <Card
               bordered={false}
-              className="bg-[#582F08]/5 flex-shrink-0 mt-2 md:mt-0"
-              bodyStyle={{ padding: '12px' }}
-              styles={{ body: { padding: '12px' } }}
+              className="bg-white border-t border-[#f0e6da] rounded-none flex-shrink-0"
+              bodyStyle={{ padding: '20px' }}
+              styles={{ body: { padding: '20px' } }}
             >
-              {document.data.document.documentType === 'BudgetRelease' && (
-                <div className="overflow-x-auto -mx-2">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <div>
+                  <h3 className="text-base font-semibold text-[#582F08]">Budget Summary</h3>
+                  <p className="text-sm text-gray-500 mt-1">Allocation details and approval controls remain available here.</p>
+                </div>
+              </div>
+              {documentRecord.documentType === 'BudgetRelease' && (
+                <div className="overflow-x-auto rounded-xl border border-[#f0e6da]">
                   <Table
                     dataSource={budgetData}
                     columns={budgetColumns}
@@ -575,6 +651,9 @@ function ViewDocument() {
                     locale={{ emptyText: 'No budget data available' }}
                     size="small"
                     scroll={{ x: 'max-content' }}
+                    rowClassName={(_, index) =>
+                      index % 2 !== 0 ? 'bg-[#fffaf6]' : ''
+                    }
                   />
                 </div>
               )}
@@ -582,14 +661,14 @@ function ViewDocument() {
               {hasPermission(getAllRolePermissions(user), [
                 requiredPermissions.APPROVE_DOCUMENT,
               ]) &&
-                !document.data.document.isApproved &&
-                document.data.document.documentType !== 'General' && (
+                !documentRecord.isApproved &&
+                documentRecord.documentType !== 'General' && (
                   <Button
                     type="primary"
                     htmlType="button"
                     loading={approvalLoading}
                     icon={<FaHandshake className="w-4 h-4" />}
-                    className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-4 md:mt-6"
+                    className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 w-full mt-4 md:mt-6 h-11 rounded-xl"
                     onClick={handleApproveDocument}
                   >
                     Approve
@@ -599,15 +678,15 @@ function ViewDocument() {
               {hasPermission(getAllRolePermissions(user), [
                 requiredPermissions.APPROVE_DOCUMENT,
               ]) &&
-                document.data.document.isApproved &&
-                document.data.document.documentType !== 'General' && (
+                documentRecord.isApproved &&
+                documentRecord.documentType !== 'General' && (
                   <Button
                     type="primary"
                     htmlType="button"
                     loading={reverseLoading}
                     danger
                     icon={<FaHandshake className="w-4 h-4" />}
-                    className="flex-1 w-full mt-6"
+                    className="flex-1 w-full mt-6 h-11 rounded-xl"
                     onClick={handleReverseApproval}
                   >
                     Reverse Approval
@@ -619,94 +698,103 @@ function ViewDocument() {
           {/* Comments Section */}
           <Card
             bordered={false}
-            className="h-full order-2"
+            className="h-full order-2 rounded-2xl border border-[#f0e6da] shadow-sm overflow-hidden"
             bodyStyle={{
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
-              padding: '12px',
+              padding: '0',
             }}
-            styles={{ body: { padding: '12px' } }}
+            styles={{ body: { padding: '0' } }}
           >
-            <div className="flex items-center gap-2 mb-3 md:mb-4 flex-shrink-0">
-              <LuMessageSquare className="w-5 h-5 md:w-6 md:h-6" />
-              <Title level={4} style={{ margin: 0 }} className="text-base md:text-lg">
-                Comments
-              </Title>
+            <div className="px-5 py-4 border-b border-[#f0e6da] bg-white flex items-center gap-3 flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#FDF4ED] flex items-center justify-center text-[#9D4D01]">
+                <LuMessageSquare className="w-5 h-5" />
+              </div>
+              <div>
+                <Title level={4} style={{ margin: 0 }} className="text-base md:text-lg text-[#582F08]">
+                  Comments And Routing
+                </Title>
+                <p className="text-sm text-gray-500 mt-1">Read the thread and continue the workflow when routing is available.</p>
+              </div>
             </div>
 
             <div
-              className="flex-1 bg-[#e4c8ad] rounded-lg p-3 md:p-4 overflow-y-auto mb-3 md:mb-4"
+              className="flex-1 bg-[#fffaf6] p-4 md:p-5 overflow-y-auto"
               style={{
-                height: 'calc(100vh - 24rem)',
-                minHeight: '150px',
-                maxHeight: 'calc(100vh - 24rem)',
+                height: 'calc(100vh - 26rem)',
+                minHeight: '220px',
+                maxHeight: 'calc(100vh - 26rem)',
               }}
             >
               {commentsToShow.length > 0 ? (
-                commentsToShow.map((comment) => (
-                  <div
-                    key={comment.id}
-                    className={`flex ${
-                      comment.userId === user?.userId
-                        ? 'justify-end'
-                        : 'justify-start'
-                    } mb-3 md:mb-4`}
-                  >
+                <div className="space-y-4">
+                  {commentsToShow.map((comment) => (
                     <div
-                      className={`flex gap-2 md:gap-3 max-w-[85%] md:max-w-[80%] ${
+                      key={comment.id}
+                      className={`flex ${
                         comment.userId === user?.userId
-                          ? 'flex-row-reverse'
-                          : 'flex-row'
+                          ? 'justify-end'
+                          : 'justify-start'
                       }`}
                     >
-                      <Avatar icon={<LuUser className="w-4 h-4 md:w-5 md:h-5" />} size="small" className="flex-shrink-0" />
                       <div
-                        className={`rounded-lg p-3 md:p-4 ${
+                        className={`flex gap-3 max-w-[88%] ${
                           comment.userId === user?.userId
-                            ? 'bg-[#582F08] text-white'
-                            : 'bg-[#9d4d01] text-white'
+                            ? 'flex-row-reverse'
+                            : 'flex-row'
                         }`}
                       >
-                        <p className="font-medium text-xs md:text-sm">
-                          {comment.user?.name || 'Unknown User'}
-                        </p>
-                        <p className="mt-1 text-sm md:text-base">{comment.body}</p>
-                        <p className="text-[10px] md:text-xs mt-2 opacity-75">
-                          {dayjs(comment.createdAt).format('YYYY-MM-DD HH:mm')}
-                        </p>
+                        <Avatar
+                          icon={<LuUser className="w-4 h-4 md:w-5 md:h-5" />}
+                          size="small"
+                          className="flex-shrink-0 mt-1"
+                          style={{ backgroundColor: comment.userId === user?.userId ? '#582F08' : '#9D4D01' }}
+                        />
+                        <div
+                          className={`rounded-2xl px-4 py-3 shadow-sm border ${
+                            comment.userId === user?.userId
+                              ? 'bg-[#582F08] text-white border-[#582F08]'
+                              : 'bg-white text-[#582F08] border-[#f0e6da]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-xs md:text-sm">
+                              {comment.user?.name || 'Unknown User'}
+                            </p>
+                            {comment.isPrivate && (
+                              <span className={`text-[10px] uppercase tracking-[0.12em] ${comment.userId === user?.userId ? 'text-white/70' : 'text-[#9D4D01]'}`}>
+                                Private
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-1 text-sm md:text-[15px] whitespace-pre-wrap">{comment.body}</p>
+                          <p className={`text-[10px] md:text-xs mt-2 ${comment.userId === user?.userId ? 'text-white/70' : 'text-gray-400'}`}>
+                            {dayjs(comment.createdAt).format('YYYY-MM-DD HH:mm')}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               ) : (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-sm">No comments yet</p>
+                <div className="h-full rounded-2xl border border-dashed border-[#e9d6c2] bg-white flex items-center justify-center">
+                  <p className="text-sm text-gray-500">No comments yet</p>
                 </div>
               )}
             </div>
             {/* Forward Form - Show for regular receivers or CC recipients with enableForward permission */}
-            {document &&
-              document.data.document.trail[
-                document.data.document.trail.length - 1
-              ].status === 'Received' &&
-              (
-                // Regular receiver (not CC)
-                (document.data.document.trail[
-                  document.data.document.trail.length - 1
-                ].receiverId === user.userId &&
-                document.data.document.trail[
-                  document.data.document.trail.length - 1
-                ].carbonCopies.length < 1) ||
-                // CC recipient with enableForward permission
-                (chosenRecord?.isCarbonCopy && chosenRecord?.ccEnableForward)
-              ) && (
+            {document && showForwardForm && (
                 <Form
                   onFinish={handleSubmit}
                   layout="vertical"
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 px-5 py-5 border-t border-[#f0e6da] bg-white"
                   form={forwardForm}
                 >
+                  <div className="mb-4">
+                    <h3 className="text-base font-semibold text-[#582F08]">Forward Document</h3>
+                    <p className="text-sm text-gray-500 mt-1">Choose the next recipient, add context, and optionally archive after sending.</p>
+                  </div>
                   <Form.Item
                     name="divisionId"
                     label="Division"
@@ -852,12 +940,12 @@ function ViewDocument() {
                   </Form.Item>
 
                   <Form.Item className="mb-0">
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <Button
                         type="primary"
                         htmlType="submit"
                         icon={<LuSend className="w-4 h-4" />}
-                        className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80"
+                        className="flex-1 bg-[#582F08] hover:bg-[#582F08]/80 h-11 rounded-xl"
                         loading={submitLoading}
                         disabled={submitLoading}
                       >
@@ -868,7 +956,7 @@ function ViewDocument() {
                       ]) && (
                         <Button
                           icon={<LuArchive className="w-4 h-4" />}
-                          className="flex-1 bg-[#9d4d01] hover:bg-[#9d4d01]/80 text-white"
+                          className="flex-1 bg-[#9d4d01] hover:bg-[#9d4d01]/80 text-white h-11 rounded-xl"
                           onClick={() => setShowArchiveModal(true)}
                         >
                           Archive
@@ -894,7 +982,7 @@ function ViewDocument() {
           show={showArchiveModal}
           sender={authUser?.userId}
           setShow={setShowArchiveModal}
-          record={document.data.document}
+          record={documentRecord}
         />
       )}
     </div>

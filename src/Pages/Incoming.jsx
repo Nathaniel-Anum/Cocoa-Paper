@@ -21,6 +21,7 @@ import {
   CheckOutlined,
   CloseOutlined,
   UploadOutlined,
+  MoreOutlined,
 } from '@ant-design/icons';
 import { SlOptionsVertical } from 'react-icons/sl';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -449,10 +450,11 @@ const Incoming = () => {
           <Dropdown
             menu={{ items: getItems(selectedRecord) }}
             trigger={['click']}
+            placement="bottomRight"
           >
-            <a onClick={(e) => e.preventDefault()}>
-              <SlOptionsVertical />
-            </a>
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed] transition-colors">
+              <MoreOutlined className="text-lg text-[#9D4D01]" />
+            </button>
           </Dropdown>
         );
       },
@@ -484,23 +486,30 @@ const Incoming = () => {
   console.log(_data);
 
   return (
-    <div className="">
-      {/* Page Title */}
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-[#582F08]">Incoming Documents</h1>
-        <p className="text-sm text-gray-500 mt-1">Documents received and pending action</p>
-      </div>
-
-      {/* Search and Filter Bar */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span className="font-medium text-[#582F08]">{filteredData.length}</span> documents found
+    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
+      {/* Header Card */}
+      <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-5">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 flex-shrink-0">
+              <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="28" cy="28" r="28" fill="#FDF4ED"/>
+                <rect x="14" y="18" width="28" height="22" rx="3" fill="#E3BC97"/>
+                <rect x="14" y="18" width="28" height="22" rx="3" stroke="#9D4D01" strokeWidth="1.5"/>
+                <path d="M14 22l14 9 14-9" stroke="#582F08" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M22 32l-8 8" stroke="#9D4D01" strokeWidth="1" strokeLinecap="round"/>
+                <path d="M34 32l8 8" stroke="#9D4D01" strokeWidth="1" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-[#582F08]">Incoming Documents</h1>
+              <p className="text-sm text-gray-500 mt-0.5">Documents received and pending action</p>
+            </div>
           </div>
-          <div className="flex flex-col md:flex-row gap-2">
+          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
             <Input.Search
               placeholder="Search by subject, reference, sender..."
-              className="w-full md:w-[25rem]"
+              className="w-full md:w-[22rem]"
               allowClear
               onChange={(e) => setSearchText(e.target.value)}
             />
@@ -510,9 +519,9 @@ const Incoming = () => {
                 setTempFilterDepartment(filterDepartment);
                 setIsFilterModalOpen(true);
               }}
-              className="relative flex items-center justify-center gap-2 px-4 h-[32px] border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              className="relative flex items-center justify-center gap-2 px-4 h-[32px] border border-[#E3BC97] rounded-lg hover:bg-[#fdf4ed] transition-colors"
             >
-              <FiFilter className="text-[#582F08] text-lg" />
+              <FiFilter className="text-[#9D4D01] text-base" />
               <span className="text-sm text-[#582F08] hidden md:inline">Filter</span>
               {(filterDivision || filterDepartment) && (
                 <span className="absolute -top-1 -right-1 bg-[#582F08] text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
@@ -521,6 +530,9 @@ const Incoming = () => {
               )}
             </button>
           </div>
+        </div>
+        <div className="border-t border-[#f0e6da] px-6 py-3 flex gap-6 bg-[#fffaf6]">
+          <span className="text-sm text-gray-500"><span className="font-semibold text-[#582F08]">{filteredData.length}</span> documents</span>
         </div>
       </div>
 
@@ -683,14 +695,16 @@ const Incoming = () => {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <Table 
-          columns={columns} 
-          dataSource={_data} 
-          loading={isLoading}
-          className="incoming-table"
-          rowClassName="hover:bg-[#FDF4ED] transition-colors"
-        />
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-[#f0e6da]">
+        <div className="p-4">
+          <Table 
+            columns={columns} 
+            dataSource={_data} 
+            loading={isLoading}
+            className="incoming-table"
+            rowClassName={(_, i) => i % 2 !== 0 ? 'bg-[#fffaf6]' : ''}
+          />
+        </div>
       </div>
       {isModalOpen && (
         <Modal

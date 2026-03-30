@@ -13,7 +13,9 @@ import {
   Button,
   Card,
   Spin,
+  Dropdown,
 } from 'antd';
+import { MoreOutlined } from '@ant-design/icons';
 import { useTrail } from './CustomHook/useTrail';
 import { FaRegEye } from 'react-icons/fa';
 import axiosInstance from '../Components/axiosInstance';
@@ -209,51 +211,44 @@ const Outgoing = () => {
     {
       title: 'Action',
       key: 'action',
-
-      render: (selectedRecord) => (
-        <div className="flex gap-x-3">
-          <Popover
-            content={
-              <div>
-                <p>View Document</p>
-              </div>
-            }
-          >
-            <button
-              onClick={() => {
-                setShowToolbar(false);
-                navigate(`/view-document/${selectedRecord?.docID}`);
-              }}
-            >
-              <FaRegEye className="text-[20px] " />
+      render: (selectedRecord) => {
+        const items = [
+          {
+            key: 'view',
+            label: 'View Document',
+            onClick: () => {
+              setShowToolbar(false);
+              navigate(`/view-document/${selectedRecord?.docID}`);
+            },
+          },
+          {
+            key: 'trail',
+            label: 'View Trail',
+            onClick: () => handleView(selectedRecord),
+          },
+          ...(hasPermission(allRolePermissions, [requiredPermissions.RECALL_TRAIL])
+            ? [{
+                key: 'recall',
+                label: (
+                  <Popconfirm
+                    title="Are you sure you want to recall this item?"
+                    onConfirm={() => callBackDoc(selectedRecord.docID)}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span>Recall Document</span>
+                  </Popconfirm>
+                ),
+              }]
+            : []),
+        ];
+        return (
+          <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed] transition-colors">
+              <MoreOutlined className="text-lg text-[#9D4D01]" />
             </button>
-          </Popover>
-          <Popover
-            content={
-              <div>
-                <p>View Trail</p>
-              </div>
-            }
-          >
-            <button onClick={() => handleView(selectedRecord)}>
-              <IoLocationOutline className="text-[20px] " />
-            </button>
-          </Popover>
-
-          {hasPermission(allRolePermissions, [
-            requiredPermissions.RECALL_TRAIL,
-          ]) && (
-            <Popconfirm
-              title="Are you sure you want to recall this item?"
-              onConfirm={() => callBackDoc(selectedRecord.docID)}
-            >
-              <Tooltip title="Recall">
-                <GiRecycle className="text-[20px] cursor-pointer" />
-              </Tooltip>
-            </Popconfirm>
-          )}
-        </div>
-      ),
+          </Dropdown>
+        );
+      },
     },
   ];
   // Filter trails to keep only the most recent record for each unique reference
@@ -307,23 +302,29 @@ const Outgoing = () => {
   });
 
   return (
-    <div className="">
-      {/* Page Title */}
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-[#582F08]">Outgoing Documents</h1>
-        <p className="text-sm text-gray-500 mt-1">Documents you have sent</p>
-      </div>
-
-      {/* Search and Filter Bar */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span className="font-medium text-[#582F08]">{mobileFilteredData.length}</span> documents found
+    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
+      {/* Header Card */}
+      <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-5">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 flex-shrink-0">
+              <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="28" cy="28" r="28" fill="#FDF4ED"/>
+                <rect x="14" y="18" width="28" height="22" rx="3" fill="#E3BC97"/>
+                <rect x="14" y="18" width="28" height="22" rx="3" stroke="#9D4D01" strokeWidth="1.5"/>
+                <path d="M14 26l14-8 14 8" stroke="#582F08" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M28 18v-5M28 13l-3 3m3-3l3 3" stroke="#9D4D01" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-[#582F08]">Outgoing Documents</h1>
+              <p className="text-sm text-gray-500 mt-0.5">Documents you have sent</p>
+            </div>
           </div>
-          <div className="flex flex-col md:flex-row gap-2">
+          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
             <Input.Search
               placeholder="Search by subject, reference, receiver..."
-              className="w-full md:w-[25rem]"
+              className="w-full md:w-[22rem]"
               allowClear
               onChange={(e) => setSearchText(e.target.value)}
             />
@@ -333,9 +334,9 @@ const Outgoing = () => {
                 setTempFilterDepartment(filterDepartment);
                 setIsFilterModalOpen(true);
               }}
-              className="relative flex items-center justify-center gap-2 px-4 h-[32px] border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              className="relative flex items-center justify-center gap-2 px-4 h-[32px] border border-[#E3BC97] rounded-lg hover:bg-[#fdf4ed] transition-colors"
             >
-              <FiFilter className="text-[#582F08] text-lg" />
+              <FiFilter className="text-[#9D4D01] text-base" />
               <span className="text-sm text-[#582F08] hidden md:inline">Filter</span>
               {(filterDivision || filterDepartment) && (
                 <span className="absolute -top-1 -right-1 bg-[#582F08] text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
@@ -344,6 +345,9 @@ const Outgoing = () => {
               )}
             </button>
           </div>
+        </div>
+        <div className="border-t border-[#f0e6da] px-6 py-3 flex gap-6 bg-[#fffaf6]">
+          <span className="text-sm text-gray-500"><span className="font-semibold text-[#582F08]">{mobileFilteredData.length}</span> documents</span>
         </div>
       </div>
 
@@ -526,14 +530,16 @@ const Outgoing = () => {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <Table 
-          columns={columns} 
-          dataSource={_data} 
-          loading={isLoading}
-          className="outgoing-table"
-          rowClassName="hover:bg-[#FDF4ED] transition-colors"
-        />
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-[#f0e6da]">
+        <div className="p-4">
+          <Table 
+            columns={columns} 
+            dataSource={_data} 
+            loading={isLoading}
+            className="outgoing-table"
+            rowClassName={(_, i) => i % 2 !== 0 ? 'bg-[#fffaf6]' : ''}
+          />
+        </div>
       </div>
     </div>
   );

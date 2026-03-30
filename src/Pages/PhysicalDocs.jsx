@@ -1,25 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Table, message, Popover, Form, Input, Select, Tooltip } from 'antd';
+import React, { useState } from 'react';
+import { Dropdown, Input, message, Table } from 'antd';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTrail } from './CustomHook/useTrail';
 import axiosInstance from '../Components/axiosInstance';
-import { CheckOutlined } from '@ant-design/icons';
+import { CheckOutlined, MoreOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import {
-  hasPermission,
-  requiredPermissions,
-  getAllRolePermissions,
-} from '../../utils/Roles';
-import { useUser } from './CustomHook/useUser';
 
 const PhysicalDocs = () => {
   const { trails, isLoading } = useTrail('physical');
   const navigate = useNavigate();
-  const { user } = useUser();
-  const allRolePermissions = getAllRolePermissions(user);
   const [searchText, setSearchText] = useState('');
-
-  const [form] = Form.useForm();
 
   const queryClient = useQueryClient();
 
@@ -132,21 +122,33 @@ const PhysicalDocs = () => {
       title: 'Actions',
       key: 'action',
 
-      render: (selectedRecord) => (
-        <div>
-          <div className="flex gap-2">
-            <Tooltip title={'Receive Document'}>
-              <button
-                // className="bg-[#582f08] text-white px-2 rounded-lg font-semibold text-[0.9rem]"
-
-                onClick={() => handleButtonClick(selectedRecord)}
-              >
+      render: (selectedRecord) => {
+        const items = [
+          {
+            key: 'receive-document',
+            label: (
+              <span className="inline-flex items-center gap-2">
                 <CheckOutlined />
-              </button>
-            </Tooltip>
-          </div>
-        </div>
-      ),
+                Receive Document
+              </span>
+            ),
+            onClick: () => handleButtonClick(selectedRecord),
+          },
+          {
+            key: 'view-document',
+            label: 'View Document',
+            onClick: () => navigate(`/view-document/${selectedRecord?.docID}`),
+          },
+        ];
+
+        return (
+          <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed] transition-colors">
+              <MoreOutlined className="text-lg text-[#9D4D01]" />
+            </button>
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -157,22 +159,45 @@ const PhysicalDocs = () => {
   }));
   // console.log(_data);
   return (
-    <div className="">
-      {/* Page Title */}
-      <div className="mb-4">
-        <h1 className="text-xl md:text-2xl font-bold text-[#582F08]">Physical Documents</h1>
-        <p className="text-sm text-gray-500 mt-1">Track physical document locations</p>
+    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
+      <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-5">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 flex-shrink-0">
+              <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="28" cy="28" r="28" fill="#FDF4ED"/>
+                <rect x="17" y="17" width="22" height="24" rx="3" fill="#E3BC97" stroke="#9D4D01" strokeWidth="1.5"/>
+                <path d="M23 24h10M23 29h10M23 34h7" stroke="#582F08" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M39 33l4 4 5-7" stroke="#9D4D01" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-[#582F08]">Physical Documents</h1>
+              <p className="text-sm text-gray-500 mt-0.5">Track physical document locations</p>
+            </div>
+          </div>
+          <Input.Search
+            placeholder="Search by subject, reference, sender, department..."
+            className="w-full md:w-[22rem]"
+            allowClear
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </div>
+        <div className="border-t border-[#f0e6da] px-6 py-3 flex gap-6 bg-[#fffaf6]">
+          <span className="text-sm text-gray-500"><span className="font-semibold text-[#582F08]">{_data.length}</span> physical documents</span>
+        </div>
       </div>
 
-      <div className="flex justify-end mb-4">
-        <Input.Search
-          placeholder="Search by subject, reference, sender, department..."
-          className="w-[30rem]"
-          allowClear
-          onChange={(e) => setSearchText(e.target.value)}
-        />
+      <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da] overflow-x-auto">
+        <div className="p-4">
+          <Table
+            columns={columns}
+            dataSource={_data}
+            loading={isLoading}
+            rowClassName={(_, index) => (index % 2 !== 0 ? 'bg-[#fffaf6]' : '')}
+          />
+        </div>
       </div>
-      <Table columns={columns} dataSource={_data} loading={isLoading} />
     </div>
   );
 };

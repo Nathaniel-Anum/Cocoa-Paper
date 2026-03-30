@@ -453,6 +453,14 @@ function App() {
                 </ProtectedRoutes>
               }
             />
+            <Route
+              path="/user-guide"
+              element={
+                <ProtectedRoutes isAllowed={!!user}>
+                  <UserGuide />
+                </ProtectedRoutes>
+              }
+            />
           </Route>
           <Route
             path="/backoffice"
@@ -600,14 +608,6 @@ function App() {
           </Route>
 
           <Route path="/otp-settings" element={<OTPSettings />} />
-          <Route
-            path="/user-guide"
-            element={
-              <ProtectedRoutes isAllowed={!!user}>
-                <UserGuide />
-              </ProtectedRoutes>
-            }
-          />
           {/* </Route> */}
 
           <Route element={<PublicRoutes />}>
