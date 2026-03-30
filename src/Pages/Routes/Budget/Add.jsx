@@ -12,6 +12,8 @@ import {
 import React, { useEffect, useState } from 'react';
 import { addBudgetItem } from '../../../http/budget';
 import axiosInstance from '../../../Components/axiosInstance';
+import { useUser } from '../../CustomHook/useUser';
+import { hasPermission, requiredPermissions, getAllRolePermissions } from '../../../../utils/Roles';
 
 const AddBudget = () => {
   const [form] = Form.useForm();
@@ -19,16 +21,20 @@ const AddBudget = () => {
   const handleDivisionChange = (value) => setSelectedDivision(value);
 
   const qClient = useQueryClient();
+  const { user: authUser } = useUser();
+  const allRolePermissions = getAllRolePermissions(authUser);
+  const isGlobal = hasPermission(allRolePermissions, [requiredPermissions.READ_BUDGET_GLOBAL]);
 
   const { data: divisions } = useQuery({
     queryKey: ['divisions'],
     queryFn: () => axiosInstance.get('/division'),
+    enabled: isGlobal,
   });
 
   const { data: departments } = useQuery({
     queryKey: ['departments', selectedDivision],
     queryFn: () => axiosInstance.get(`/department/${selectedDivision}`),
-    enabled: !!selectedDivision,
+    enabled: isGlobal && !!selectedDivision,
   });
 
   useEffect(() => {
@@ -50,6 +56,13 @@ const AddBudget = () => {
     },
   });
 
+  const handleFinish = (values) => {
+    const payload = isGlobal
+      ? values
+      : { ...values, departmentId: authUser?.departmentId };
+    saveBudgetItem(payload);
+  };
+
   return (
     <div className="bg-white rounded-md px-6 md:px-12 w-full max-w-6xl mx-auto py-8">
       <div className="flex flex-col justify-center">
@@ -62,42 +75,45 @@ const AddBudget = () => {
           form={form}
           className="mt-10 w-full"
           name="Flow Form"
-          onFinish={saveBudgetItem}
+          onFinish={handleFinish}
           layout="vertical"
           autoComplete="off"
           requiredMark={true}
         >
-          <Form.Item
-            name="divisionId"
-            label="Division"
-            rules={[{ required: true, message: 'Choose your Division!' }]}
-          >
-            <Select
-              placeholder="Choose your Division"
-              allowClear
-              options={divisions?.data.map((division) => ({
-                label: division?.divisionName,
-                value: division?.divisionId,
-              }))}
-              onChange={handleDivisionChange}
-            />
-          </Form.Item>
+          {isGlobal && (
+            <>
+              <Form.Item
+                name="divisionId"
+                label="Division"
+                rules={[{ required: true, message: 'Choose your Division!' }]}
+              >
+                <Select
+                  placeholder="Choose your Division"
+                  allowClear
+                  options={divisions?.data?.map((division) => ({
+                    label: division?.divisionName,
+                    value: division?.divisionId,
+                  }))}
+                  onChange={handleDivisionChange}
+                />
+              </Form.Item>
 
-          <Form.Item
-            name="departmentId"
-            label="Department"
-            rules={[{ required: true, message: 'Choose your Department!' }]}
-          >
-            <Select
-              placeholder="Choose your Department"
-              allowClear
-              options={departments?.data?.data?.map((department) => ({
-                label: department?.departmentName,
-                value: department?.departmentId,
-              }))}
-              // onChange={handleDepartmentChange}
-            />
-          </Form.Item>
+              <Form.Item
+                name="departmentId"
+                label="Department"
+                rules={[{ required: true, message: 'Choose your Department!' }]}
+              >
+                <Select
+                  placeholder="Choose your Department"
+                  allowClear
+                  options={departments?.data?.data?.map((department) => ({
+                    label: department?.departmentName,
+                    value: department?.departmentId,
+                  }))}
+                />
+              </Form.Item>
+            </>
+          )}
           <Form.Item
             name={'name'}
             label="Budget Title"
