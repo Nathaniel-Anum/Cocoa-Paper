@@ -1,20 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from './CustomHook/useUser';
 import { useTrail } from './CustomHook/useTrail';
-import Lottie from 'react-lottie';
-import locator from '../../src/lotties/locator.json';
-import { Modal, Steps, Button, Table, Popover, Tooltip, Input, Badge } from 'antd';
+import { Modal, Button, Table, Dropdown, Input, Tag } from 'antd';
 import { useQuery } from '@tanstack/react-query';
-import { FaRegEye } from 'react-icons/fa';
+import { EyeOutlined, MoreOutlined, ApartmentOutlined, LinkOutlined, SearchOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { FaTable, FaThLarge } from 'react-icons/fa';
-import { EyeOutlined } from '@ant-design/icons';
 import axiosInstance from '../Components/axiosInstance';
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 import Trail from '../Components/Trail/Trail';
-import { LuFileSearch, LuSearch, LuLink } from 'react-icons/lu';
-import { BsSend } from 'react-icons/bs';
-import { IoLocationOutline } from 'react-icons/io5';
+import { LuLink } from 'react-icons/lu';
 import { isArray } from 'lodash';
 import LinkDocumentModal from '../Components/modals/LinkDocumentModal';
 import LinkedDocuments from '../Components/LinkedDocuments';
@@ -112,6 +107,27 @@ const Locator = () => {
   };
 
   // **Table Columns Configuration for Trail Data**
+  const getActionItems = (record) => [
+    {
+      key: 'trail',
+      label: 'View Trail',
+      icon: <SearchOutlined />,
+      onClick: () => showModal(record),
+    },
+    {
+      key: 'receipts',
+      label: 'Read Receipts',
+      icon: <EyeOutlined />,
+      onClick: () => openReadReceiptsModal(record),
+    },
+    {
+      key: 'links',
+      label: 'Document Links',
+      icon: <LinkOutlined />,
+      onClick: (e) => openLinksModal(record, e),
+    },
+  ];
+
   const columns = [
     {
       title: 'Subject',
@@ -126,6 +142,13 @@ const Locator = () => {
           receiverNames.includes(search)
         );
       },
+      render: (val) => <span className="font-semibold text-[#582F08]">{val}</span>,
+    },
+    {
+      title: 'Reference',
+      dataIndex: 'ref',
+      key: 'ref',
+      render: (val) => <span className="font-mono text-xs text-gray-500">{val || '—'}</span>,
     },
     {
       title: 'Current Recipient',
@@ -135,243 +158,232 @@ const Locator = () => {
         const hasSenderMatch = record.trail.some(
           (trailItem) => trailItem.sender.userId === user?.userId
         );
-
         return (
           <span>
             {hasSenderMatch
               ? record.trail.map((trailItem) =>
                   trailItem.sender.userId === user?.userId ? (
-                    <span key={trailItem.trailsId}>
-                      {trailItem.receiver?.name}
-                    </span>
+                    <Tag key={trailItem.trailsId} color="orange">{trailItem.receiver?.name}</Tag>
                   ) : null
                 )
-              : 'Document In Possession'}
+              : <Tag color="blue">In Possession</Tag>}
           </span>
         );
       },
     },
     {
-      title: 'Actions',
+      title: 'Date Sent',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (val) => <span className="text-xs text-gray-500">{dayjs(val).format('MMM D, YYYY')}</span>,
+    },
+    {
+      title: '',
       key: 'actions',
+      width: 50,
       render: (_, record) => (
-        <div className="flex gap-2">
-          <Popover
-            content={
-              <div>
-                <p>Read Receipts</p>
-              </div>
-            }
-          >
-            <button type="link" onClick={(e) => openReadReceiptsModal(record, e)}>
-              <EyeOutlined className="text-[20px] text-blue-600" />
-            </button>
-          </Popover>
-          <Popover
-            content={
-              <div>
-                <p>View Trail</p>
-              </div>
-            }
-          >
-            <button type="link" onClick={() => showModal(record)}>
-              <FaRegEye className="text-[20px]" />
-            </button>
-          </Popover>
-          <Popover
-            content={
-              <div>
-                <p>Document Links</p>
-              </div>
-            }
-          >
-            <button type="link" onClick={(e) => openLinksModal(record, e)}>
-              <LuLink className="text-[20px] text-orange-600" />
-            </button>
-          </Popover>
-        </div>
+        <Dropdown
+          menu={{ items: getActionItems(record) }}
+          trigger={['click']}
+          placement="bottomRight"
+        >
+          <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed] transition-colors">
+            <MoreOutlined className="text-lg text-[#9D4D01]" />
+          </button>
+        </Dropdown>
       ),
     },
   ];
 
   return (
-    <div className="">
-      {/* Toggle Button to Switch Views */}
-      <div className="mb-4 flex justify-end fixed top-[6rem] md:top-[8rem] right-4 md:right-[4.5rem] z-10">
-        <Popover
-          content={
-            <div>
-              <p>Toggle View</p>
+    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen bg-[#faf7f4]">
+
+      {/* ── Header ── */}
+      <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-5">
+          <div className="flex items-center gap-4">
+            {/* Inline SVG Illustration */}
+            <div className="w-14 h-14 flex-shrink-0">
+              <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="28" cy="28" r="28" fill="#FDF4ED"/>
+                {/* Map pin document */}
+                <rect x="16" y="12" width="18" height="24" rx="3" fill="#E3BC97"/>
+                <rect x="19" y="17" width="12" height="2" rx="1" fill="#9D4D01"/>
+                <rect x="19" y="21" width="8" height="2" rx="1" fill="#9D4D01" opacity="0.6"/>
+                <rect x="19" y="25" width="10" height="2" rx="1" fill="#9D4D01" opacity="0.6"/>
+                {/* Pin */}
+                <circle cx="36" cy="32" r="7" fill="#9D4D01"/>
+                <circle cx="36" cy="32" r="3" fill="white"/>
+                <path d="M36 39 L33 44 L36 42 L39 44 Z" fill="#9D4D01"/>
+                {/* Search glass */}
+                <circle cx="20" cy="40" r="5" stroke="#582F08" strokeWidth="2" fill="none"/>
+                <line x1="24" y1="44" x2="27" y2="47" stroke="#582F08" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
             </div>
-          }
-        >
-          <button onClick={() => setIsGridView(!isGridView)}>
-            {isGridView ? (
-              <FaTable size={20} className="text-[#582F08]" />
-            ) : (
-              <FaThLarge size={20} className="text-[#582F08]" />
-            )}
-          </button>
-        </Popover>
-      </div>
-      {console.log(trailDisplay && { trailDisplay })}
-      {/* Conditional Rendering for Grid or Table View */}
-      {isGridView ? (
-        <div className="">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 no-scrollbar min-h-screen pb-8">
-            {isArray(trailDisplay?.data) ? (
-              trailDisplay?.data?.map((trail) => (
-                  <div className="flex items-center p-2 md:p-4 lg:p-6 cursor-pointer" key={trail.docID}>
-                  <div className="w-full max-w-2xl">
-                    <div
-                      className="relative transition-all bg-[#c2773199] rounded-2xl p-4 md:p-6 lg:p-8 shadow-2xl hover:bg-[#5f4a387d] overflow-hidden"
-                      style={{
-                        backgroundImage:
-                          'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 25%, rgba(249, 238, 218, 0) 50%)',
-                      }}
-                    >
-                      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
-                        <Tooltip title="Read Receipts">
-                          <button
-                            onClick={(e) => openReadReceiptsModal(trail, e)}
-                            className="hover:scale-110 transition-transform p-1 hover:bg-white/20 rounded"
-                          >
-                            <EyeOutlined className="w-5 h-5 text-blue-600" />
-                          </button>
-                        </Tooltip>
-                        <Tooltip title="Document Links">
-                          <button
-                            onClick={(e) => openLinksModal(trail, e)}
-                            className="hover:scale-110 transition-transform p-1 hover:bg-white/20 rounded"
-                          >
-                            <LuLink className="w-5 h-5 text-orange-600" />
-                          </button>
-                        </Tooltip>
-                        <Tooltip title="View Trail">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              showModal(trail);
-                            }}
-                            className="animate-pulse hover:scale-110 transition-transform p-1 hover:bg-white/20 rounded"
-                          >
-                            <LuSearch className="w-5 h-5 text-gray-600" />
-                          </button>
-                        </Tooltip>
-                        <IoLocationOutline className=" w-8 h-8 text-gray-700" />
-                      </div>
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-orange-100/30 rounded-bl-full" />
-
-                      <div className="space-y-6" onClick={() => showModal(trail)}>
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-600">
-                            Subject
-                          </label>
-                          <h2 className="text-xl font-bold text-gray-800">
-                            {trail.subject}
-                          </h2>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-600">
-                            Reference
-                          </label>
-                          <p className="font-mono text-gray-700">
-                            {trail?.ref || 'N/A'}
-                          </p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-600">
-                            Sent To
-                          </label>
-                          <p className="text-gray-800">
-                            {trail?.trail?.length > 0
-                              ? trail?.trail[trail?.trail?.length - 1]?.receiver?.name || 'N/A'
-                              : 'N/A'}
-                          </p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-600">
-                            Date Sent
-                          </label>
-                          <p className="text-gray-800">
-                            {new Date(trail?.createdAt).toLocaleDateString(
-                              'en-US',
-                              {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                              }
-                            )}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-orange-200/20 via-orange-300/40 to-orange-200/20" />
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="flex justify-center items-center">
-                <span className="text-3xl text-zinc-600">
-                  No Trails Available
-                </span>
-              </div>
-            )}
+            <div>
+              <h1 className="text-xl font-bold text-[#582F08]">Document Locator</h1>
+              <p className="text-sm text-gray-500 mt-0.5">Track the real-time location and trail of any document in the system.</p>
+            </div>
           </div>
 
-          {/* Lottie Animation on the Right Side (Shown Only in Grid View) */}
-          {/* <div className="flex justify-center items-center fixed bottom-10 right-[5rem]">
-            <Lottie options={defaultOptions} height={450} width={650} />
-          </div> */}
-        </div>
-      ) : (
-        // Full-Width Ant Design Table Component for Trail Data (Table View)
-        <div>
-          <div className="flex justify-end mb-4">
-            <Input.Search
-              placeholder="Search by subject, recipient..."
-              className="w-full md:w-[30rem]"
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Input
+              placeholder="Search by subject or recipient..."
+              prefix={<SearchOutlined className="text-[#9D4D01]" />}
               allowClear
+              size="middle"
+              className="w-full md:w-72 rounded-lg"
               onChange={(e) => setSearchText(e.target.value)}
             />
+            <button
+              onClick={() => setIsGridView(!isGridView)}
+              className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-[#f0e6da] bg-white hover:bg-[#fdf4ed] transition-colors text-[#582F08]"
+              title={isGridView ? 'Switch to Table view' : 'Switch to Grid view'}
+            >
+              {isGridView ? <FaTable size={16} /> : <FaThLarge size={16} />}
+            </button>
           </div>
-          <div className="overflow-x-auto">
+        </div>
+
+        {/* Stats strip */}
+        <div className="border-t border-[#f0e6da] px-6 py-3 flex gap-6 bg-[#fffaf6]">
+          <div className="flex items-center gap-2">
+            <EnvironmentOutlined className="text-[#9D4D01]" />
+            <span className="text-sm text-gray-600">
+              <span className="font-bold text-[#582F08]">
+                {isArray(trailDisplay?.data) ? trailDisplay.data.length : 0}
+              </span> documents tracked
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Content ── */}
+      {isGridView ? (
+        /* Grid View */
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {isArray(trailDisplay?.data) && trailDisplay.data.length > 0 ? (
+            trailDisplay.data
+              .filter((trail) => {
+                if (!searchText) return true;
+                const s = searchText.toLowerCase();
+                const receiverNames = trail.trail?.map(t => t.receiver?.name?.toLowerCase() || '').join(' ') || '';
+                return trail.subject?.toLowerCase().includes(s) || receiverNames.includes(s);
+              })
+              .map((trail) => {
+                const lastRecipient = trail.trail?.length > 0
+                  ? trail.trail[trail.trail.length - 1]?.receiver?.name
+                  : null;
+                return (
+                  <div
+                    key={trail.docID}
+                    className="bg-white border border-[#f0e6da] rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col cursor-pointer group"
+                    onClick={() => showModal(trail)}
+                  >
+                    {/* Card top accent */}
+                    <div className="h-1 rounded-t-xl bg-gradient-to-r from-[#9D4D01] to-[#E3BC97]" />
+
+                    <div className="p-4 flex-1 space-y-3">
+                      {/* Subject + actions row */}
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-bold text-[#582F08] text-sm leading-snug line-clamp-2 flex-1">
+                          {trail.subject}
+                        </h3>
+                        <Dropdown
+                          menu={{ items: getActionItems(trail) }}
+                          trigger={['click']}
+                          placement="bottomRight"
+                        >
+                          <button
+                            className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed] transition-colors opacity-0 group-hover:opacity-100"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreOutlined className="text-[#9D4D01]" />
+                          </button>
+                        </Dropdown>
+                      </div>
+
+                      {/* Reference */}
+                      <div>
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Reference</p>
+                        <p className="font-mono text-xs text-gray-600">{trail?.ref || '—'}</p>
+                      </div>
+
+                      {/* Last recipient */}
+                      <div>
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">With</p>
+                        {lastRecipient
+                          ? <Tag color="orange" className="text-xs">{lastRecipient}</Tag>
+                          : <span className="text-xs text-gray-400">—</span>}
+                      </div>
+
+                      {/* Date */}
+                      <div className="flex items-center justify-between pt-1 border-t border-[#f0e6da]">
+                        <span className="text-xs text-gray-400">
+                          {dayjs(trail?.createdAt).format('MMM D, YYYY')}
+                        </span>
+                        <span className="text-xs text-[#9D4D01] font-medium">
+                          {trail.trail?.length ?? 0} stop{trail.trail?.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+          ) : (
+            /* Empty state */
+            <div className="col-span-full flex flex-col items-center justify-center py-20 text-center">
+              <svg viewBox="0 0 120 100" className="w-32 h-32 mb-4" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="60" cy="90" rx="40" ry="6" fill="#f0e6da"/>
+                <rect x="30" y="20" width="44" height="56" rx="5" fill="#E3BC97" opacity="0.5"/>
+                <rect x="36" y="28" width="32" height="4" rx="2" fill="#9D4D01" opacity="0.4"/>
+                <rect x="36" y="36" width="22" height="4" rx="2" fill="#9D4D01" opacity="0.3"/>
+                <rect x="36" y="44" width="26" height="4" rx="2" fill="#9D4D01" opacity="0.3"/>
+                <circle cx="77" cy="55" r="14" stroke="#9D4D01" strokeWidth="3" fill="white"/>
+                <circle cx="77" cy="55" r="7" fill="#E3BC97" opacity="0.6"/>
+                <line x1="87" y1="65" x2="96" y2="74" stroke="#582F08" strokeWidth="3" strokeLinecap="round"/>
+              </svg>
+              <p className="text-lg font-semibold text-[#582F08]">No documents found</p>
+              <p className="text-sm text-gray-400 mt-1">No trails are available to display.</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Table View */
+        <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
+          <div className="p-4">
             <Table
-              dataSource={isArray(trailDisplay?.data) ? trailDisplay?.data : []}
+              dataSource={isArray(trailDisplay?.data) ? trailDisplay.data : []}
               columns={columns}
               rowKey="docID"
               pagination={{ pageSize: 10 }}
               scroll={{ x: 600 }}
               size="small"
+              rowClassName={(_, i) => i % 2 !== 0 ? 'bg-[#fffaf6]' : ''}
               className="w-full"
             />
           </div>
         </div>
       )}
-      {/* Locator Modal for Trail Steps */}
+
+      {/* ── Modals ── */}
       <Trail
         open={isModalOpen}
         handleCancel={handleCancel}
         trails={documentTrial?.data?.trails}
       />
-      
-      {/* Link Document Modal */}
+
       <LinkDocumentModal
         open={isLinkModalOpen}
         onClose={closeLinkModal}
         documentId={selectedDocForLinking?.docID}
         documentSubject={selectedDocForLinking?.subject}
       />
-      
-      {/* View Linked Documents Modal */}
+
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <LuLink className="text-[#582F08]" />
+            <LinkOutlined className="text-[#582F08]" />
             <span>Linked Documents</span>
           </div>
         }
@@ -384,7 +396,7 @@ const Locator = () => {
           <div className="flex justify-between items-center mb-4">
             <Button
               type="primary"
-              icon={<LuLink />}
+              icon={<LinkOutlined />}
               onClick={() => {
                 const currentDoc = trailDisplay?.data?.find(d => d.docID === trialId);
                 if (currentDoc) {
@@ -397,7 +409,7 @@ const Locator = () => {
               Link New Document
             </Button>
           </div>
-          <LinkedDocuments 
+          <LinkedDocuments
             documentId={trialId}
             onViewDocument={(docId) => {
               closeLinksModal();
@@ -413,7 +425,6 @@ const Locator = () => {
         </div>
       </Modal>
 
-      {/* Read Receipts Modal */}
       <Modal
         title={
           <div className="flex items-center gap-2">
