@@ -97,15 +97,6 @@ const Locator = () => {
 
   const { allTrails } = useTrail();
 
-  const defaultOptions = {
-    loop: true,
-    autoplay: true,
-    animationData: locator,
-    rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice',
-    },
-  };
-
   // **Table Columns Configuration for Trail Data**
   const getActionItems = (record) => [
     {
