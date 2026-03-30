@@ -8,7 +8,7 @@ import {
 } from '../../utils/Roles';
 import { GiTakeMyMoney } from 'react-icons/gi';
 import { HiMiniPresentationChartLine } from 'react-icons/hi2';
-import { FaShieldAlt, FaChartPie, FaBars, FaTimes, FaQuestionCircle } from 'react-icons/fa';
+import { FaShieldAlt, FaChartPie, FaBars, FaTimes, FaBook } from 'react-icons/fa';
 import { useState } from 'react';
 
 const Sidebar = () => {
@@ -156,7 +156,7 @@ const Sidebar = () => {
 
           <Link to="/user-guide" onClick={closeSidebar}>
             <li className="flex flex-col justify-center items-center gap-1 hover:bg-white/10 duration-300 py-2 px-2 hover:scale-105 hover:rounded-md">
-              <FaQuestionCircle
+              <FaBook
                 className="text-[#E3BC97]"
                 size={38}
               />
