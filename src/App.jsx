@@ -45,6 +45,7 @@ import RetentionPolicy from './Components/BackOffice/RetentionPolicy';
 import UserGroups from './Components/BackOffice/UserGroups';
 import Stamp from './Components/BackOffice/Stamp';
 import OTPSettings from './Components/OTPSettings';
+import UserGuide from './Pages/UserGuide';
 import { socket } from './utils/socket';
 import useStore from './store/store';
 import { isPushSupported, subscribeToPush, isSubscribedToPush } from './utils/pushNotifications';
@@ -599,6 +600,14 @@ function App() {
           </Route>
 
           <Route path="/otp-settings" element={<OTPSettings />} />
+          <Route
+            path="/user-guide"
+            element={
+              <ProtectedRoutes isAllowed={!!user}>
+                <UserGuide />
+              </ProtectedRoutes>
+            }
+          />
           {/* </Route> */}
 
           <Route element={<PublicRoutes />}>
