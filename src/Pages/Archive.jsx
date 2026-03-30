@@ -8,16 +8,19 @@ import {
   message,
   Popconfirm,
   Breadcrumb,
-  Popover,
+  Dropdown,
 } from 'antd';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  DeleteTwoTone,
-  EditTwoTone,
+  DeleteOutlined,
+  EditOutlined,
   FilePdfFilled,
   FolderFilled,
   UploadOutlined,
   ArrowLeftOutlined,
+  SearchOutlined,
+  MoreOutlined,
+  FolderOpenOutlined,
 } from '@ant-design/icons';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import {
@@ -340,69 +343,65 @@ const Archive = () => {
     {
       title: 'Reference',
       dataIndex: 'ref',
-      render: (value) => value || '-',
+      render: (value) => <span className="font-mono text-xs text-gray-500">{value || '—'}</span>,
     },
     {
       title: 'Date Created',
       dataIndex: 'createdAt',
       render: (date) => {
-        const dateObj = new Date(date);
-        return (
-          <div className="flex gap-2">
-            <span>{dateObj.toDateString()}</span>
-            <span>{dateObj.toLocaleTimeString()}</span>
-          </div>
-        );
+        const d = new Date(date);
+        return <span className="text-xs text-gray-500">{d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>;
       },
     },
     {
       title: 'Type',
       dataIndex: 'type',
+      render: (val) => <span className="text-xs text-gray-500">{val}</span>,
     },
     {
       title: 'Subject',
       dataIndex: 'subject',
-      render: (value) => value || '-',
+      render: (value) => <span className="text-xs text-gray-600">{value || '—'}</span>,
     },
     {
-      title: 'Action',
-      render: (_, record) => (
-        <div className="flex gap-3 text-[17px]">
-          <div className="flex item-center">
-            <button
-              onClick={() => {
-                setSelectedItem((prev) => ({ ...prev, record }));
-                setModalStates((prev) => ({ ...prev, editModal: true }));
-              }}
-            >
-              <EditTwoTone />
+      title: '',
+      key: 'actions',
+      width: 50,
+      render: (_, record) => {
+        const items = [
+          {
+            key: 'edit',
+            label: 'Rename',
+            icon: <EditOutlined />,
+            onClick: () => {
+              setSelectedItem((prev) => ({ ...prev, record }));
+              setModalStates((prev) => ({ ...prev, editModal: true }));
+            },
+          },
+          ...(record.document?.docID
+            ? [{
+                key: 'unarchive',
+                label: 'Unarchive',
+                icon: <MdUnarchive />,
+                onClick: () => mutations.unarchive.mutate(record),
+              }]
+            : []),
+          {
+            key: 'delete',
+            label: 'Delete',
+            icon: <DeleteOutlined />,
+            danger: true,
+            onClick: () => mutations.delete.mutate(record),
+          },
+        ];
+        return (
+          <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed] transition-colors">
+              <MoreOutlined className="text-lg text-[#9D4D01]" />
             </button>
-          </div>
-          <Popconfirm
-            title={`Delete this ${record.type.toLowerCase()}?`}
-            onConfirm={() => mutations.delete.mutate(record)}
-            okText="Yes"
-            cancelText="No"
-            overlayClassName="custom-popconfirm"
-          >
-            <button>
-              <DeleteTwoTone twoToneColor="#FF0000" />
-            </button>
-          </Popconfirm>
-          {record.document?.docID && (
-            <Popconfirm
-              title="Unarchive this file?"
-              onConfirm={() => mutations.unarchive.mutate(record)}
-              okText="Yes"
-              cancelText="No"
-            >
-              <Popover content="Unarchive">
-                <Button icon={<MdUnarchive />} />
-              </Popover>
-            </Popconfirm>
-          )}
-        </div>
-      ),
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -442,223 +441,234 @@ const Archive = () => {
   // console.log(onlyFolders);
 
   console.log(moveFolderData);
+
   return (
-    <div className="pb-8">
-      {/* Page Title */}
-      <div className="mb-2">
-        <h1 className="text-xl md:text-2xl font-bold text-[#582F08]">Archive</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage your files and folders</p>
-      </div>
+    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen bg-[#faf7f4]">
 
-      {/* Clean Header with Actions */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() =>
-              setModalStates((prev) => ({ ...prev, createFolder: true }))
-            }
-            className="flex items-center gap-2 px-3 py-2 bg-[#582F08] text-white rounded-lg hover:bg-[#6d3a0a] transition-colors text-sm font-medium"
-          >
-            <MdOutlineCreateNewFolder className="text-base" />
-            <span className="hidden sm:inline">New Folder</span>
-          </button>
-          
-          <button
-            onClick={() =>
-              setModalStates((prev) => ({ ...prev, uploadFile: true }))
-            }
-            className="flex items-center gap-2 px-3 py-2 border border-[#582F08] text-[#582F08] rounded-lg hover:bg-[#582F08] hover:text-white transition-colors text-sm font-medium"
-          >
-            <UploadOutlined className="text-base" />
-            <span className="hidden sm:inline">Upload</span>
-          </button>
+      {/* ── Header card ── */}
+      <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-5">
+          <div className="flex items-center gap-4">
+            {/* Inline SVG illustration */}
+            <div className="w-14 h-14 flex-shrink-0">
+              <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="28" cy="28" r="28" fill="#FDF4ED"/>
+                {/* Cabinet body */}
+                <rect x="12" y="16" width="32" height="24" rx="3" fill="#E3BC97"/>
+                {/* Top drawer */}
+                <rect x="12" y="16" width="32" height="11" rx="2" fill="#D4A068"/>
+                <rect x="24" y="20" width="8" height="3" rx="1.5" fill="#9D4D01"/>
+                {/* Bottom drawer */}
+                <rect x="12" y="29" width="32" height="11" rx="2" fill="#C8955A"/>
+                <rect x="24" y="33" width="8" height="3" rx="1.5" fill="#9D4D01"/>
+                {/* Paper peeking out */}
+                <rect x="20" y="11" width="16" height="8" rx="2" fill="white" opacity="0.9"/>
+                <rect x="23" y="13" width="10" height="1.5" rx="0.75" fill="#9D4D01" opacity="0.5"/>
+                <rect x="23" y="16" width="7" height="1.5" rx="0.75" fill="#9D4D01" opacity="0.3"/>
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-[#582F08]">Archive</h1>
+              <p className="text-sm text-gray-500 mt-0.5">Manage your archived files, folders, and documents securely.</p>
+            </div>
+          </div>
 
-          {selectedItem.rowKeys.length > 0 && (
+          <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
+            {/* Search */}
+            <Input
+              placeholder="Search files and folders..."
+              prefix={<SearchOutlined className="text-[#9D4D01]" />}
+              allowClear
+              size="middle"
+              className="w-full md:w-64 rounded-lg"
+              onChange={(e) => setSearchText(e.target.value)}
+            />
             <button
-              className="flex items-center gap-2 px-3 py-2 text-[#582F08] hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium"
-              onClick={() => {
-                setModalStates((prev) => ({ ...prev, moveModal: true }));
-                setMoveModalState((prev) => ({
-                  ...prev,
-                  currentFolderId: selectedItem.record?.parentFolderId || null,
-                }));
-              }}
+              onClick={() => setModalStates((prev) => ({ ...prev, createFolder: true }))}
+              className="flex items-center gap-2 px-3 py-2 bg-[#582F08] text-white rounded-lg hover:bg-[#6d3a0a] transition-colors text-sm font-medium whitespace-nowrap"
             >
-              <MdDriveFileMoveOutline className="text-base" />
-              <span>Move</span>
+              <MdOutlineCreateNewFolder className="text-base" />
+              <span className="hidden sm:inline">New Folder</span>
             </button>
-          )}
+            <button
+              onClick={() => setModalStates((prev) => ({ ...prev, uploadFile: true }))}
+              className="flex items-center gap-2 px-3 py-2 border border-[#582F08] text-[#582F08] rounded-lg hover:bg-[#582F08] hover:text-white transition-colors text-sm font-medium whitespace-nowrap"
+            >
+              <UploadOutlined className="text-base" />
+              <span className="hidden sm:inline">Upload</span>
+            </button>
+            {selectedItem.rowKeys.length > 0 && (
+              <button
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium whitespace-nowrap"
+                onClick={() => {
+                  setModalStates((prev) => ({ ...prev, moveModal: true }));
+                  setMoveModalState((prev) => ({
+                    ...prev,
+                    currentFolderId: selectedItem.record?.parentFolderId || null,
+                  }));
+                }}
+              >
+                <MdDriveFileMoveOutline className="text-base" />
+                <span>Move</span>
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Search */}
-        <div className="w-full md:w-72">
-          <Input.Search
-            placeholder="Search..."
-            allowClear
-            onChange={(e) => setSearchText(e.target.value)}
-            size="middle"
+        {/* Stats + breadcrumb strip */}
+        <div className="border-t border-[#f0e6da] px-6 py-3 flex items-center justify-between bg-[#fffaf6] flex-wrap gap-2">
+          <Breadcrumb
+            items={breadcrumbs}
+            itemRender={(route, _, routes) => (
+              <Link
+                to={route.path === '/archive' ? '/archive' : `/archive${route.path}`}
+                onClick={() => setBreadcrumbs(routes.slice(0, routes.indexOf(route) + 1))}
+                className="text-sm text-[#9D4D01] hover:text-[#582F08] font-medium"
+              >
+                {route.title}
+              </Link>
+            )}
+          />
+          <span className="text-xs text-gray-400">
+            {Array.isArray(tableData) ? tableData.length : 0} item{tableData?.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Table ── */}
+      <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
+        {/* Desktop table */}
+        <div className="hidden md:block p-4">
+          <Table
+            columns={columns}
+            dataSource={Array.isArray(tableData) ? tableData : []}
+            showExpandColumn={false}
+            rowSelection={{
+              hideSelectAll: true,
+              type: 'radio',
+              selectedRowKeys: selectedItem.rowKeys,
+              onChange: (keys, rows) =>
+                setSelectedItem((prev) => ({ ...prev, rowKeys: keys, record: rows[0] })),
+            }}
+            scroll={{ x: 600 }}
+            size="small"
+            pagination={{ pageSize: 15, size: 'small' }}
+            rowClassName={(_, i) => i % 2 !== 0 ? 'bg-[#fffaf6]' : ''}
+            locale={{
+              emptyText: (
+                <div className="flex flex-col items-center py-12 text-gray-400">
+                  <svg viewBox="0 0 80 70" className="w-24 h-20 mb-3" fill="none">
+                    <ellipse cx="40" cy="65" rx="28" ry="4" fill="#f0e6da"/>
+                    <rect x="15" y="15" width="50" height="42" rx="4" fill="#E3BC97" opacity="0.4"/>
+                    <rect x="22" y="24" width="36" height="4" rx="2" fill="#9D4D01" opacity="0.3"/>
+                    <rect x="22" y="32" width="24" height="4" rx="2" fill="#9D4D01" opacity="0.2"/>
+                    <rect x="22" y="40" width="30" height="4" rx="2" fill="#9D4D01" opacity="0.2"/>
+                  </svg>
+                  <p className="font-medium text-[#582F08]">This folder is empty</p>
+                  <p className="text-xs mt-1">Upload files or create a new folder to get started</p>
+                </div>
+              ),
+            }}
           />
         </div>
-      </div>
 
-      {/* Breadcrumb */}
-      <div className="mb-4 text-sm">
-        <Breadcrumb
-          items={breadcrumbs}
-          itemRender={(route, _, routes) => (
-            <Link
-              to={route.path === '/archive' ? '/archive' : `/archive${route.path}`}
-              onClick={() => setBreadcrumbs(routes.slice(0, routes.indexOf(route) + 1))}
-              className="text-gray-600 hover:text-[#582F08]"
-            >
-              {route.title}
-            </Link>
-          )}
-        />
-      </div>
-
-      {/* Desktop Table */}
-      <div className="hidden md:block">
-        <Table
-          columns={columns}
-          dataSource={Array.isArray(tableData) ? tableData : []}
-          showExpandColumn={false}
-          rowSelection={{
-            hideSelectAll: true,
-            type: 'radio',
-            selectedRowKeys: selectedItem.rowKeys,
-            onChange: (keys, rows) =>
-              setSelectedItem((prev) => ({
-                ...prev,
-                rowKeys: keys,
-                record: rows[0],
-              })),
-          }}
-          scroll={{ x: 600 }}
-          size="small"
-          pagination={{ pageSize: 15, size: 'small' }}
-        />
-      </div>
-
-      {/* Mobile List */}
-      <div className="md:hidden">
-        {Array.isArray(tableData) && tableData.length > 0 ? (
-          <div className="divide-y divide-gray-100">
-            {tableData.map((record) => (
-              <div
-                key={record.key}
-                className={`py-3 px-1 flex items-center gap-3 ${
-                  selectedItem.rowKeys.includes(record.key) ? 'bg-[#FDF8F4]' : ''
-                }`}
-                onClick={() =>
-                  setSelectedItem((prev) => ({
-                    ...prev,
-                    rowKeys: [record.key],
-                    record: record,
-                  }))
-                }
-              >
-                {/* Icon */}
-                {record.type === 'Folder' ? (
-                  <FolderFilled className="text-2xl text-[#FFAC28] flex-shrink-0" />
-                ) : (
-                  <FilePdfFilled className="text-2xl text-[#eb3b3b] flex-shrink-0" />
-                )}
-                
-                {/* Content */}
-                <div 
-                  className="flex-1 min-w-0 cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (record.type === 'Folder') {
-                      handleBreadcrumbUpdate(record);
-                    } else {
-                      handleFileClick(record);
-                    }
-                  }}
+        {/* Mobile list */}
+        <div className="md:hidden">
+          {Array.isArray(tableData) && tableData.length > 0 ? (
+            <div className="divide-y divide-[#f0e6da]">
+              {tableData.map((record) => (
+                <div
+                  key={record.key}
+                  className={`py-3 px-4 flex items-center gap-3 ${selectedItem.rowKeys.includes(record.key) ? 'bg-[#fdf4ed]' : ''}`}
+                  onClick={() => setSelectedItem((prev) => ({ ...prev, rowKeys: [record.key], record }))}
                 >
-                  <p className="text-sm font-medium text-[#582F08] truncate">
-                    {record.type === 'Folder' ? record.folderName : record.fileName}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {record.ref || record.type} · {new Date(record.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <button
+                  {record.type === 'Folder' ? (
+                    <FolderFilled className="text-2xl text-[#FFAC28] flex-shrink-0" />
+                  ) : (
+                    <FilePdfFilled className="text-2xl text-[#eb3b3b] flex-shrink-0" />
+                  )}
+                  <div
+                    className="flex-1 min-w-0 cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedItem((prev) => ({ ...prev, record }));
-                      setModalStates((prev) => ({ ...prev, editModal: true }));
+                      if (record.type === 'Folder') handleBreadcrumbUpdate(record);
+                      else handleFileClick(record);
                     }}
-                    className="p-2 text-gray-400 hover:text-[#582F08]"
                   >
-                    <EditTwoTone />
-                  </button>
-                  <Popconfirm
-                    title={`Delete ${record.type.toLowerCase()}?`}
-                    onConfirm={() => mutations.delete.mutate(record)}
-                    okText="Yes"
-                    cancelText="No"
+                    <p className="text-sm font-semibold text-[#582F08] truncate">
+                      {record.type === 'Folder' ? record.folderName : record.fileName}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {record.ref || record.type} · {new Date(record.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Dropdown
+                    menu={{
+                      items: [
+                        {
+                          key: 'edit',
+                          label: 'Rename',
+                          icon: <EditOutlined />,
+                          onClick: () => {
+                            setSelectedItem((prev) => ({ ...prev, record }));
+                            setModalStates((prev) => ({ ...prev, editModal: true }));
+                          },
+                        },
+                        ...(record.document?.docID
+                          ? [{ key: 'unarchive', label: 'Unarchive', icon: <MdUnarchive />, onClick: () => mutations.unarchive.mutate(record) }]
+                          : []),
+                        { key: 'delete', label: 'Delete', icon: <DeleteOutlined />, danger: true, onClick: () => mutations.delete.mutate(record) },
+                      ],
+                    }}
+                    trigger={['click']}
+                    placement="bottomRight"
                   >
-                    <button 
-                      className="p-2 text-gray-400 hover:text-red-500"
+                    <button
+                      className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed]"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <DeleteTwoTone twoToneColor="#FF0000" />
+                      <MoreOutlined className="text-[#9D4D01]" />
                     </button>
-                  </Popconfirm>
+                  </Dropdown>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 text-gray-400">
-            <FolderFilled className="text-4xl mb-2" />
-            <p>No items</p>
-          </div>
-        )}
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center py-12 text-gray-400">
+              <FolderOpenOutlined className="text-4xl mb-2 text-[#E3BC97]" />
+              <p className="font-medium text-[#582F08]">This folder is empty</p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Modals */}
+      {/* ── Modals ── */}
       {modalStates.createFolder && (
         <CreateFolder
           open={modalStates.createFolder}
-          setOpen={(value) =>
-            setModalStates((prev) => ({ ...prev, createFolder: value }))
-          }
+          setOpen={(value) => setModalStates((prev) => ({ ...prev, createFolder: value }))}
           id={id}
         />
       )}
       {modalStates.uploadFile && (
         <UploadFile
           show={modalStates.uploadFile}
-          setShow={(value) =>
-            setModalStates((prev) => ({ ...prev, uploadFile: value }))
-          }
+          setShow={(value) => setModalStates((prev) => ({ ...prev, uploadFile: value }))}
           id={id}
         />
       )}
 
       {/* Edit Modal */}
       <Modal
-        title={`Edit ${selectedItem.record?.type || 'Item'}`}
+        title={`Rename ${selectedItem.record?.type || 'Item'}`}
         open={modalStates.editModal}
-        onCancel={() =>
-          setModalStates((prev) => ({ ...prev, editModal: false }))
-        }
+        onCancel={() => setModalStates((prev) => ({ ...prev, editModal: false }))}
         footer={null}
         width={400}
       >
         <Form form={form} onFinish={(values) => mutations.edit.mutate(values)} layout="vertical" className="mt-4">
           {selectedItem.record?.type === 'Folder' ? (
-            <Form.Item
-              name="folderName"
-              label="Folder Name"
-              rules={[{ required: true, message: 'Please input folder name' }]}
-            >
+            <Form.Item name="folderName" label="Folder Name" rules={[{ required: true, message: 'Please input folder name' }]}>
               <Input placeholder="Enter folder name" />
             </Form.Item>
           ) : (
@@ -675,9 +685,7 @@ const Archive = () => {
             </>
           )}
           <Form.Item className="mb-0">
-            <Button type="primary" htmlType="submit" className="w-full bg-[#582F08]">
-              Save
-            </Button>
+            <Button type="primary" htmlType="submit" className="w-full bg-[#582F08]">Save</Button>
           </Form.Item>
         </Form>
       </Modal>
@@ -691,7 +699,7 @@ const Archive = () => {
           <Button key="cancel" onClick={handleCloseMoveModal}>Cancel</Button>,
           <Button key="move" type="primary" onClick={() => mutations.move.mutate()} className="bg-[#582F08]">
             Move Here
-          </Button>
+          </Button>,
         ]}
         width={600}
       >
@@ -701,11 +709,9 @@ const Archive = () => {
               onClick={handleBackClick}
               className="flex items-center gap-1 text-sm text-gray-600 hover:text-[#582F08] mb-4"
             >
-              <ArrowLeftOutlined />
-              Back
+              <ArrowLeftOutlined /> Back
             </button>
           )}
-
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {isFetchingFolders ? (
               <div className="col-span-full py-8 text-center text-gray-400">Loading...</div>
@@ -714,14 +720,14 @@ const Archive = () => {
                 <div
                   key={folder.folderId}
                   onClick={() => handleFolderClick(folder)}
-                  className="p-3 cursor-pointer hover:bg-gray-50 rounded-lg flex flex-col items-center text-center"
+                  className="p-3 cursor-pointer hover:bg-[#fdf4ed] rounded-lg flex flex-col items-center text-center"
                 >
                   <FolderFilled className="text-3xl text-[#FFAC28]" />
                   <p className="text-xs mt-1 text-gray-700 truncate w-full">{folder.folderName}</p>
                 </div>
               ))
             ) : (
-              <div className="col-span-full py-8 text-center text-gray-400">No folders</div>
+              <div className="col-span-full py-8 text-center text-gray-400">No folders available</div>
             )}
           </div>
         </div>
@@ -733,9 +739,7 @@ const Archive = () => {
         open={modalStates.fileViewer}
         onCancel={() => {
           setModalStates((prev) => ({ ...prev, fileViewer: false }));
-          if (selectedItem.file?.fileUrl) {
-            URL.revokeObjectURL(selectedItem.file.fileUrl);
-          }
+          if (selectedItem.file?.fileUrl) URL.revokeObjectURL(selectedItem.file.fileUrl);
           setSelectedItem((prev) => ({ ...prev, file: null }));
         }}
         footer={null}
