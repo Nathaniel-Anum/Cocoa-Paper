@@ -20,7 +20,7 @@ import dayjs from 'dayjs';
 import { FaHandshake } from 'react-icons/fa';
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeftOutlined, EditOutlined, UploadOutlined } from '@ant-design/icons';
+import { EditOutlined, UploadOutlined } from '@ant-design/icons';
 import { LuArchive, LuMessageSquare, LuSend, LuUser } from 'react-icons/lu';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -438,7 +438,7 @@ function ViewDocument() {
   const attachmentCount = documentRecord.attachments?.length || 0;
 
   return (
-    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
+    <div className="pl-[10rem] md:pl-[11rem] pr-3 md:pr-8 pt-4 md:pt-6 pb-10 md:pb-12 min-h-screen">
       <Modal
         open={showModal}
         onCancel={() => setShowModal(false)}
@@ -476,8 +476,8 @@ function ViewDocument() {
         </Form>
       </Modal>
       <Content className="h-full mb-10">
-        <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
-          <div className="px-6 py-5 flex flex-col gap-5">
+        <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-5 md:mb-6">
+          <div className="px-4 md:px-6 py-4 md:py-5 flex flex-col gap-4 md:gap-5">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
               <div className="flex items-start gap-4 min-w-0">
                 <div className="w-14 h-14 flex-shrink-0">
@@ -489,19 +489,11 @@ function ViewDocument() {
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <Button
-                    type="text"
-                    icon={<ArrowLeftOutlined />}
-                    className="px-0 mb-2 text-[#9D4D01]"
-                    onClick={() => navigate(-1)}
-                  >
-                    Back
-                  </Button>
                   <h1 className="text-xl md:text-2xl font-bold text-[#582F08] leading-tight break-words">
                     {documentRecord.subject}
                   </h1>
                   <p className="text-sm text-gray-500 mt-1">
-                    Review the file, comments, approvals, and routing details in one place.
+                    Review the file, comments, approvals, and forwarding details in one place.
                   </p>
                 </div>
               </div>
@@ -515,7 +507,7 @@ function ViewDocument() {
               </div>
             </div>
           </div>
-          <div className="border-t border-[#f0e6da] bg-[#fffaf6] px-6 py-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 text-sm">
+          <div className="border-t border-[#f0e6da] bg-[#fffaf6] px-4 md:px-6 py-3 md:py-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
             <div>
               <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">Reference</p>
               <p className="font-medium text-[#582F08] break-all">{documentRecord.ref || '--'}</p>
@@ -525,21 +517,13 @@ function ViewDocument() {
               <p className="font-medium text-[#582F08] break-all">{fileName}</p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">Division</p>
-              <p className="font-medium text-[#582F08]">{documentRecord.division?.divisionName || '--'}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">Department</p>
-              <p className="font-medium text-[#582F08]">{documentRecord.department?.departmentName || '--'}</p>
-            </div>
-            <div>
               <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">Attachments</p>
               <p className="font-medium text-[#582F08]">{attachmentCount}</p>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.9fr)] gap-6 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.9fr)] gap-4 md:gap-6 items-start">
           {/* Document Preview Section */}
           <Card
             bordered={false}
@@ -552,7 +536,7 @@ function ViewDocument() {
             }}
             styles={{ body: { padding: '0' } }}
           >
-            <div className="px-5 py-4 border-b border-[#f0e6da] bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="px-4 md:px-5 py-4 border-b border-[#f0e6da] bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-[#582F08]">Document Preview</h2>
                 <p className="text-sm text-gray-500 mt-1">Open the original file and inspect supporting data below.</p>
@@ -570,7 +554,7 @@ function ViewDocument() {
               )}
             </div>
 
-            <div className="p-5 bg-[#fffaf6]">
+            <div className="p-3 md:p-5 bg-[#fffaf6]">
               <div className="flex-1 overflow-hidden rounded-2xl border border-[#f0e6da] bg-white min-h-[480px]">
                 {fileUrl ? (
                   <Spin spinning={isLoading} tip="Loading document...">
@@ -632,8 +616,8 @@ function ViewDocument() {
             <Card
               bordered={false}
               className="bg-white border-t border-[#f0e6da] rounded-none flex-shrink-0"
-              bodyStyle={{ padding: '20px' }}
-              styles={{ body: { padding: '20px' } }}
+              bodyStyle={{ padding: '16px' }}
+              styles={{ body: { padding: '16px' } }}
             >
               <div className="flex items-center justify-between gap-3 mb-4">
                 <div>
@@ -707,23 +691,23 @@ function ViewDocument() {
             }}
             styles={{ body: { padding: '0' } }}
           >
-            <div className="px-5 py-4 border-b border-[#f0e6da] bg-white flex items-center gap-3 flex-shrink-0">
+            <div className="px-4 md:px-5 py-4 border-b border-[#f0e6da] bg-white flex items-center gap-3 flex-shrink-0">
               <div className="w-10 h-10 rounded-xl bg-[#FDF4ED] flex items-center justify-center text-[#9D4D01]">
                 <LuMessageSquare className="w-5 h-5" />
               </div>
               <div>
                 <Title level={4} style={{ margin: 0 }} className="text-base md:text-lg text-[#582F08]">
-                  Comments And Routing
+                  Comments And Forwarding
                 </Title>
-                <p className="text-sm text-gray-500 mt-1">Read the thread and continue the workflow when routing is available.</p>
+                <p className="text-sm text-gray-500 mt-1">Read the thread and continue the workflow when forwarding is available.</p>
               </div>
             </div>
 
             <div
-              className="flex-1 bg-[#fffaf6] p-4 md:p-5 overflow-y-auto"
+              className="flex-1 bg-[#fffaf6] p-3 md:p-5 overflow-y-auto"
               style={{
                 height: 'calc(100vh - 26rem)',
-                minHeight: '220px',
+                minHeight: '200px',
                 maxHeight: 'calc(100vh - 26rem)',
               }}
             >
@@ -788,7 +772,7 @@ function ViewDocument() {
                 <Form
                   onFinish={handleSubmit}
                   layout="vertical"
-                  className="flex-shrink-0 px-5 py-5 border-t border-[#f0e6da] bg-white"
+                  className="flex-shrink-0 px-4 md:px-5 py-4 md:py-5 border-t border-[#f0e6da] bg-white"
                   form={forwardForm}
                 >
                   <div className="mb-4">
