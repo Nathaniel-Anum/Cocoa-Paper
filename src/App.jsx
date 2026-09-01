@@ -35,6 +35,8 @@ import ViewDocument from './Pages/ViewDocument';
 import BudgetIndex from './Pages/Routes/Budget/BudgetIndex';
 import AddBudget from './Pages/Routes/Budget/Add';
 import UpdateBudget from './Pages/Routes/Budget/Update';
+import BudgetDetail from './Pages/Routes/Budget/BudgetDetail';
+import BudgetCompare from './Pages/Routes/Budget/BudgetCompare';
 import Analytics from './Pages/Analytics';
 import AdvancedAnalytics from './Pages/AdvancedAnalytics';
 import FinancialYear from './Components/BackOffice/FinancialYear';
@@ -42,6 +44,7 @@ import AuditTrail from './Components/BackOffice/AuditTrail';
 import Attachments from './Pages/Attachments';
 import Configuration from './Components/BackOffice/Configuration';
 import RetentionPolicy from './Components/BackOffice/RetentionPolicy';
+import Scripts from './Components/BackOffice/Scripts';
 import UserGroups from './Components/BackOffice/UserGroups';
 import Stamp from './Components/BackOffice/Stamp';
 import OTPSettings from './Components/OTPSettings';
@@ -263,6 +266,30 @@ function App() {
                   ])}
                 >
                   <UpdateBudget />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/budget/compare"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(allRolePermissions, [
+                    requiredPermissions.READ_BUDGET,
+                  ])}
+                >
+                  <BudgetCompare />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/budget/:id"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(allRolePermissions, [
+                    requiredPermissions.READ_BUDGET,
+                  ])}
+                >
+                  <BudgetDetail />
                 </ProtectedRoutes>
               }
             />
@@ -598,6 +625,18 @@ function App() {
                   ])}
                 >
                   <RetentionPolicy />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/backoffice/scripts"
+              element={
+                <ProtectedRoutes
+                  isAllowed={hasPermission(allRolePermissions, [
+                    requiredPermissions.UPDATE_CONFIGURATION,
+                  ])}
+                >
+                  <Scripts />
                 </ProtectedRoutes>
               }
             />

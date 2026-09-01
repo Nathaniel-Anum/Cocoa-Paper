@@ -1,9 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
-import { getAllBudgets, getArchivedBudgets, getFinancialYears } from '../http/budget';
+import { useQuery } from "@tanstack/react-query";
+import {
+  getAllBudgets,
+  getArchivedBudgets,
+  getFinancialYears,
+  getBudgetById,
+  getBudgetStats,
+  compareBudgetsByYear,
+} from "../http/budget";
 
 export const useGetFinancialYear = (options) => {
   return useQuery({
-    queryKey: ['financialYears'],
+    queryKey: ["financialYears"],
     queryFn: () => getFinancialYears(),
     ...options,
   });
@@ -11,14 +18,40 @@ export const useGetFinancialYear = (options) => {
 
 export const useGetAllBudgets = (params) => {
   return useQuery({
-    queryKey: ['budgets', params],
+    queryKey: ["budgets", params],
     queryFn: () => getAllBudgets(params),
   });
 };
 
 export const useGetArchivedBudgets = (params) => {
   return useQuery({
-    queryKey: ['budgets-archived'],
+    queryKey: ["budgets-archived"],
     queryFn: () => getArchivedBudgets(params),
+  });
+};
+
+export const useGetBudgetById = (id, options) => {
+  return useQuery({
+    queryKey: ["budget", id],
+    queryFn: () => getBudgetById(id),
+    enabled: !!id,
+    ...options,
+  });
+};
+
+export const useGetBudgetStats = (options) => {
+  return useQuery({
+    queryKey: ["budget-stats"],
+    queryFn: () => getBudgetStats(),
+    ...options,
+  });
+};
+
+export const useCompareBudgetsByYear = (params, options) => {
+  return useQuery({
+    queryKey: ["budget-year-compare", params],
+    queryFn: () => compareBudgetsByYear(params),
+    enabled: !!(params?.yearAId && params?.yearBId),
+    ...options,
   });
 };

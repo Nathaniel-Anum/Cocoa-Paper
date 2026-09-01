@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Committee Review Workspace - BAMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Custom Table Styling for Financial Precision */
+        .financial-table th { @apply py-3 px-4 text-left font-label-md text-label-md bg-primary-container text-on-primary; }
+        .financial-table td { @apply py-2 px-4 border-b border-outline-variant font-table-data text-table-data text-on-surface; }
+        .row-zebra:nth-child(even) { @apply bg-surface-container; }
+        .row-zebra:nth-child(odd) { @apply bg-surface; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface-variant": "#51443b",
+                      "secondary-fixed": "#ffdcc7",
+                      "surface-dim": "#e3d8d2",
+                      "surface-container-highest": "#ece0da",
+                      "on-primary-fixed-variant": "#683c15",
+                      "on-primary-container": "#d29667",
+                      "on-tertiary-fixed-variant": "#174c65",
+                      "on-surface": "#201b17",
+                      "secondary-container": "#fd984e",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed": "#2f1500",
+                      "surface-bright": "#fff8f5",
+                      "on-tertiary": "#ffffff",
+                      "inverse-on-surface": "#faeee8",
+                      "primary-container": "#582f08",
+                      "on-error": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-container": "#003e57",
+                      "on-secondary-container": "#6d3300",
+                      "tertiary-fixed": "#c5e7ff",
+                      "inverse-surface": "#352f2b",
+                      "inverse-primary": "#fab987",
+                      "surface-tint": "#84532a",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#ffdcc4",
+                      "secondary-fixed-dim": "#ffb787",
+                      "surface-container-high": "#f1e6e0",
+                      "outline": "#84746a",
+                      "tertiary": "#002739",
+                      "surface-variant": "#ece0da",
+                      "background": "#fff8f5",
+                      "primary": "#3b1c00",
+                      "on-primary": "#ffffff",
+                      "on-background": "#201b17",
+                      "on-tertiary-container": "#7ba9c6",
+                      "on-tertiary-fixed": "#001e2d",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#9ecdeb",
+                      "on-secondary-fixed-variant": "#723600",
+                      "outline-variant": "#d6c3b7",
+                      "surface-container": "#f7ece5",
+                      "secondary": "#964900",
+                      "surface-container-low": "#fdf1eb",
+                      "error": "#ba1a1a",
+                      "surface": "#fff8f5",
+                      "on-secondary-fixed": "#311300",
+                      "primary-fixed-dim": "#fab987"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "container-max": "1440px",
+                      "stack-sm": "8px",
+                      "gutter": "24px",
+                      "stack-md": "16px",
+                      "margin-page": "40px",
+                      "sidebar-width": "280px",
+                      "stack-lg": "32px"
+              },
+              "fontFamily": {
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "table-data": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "title-lg": ["Inter"],
+                      "body-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "table-data": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden">
+<!-- Side Navigation Bar -->
+<nav class="fixed left-0 top-0 h-full w-[280px] bg-primary-container border-r border-outline-variant flex flex-col p-stack-md z-50">
+<div class="mb-stack-lg">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">BAMS</h1>
+<p class="font-label-md text-label-md text-on-primary opacity-70">Institutional Oversight</p>
+</div>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">payments</span> Budgets
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">calendar_today</span> Financial Years
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg font-label-md text-label-md shadow-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span> Committee Reviews
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">rule</span> Approvals
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">assessment</span> Reports
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">history</span> Audit Trail
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings</span> Administration
+            </a>
+</div>
+<div class="mt-auto pt-4 border-t border-on-primary/10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold">JD</div>
+<div>
+<p class="font-label-md text-label-md text-on-primary">Jane Doe</p>
+<p class="text-[10px] text-on-primary opacity-60">Committee Chair</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface border-b border-outline-variant flex justify-between items-center px-gutter z-40">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">Budget Approval Management System</h2>
+<div class="h-6 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm">
+<span>Breadcrumbs</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span>Committee Workspace</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-high border border-outline-variant rounded text-on-surface font-label-md">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span>FY 2024-25</span>
+<span class="material-symbols-outlined text-[18px]">arrow_drop_down</span>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-secondary transition-colors">notifications</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A professional close-up portrait of a mid-career female executive with a focused and authoritative expression, wearing a tailored brown blazer. The background is a softly blurred modern office environment with neutral tones and warm indoor lighting, reinforcing the institutional oversight and governance theme of the platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTazxu2TNuHstEc4-r0OzJM8mnBi0xU2La8_cEF0f2MXHQJYZvkdNcrhpTxrohxwiaFO-KKY6O-8_MFGzYYWrv29yRyJ6HxA702xxebz0NNLdeAMksiCr25pzbRNgQQw5YycafmVescRF0znkbVDkNL657s4Zrc6WOykF-eJHxCZJGorokYmWu0OD2YTS3hvM8V-w4kSqQcjtge3d1lZKIDQk6YfxhQVyDuoqQVo-cmYYCU-K5J42mzguQ0EedQcHmCSpBBaslBJf-"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[280px] mt-16 h-[calc(100vh-64px-48px)] overflow-y-auto bg-background p-margin-page scrollbar-hide">
+<!-- Workflow Tracker -->
+<section class="mb-stack-lg">
+<div class="flex items-center w-full max-w-4xl">
+<!-- Step 1 -->
+<div class="flex items-center flex-1">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<span class="font-label-md text-[10px] mt-1 text-on-surface-variant">Submission</span>
+</div>
+<div class="flex-1 h-[2px] mx-2 bg-primary-container"></div>
+</div>
+<!-- Step 2 (Active) -->
+<div class="flex items-center flex-1">
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full border-2 border-secondary bg-surface flex items-center justify-center text-secondary font-bold">
+                            2
+                        </div>
+<span class="font-label-md text-label-md mt-1 text-secondary font-bold">Committee Review</span>
+</div>
+<div class="flex-1 h-[2px] mx-2 bg-outline-variant"></div>
+</div>
+<!-- Step 3 -->
+<div class="flex items-center flex-1">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant text-on-surface-variant/50 flex items-center justify-center">
+                            3
+                        </div>
+<span class="font-label-md text-[10px] mt-1 text-on-surface-variant/50">Final Approval</span>
+</div>
+<div class="flex-1 h-[2px] mx-2 bg-outline-variant"></div>
+</div>
+<!-- Step 4 -->
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant text-on-surface-variant/50 flex items-center justify-center">
+                        4
+                    </div>
+<span class="font-label-md text-[10px] mt-1 text-on-surface-variant/50">Execution</span>
+</div>
+</div>
+</section>
+<!-- Summary Cards Grid -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-stack-lg">
+<div class="bg-surface-container-low border border-outline-variant p-stack-md flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Submitted Total</span>
+<span class="font-display-lg text-display-lg text-primary mt-1">$42,500,000</span>
+<span class="text-[10px] text-on-surface-variant opacity-60 mt-auto pt-2">Institutional Base Request</span>
+</div>
+<div class="bg-surface-container-low border border-outline-variant p-stack-md flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Committee Revision</span>
+<span class="font-display-lg text-display-lg text-secondary mt-1">$38,125,000</span>
+<span class="text-[10px] text-secondary font-bold mt-auto pt-2">Current Working Revision</span>
+</div>
+<div class="bg-surface-container-low border border-outline-variant p-stack-md flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Prev-Year Approved</span>
+<span class="font-display-lg text-display-lg text-on-surface mt-1">$39,800,000</span>
+<span class="text-[10px] text-on-surface-variant opacity-60 mt-auto pt-2">FY 2023-24 Audited Total</span>
+</div>
+<div class="bg-surface-container-low border border-outline-variant p-stack-md flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Variance (%)</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-display-lg text-display-lg text-error">-10.3%</span>
+<span class="material-symbols-outlined text-error">trending_down</span>
+</div>
+<span class="text-[10px] text-on-surface-variant opacity-60 mt-auto pt-2">Vs. Original Submission</span>
+</div>
+</section>
+<!-- Workspace Tabs & Split Layout -->
+<div class="flex flex-col h-full">
+<div class="flex border-b border-outline-variant mb-stack-md">
+<button class="px-6 py-3 border-b-2 border-secondary text-secondary font-bold font-label-md text-label-md">Committee Revision</button>
+<button class="px-6 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors">Original Submission</button>
+<button class="px-6 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors">Comparison</button>
+<button class="px-6 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors flex items-center gap-2">
+                    Comments <span class="bg-primary text-on-primary text-[10px] px-1.5 py-0.5 rounded-full">12</span>
+</button>
+<button class="px-6 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors">History</button>
+</div>
+<!-- Workspace Content (Split View) -->
+<div class="flex flex-1 gap-gutter overflow-hidden h-full pb-stack-lg">
+<!-- Left: Comparison Table -->
+<div class="flex-1 overflow-auto border border-outline-variant bg-surface rounded-sm shadow-sm scrollbar-hide">
+<table class="w-full financial-table border-collapse">
+<thead class="sticky top-0 z-10">
+<tr>
+<th class="w-12 text-center">#</th>
+<th class="w-1/3">Budget Line Item</th>
+<th class="text-right">Original Amt ($)</th>
+<th class="text-right bg-secondary/10">Proposed Revision ($)</th>
+<th class="text-right">Variance</th>
+<th class="w-16 text-center">Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-zebra group hover:bg-secondary-container/10 transition-colors cursor-pointer" onclick="toggleEditDrawer(true)">
+<td class="text-center text-on-surface-variant opacity-50">001</td>
+<td>Infrastructure - Data Center Expansion</td>
+<td class="text-right">1,250,000.00</td>
+<td class="text-right bg-secondary/5 font-bold">1,050,000.00</td>
+<td class="text-right text-error font-bold">-16.0%</td>
+<td class="text-center">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">edit_square</span>
+</td>
+</tr>
+<tr class="row-zebra group bg-secondary-container/20 border-l-4 border-secondary">
+<td class="text-center text-on-surface-variant opacity-50">002</td>
+<td class="font-bold">Faculty Compensation - Tier 1 Adjuncts</td>
+<td class="text-right">8,400,000.00</td>
+<td class="text-right bg-secondary/10 font-bold">7,900,000.00</td>
+<td class="text-right text-error font-bold">-6.0%</td>
+<td class="text-center">
+<span class="material-symbols-outlined text-[18px] text-secondary">edit_square</span>
+</td>
+</tr>
+<tr class="row-zebra group hover:bg-secondary-container/10 transition-colors cursor-pointer">
+<td class="text-center text-on-surface-variant opacity-50">003</td>
+<td>Student Welfare Fund</td>
+<td class="text-right">500,000.00</td>
+<td class="text-right bg-secondary/5 font-bold">500,000.00</td>
+<td class="text-right text-on-surface-variant opacity-50">0.0%</td>
+<td class="text-center">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">edit_square</span>
+</td>
+</tr>
+<tr class="row-zebra group hover:bg-secondary-container/10 transition-colors cursor-pointer">
+<td class="text-center text-on-surface-variant opacity-50">004</td>
+<td>Laboratory Equipment Renewal - Bio-Sciences</td>
+<td class="text-right">2,100,000.00</td>
+<td class="text-right bg-secondary/5 font-bold">1,850,000.00</td>
+<td class="text-right text-error font-bold">-11.9%</td>
+<td class="text-center">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">edit_square</span>
+</td>
+</tr>
+<tr class="row-zebra group hover:bg-secondary-container/10 transition-colors cursor-pointer">
+<td class="text-center text-on-surface-variant opacity-50">005</td>
+<td>Campus Security Infrastructure Upgrade</td>
+<td class="text-right">750,000.00</td>
+<td class="text-right bg-secondary/5 font-bold">750,000.00</td>
+<td class="text-right text-on-surface-variant opacity-50">0.0%</td>
+<td class="text-center">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">edit_square</span>
+</td>
+</tr>
+<tr class="row-zebra group hover:bg-secondary-container/10 transition-colors cursor-pointer">
+<td class="text-center text-on-surface-variant opacity-50">006</td>
+<td>Utility Reserve - FY25 Projections</td>
+<td class="text-right">4,200,000.00</td>
+<td class="text-right bg-secondary/5 font-bold">3,800,000.00</td>
+<td class="text-right text-error font-bold">-9.5%</td>
+<td class="text-center">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">edit_square</span>
+</td>
+</tr>
+<tr class="row-zebra group hover:bg-secondary-container/10 transition-colors cursor-pointer">
+<td class="text-center text-on-surface-variant opacity-50">007</td>
+<td>Software Licensing - ERP Migration</td>
+<td class="text-right">950,000.00</td>
+<td class="text-right bg-secondary/5 font-bold">950,000.00</td>
+<td class="text-right text-on-surface-variant opacity-50">0.0%</td>
+<td class="text-center">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">edit_square</span>
+</td>
+</tr>
+</tbody>
+<tfoot class="sticky bottom-0 z-10 bg-surface-container-high border-t-2 border-primary-container">
+<tr>
+<td class="font-bold py-3" colspan="2">GRAND TOTAL (Current Section)</td>
+<td class="text-right font-bold py-3">18,150,000.00</td>
+<td class="text-right font-bold py-3 bg-secondary/10 text-secondary">16,800,000.00</td>
+<td class="text-right font-bold py-3 text-error">-7.4%</td>
+<td></td>
+</tr>
+</tfoot>
+</table>
+</div>
+<!-- Right: Edit Drawer (Mockup as a high-precision sidebar) -->
+<aside class="w-[360px] bg-surface-container-low border border-outline-variant flex flex-col p-stack-md transition-all duration-300 transform translate-x-0" id="editDrawer">
+<div class="flex items-center justify-between mb-stack-md border-b border-outline-variant pb-2">
+<h3 class="font-title-lg text-title-lg text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">edit_note</span>
+                            Edit Line #002
+                        </h3>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-error transition-colors" onclick="toggleEditDrawer(false)">close</button>
+</div>
+<div class="flex flex-col gap-stack-md flex-1 overflow-y-auto pr-2 scrollbar-hide">
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-1">Budget Category</label>
+<p class="font-table-data text-table-data bg-surface-container-high p-2 rounded border border-outline-variant">Faculty Compensation</p>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-1">Submitted Amount ($)</label>
+<input class="w-full font-table-data text-table-data bg-surface-container text-on-surface-variant/70 p-2 rounded border border-outline-variant cursor-not-allowed" readonly="" type="text" value="8,400,000.00"/>
+<span class="text-[10px] text-on-surface-variant/60 flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[12px]">lock</span> Read-only field
+                            </span>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-1">New Committee Amount ($)</label>
+<input class="w-full font-table-data text-table-data bg-surface p-2 rounded border-2 border-secondary focus:ring-0 focus:outline-none focus:border-secondary" type="number" value="7900000"/>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-1">Reason for Change (Mandatory)</label>
+<textarea class="w-full font-table-data text-table-data bg-surface p-2 rounded border border-outline-variant focus:ring-1 focus:ring-secondary focus:border-secondary" placeholder="Provide precise institutional justification for the variance..." rows="4"></textarea>
+</div>
+<div class="bg-secondary/5 p-stack-sm rounded border border-secondary/20 mt-2">
+<h4 class="font-label-md text-[11px] text-secondary font-bold uppercase mb-1">Analytical Impact</h4>
+<p class="text-[12px] text-on-surface-variant">Reducing this line by $500k will result in a 6% efficiency gain for the Compensation department without impacting core adjunct quotas.</p>
+</div>
+</div>
+<div class="mt-auto pt-stack-md border-t border-outline-variant flex flex-col gap-2">
+<button class="w-full bg-secondary text-on-secondary py-2.5 font-label-md text-label-md rounded-sm hover:opacity-90 active:scale-95 transition-all">Save Revision</button>
+<button class="w-full border border-secondary text-secondary py-2 font-label-md text-label-md rounded-sm hover:bg-secondary/5 transition-all">Discard Changes</button>
+</div>
+</aside>
+</div>
+</div>
+</main>
+<!-- Global Footer Actions (Fixed Bottom) -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-280px)] bg-surface-container-low border-t border-outline-variant flex justify-between items-center px-gutter py-2 z-40">
+<div class="flex items-center gap-4">
+<span class="font-label-md text-label-md text-on-surface-variant">Workspace Status: <span class="text-secondary font-bold">Review in Progress</span></span>
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border border-surface bg-primary text-on-primary flex items-center justify-center text-[10px]">SJ</div>
+<div class="w-6 h-6 rounded-full border border-surface bg-secondary text-on-secondary flex items-center justify-center text-[10px]">RK</div>
+<div class="w-6 h-6 rounded-full border border-surface bg-on-tertiary-container text-on-tertiary flex items-center justify-center text-[10px]">ML</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">help_outline</span> Request Info
+            </button>
+<button class="flex items-center gap-2 px-4 py-2 text-error border border-error/30 rounded-sm hover:bg-error/5 transition-colors font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">assignment_return</span> Return for Correction
+            </button>
+<button class="flex items-center gap-2 px-6 py-2 bg-primary-container text-on-primary rounded-sm hover:opacity-90 active:scale-95 shadow-sm transition-all font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">fact_check</span> Complete Committee Review
+            </button>
+</div>
+</footer>
+<script>
+        function toggleEditDrawer(show) {
+            const drawer = document.getElementById('editDrawer');
+            if (show) {
+                drawer.classList.remove('translate-x-full', 'w-0', 'p-0', 'opacity-0');
+                drawer.classList.add('w-[360px]', 'p-stack-md', 'opacity-100');
+            } else {
+                drawer.classList.add('translate-x-full', 'w-0', 'p-0', 'opacity-0');
+                drawer.classList.remove('w-[360px]', 'p-stack-md', 'opacity-100');
+            }
+        }
+
+        // Simulate micro-interactions
+        document.querySelectorAll('.row-zebra').forEach(row => {
+            row.addEventListener('click', () => {
+                // Remove active styling from others
+                document.querySelectorAll('.row-zebra').forEach(r => {
+                    r.classList.remove('bg-secondary-container/20', 'border-l-4', 'border-secondary');
+                });
+                // Add to current
+                row.classList.add('bg-secondary-container/20', 'border-l-4', 'border-secondary');
+                toggleEditDrawer(true);
+            });
+        });
+    </script>
+</body></html>

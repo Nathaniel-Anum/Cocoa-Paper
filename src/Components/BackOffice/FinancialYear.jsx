@@ -5,44 +5,50 @@ import {
   message,
   Modal,
   Popconfirm,
-  Select,
   Table,
+  Tag,
 } from 'antd';
 import Form from 'antd/es/form/Form';
-import TextArea from 'antd/es/input/TextArea';
-import React, { useEffect, useState } from 'react';
-
-// import { useMutation, useQueryClient } from 'react-query';
-
+import React, { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
-
 import { addFinancialYear, updateFinancialYear } from '../../http/budget';
-
-import { EditOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons';
+import {
+  CalendarOutlined,
+  EditOutlined,
+  LockOutlined,
+  PlusOutlined,
+  UnlockOutlined,
+} from '@ant-design/icons';
 import { useGetFinancialYear } from '../../queryHooks/budget';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { SummaryTile } from '../../Pages/Routes/Budget/BudgetDesignShared';
+
+function fmtYearRange(startDate, endDate) {
+  const start = dayjs(startDate);
+  const end = dayjs(endDate);
+  return `FY ${start.format('YYYY')}-${end.format('YY')}`;
+}
+
+function fmtDuration(startDate, endDate) {
+  return `${dayjs(startDate).format('MMM DD, YYYY')} — ${dayjs(endDate).format('MMM DD, YYYY')}`;
+}
 
 const FinancialYear = () => {
   const [openModal, setOpenModal] = useState(false);
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState('');
-
   const [selectedRecord, setSelectedRecord] = useState(null);
-
   const { data: financialYears, isLoading } = useGetFinancialYear();
-
-  console.log(financialYears && financialYears);
+  const qClient = useQueryClient();
 
   useEffect(() => {
     if (selectedRecord) {
-      console.log(selectedRecord);
-
       form.setFieldsValue({
         startDate: dayjs(selectedRecord.startDate),
         endDate: dayjs(selectedRecord.endDate),
       });
     }
-  }, [selectedRecord]);
+  }, [selectedRecord, form]);
 
   const { mutate: saveFinancialYear } = useMutation({
     mutationKey: 'addFinancialYear',
@@ -62,21 +68,15 @@ const FinancialYear = () => {
       setOpenModal(false);
       qClient.invalidateQueries({ queryKey: ['financialYears'] });
       message.success(
-        `Financial Year ${selectedRecord ? 'updated' : 'added'} successfully`
+        `Financial Year ${selectedRecord ? 'updated' : 'added'} successfully`,
       );
       form.resetFields();
+      setSelectedRecord(null);
     },
     onError: (err) => {
-      message.error(err);
+      message.error(err?.message || 'Unable to save financial year');
     },
   });
-
-  const _data =
-    financialYears &&
-    financialYears?.data?.data?.map((year) => ({
-      ...year,
-      key: year.id,
-    }));
 
   const { mutate: lockFinancialYear } = useMutation({
     mutationKey: 'removeFinancialYear',
@@ -90,62 +90,112 @@ const FinancialYear = () => {
     },
   });
 
+  const rows = useMemo(
+    () =>
+      (financialYears?.data?.data ?? []).map((year) => ({
+        ...year,
+        key: year.id,
+      })),
+    [financialYears],
+  );
+
+  const activeYear = useMemo(() => {
+    const now = dayjs();
+    return rows.find(
+      (year) =>
+        !year.closed &&
+        now.isAfter(dayjs(year.startDate)) &&
+        now.isBefore(dayjs(year.endDate)),
+    );
+  }, [rows]);
+
+  const upcomingYear = useMemo(() => {
+    const now = dayjs();
+    return rows.find((year) => !year.closed && dayjs(year.startDate).isAfter(now));
+  }, [rows]);
+
+  const filteredRows = rows.filter((record) => {
+    if (!searchText) return true;
+    const search = searchText.toLowerCase();
+    const label = fmtYearRange(record.startDate, record.endDate).toLowerCase();
+    const duration = fmtDuration(record.startDate, record.endDate).toLowerCase();
+    return label.includes(search) || duration.includes(search);
+  });
+
   const columns = [
     {
-      title: 'Start Date',
-      dataIndex: 'startDate',
-      key: 'startDate',
-      filteredValue: [searchText],
-      onFilter: (value, record) => {
-        const search = value.toLowerCase();
-        const startDate = new Date(record.startDate).toLocaleDateString().toLowerCase();
-        const endDate = new Date(record.endDate).toLocaleDateString().toLowerCase();
-        return (
-          startDate.includes(search) ||
-          endDate.includes(search)
-        );
-      },
-      render: (value) => <span>{new Date(value).toLocaleDateString()}</span>,
+      title: 'Fiscal Year',
+      key: 'label',
+      render: (_, record) => (
+        <div className="flex items-center gap-3">
+          <CalendarOutlined className="text-[#9D4D01]" />
+          <div>
+            <p className="m-0 text-base font-bold text-[#582f08]">
+              {fmtYearRange(record.startDate, record.endDate)}
+            </p>
+            {record.id === activeYear?.id && (
+              <span className="mt-1 inline-block rounded bg-[#582f08] px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+                Live
+              </span>
+            )}
+          </div>
+        </div>
+      ),
     },
     {
-      title: 'End Date',
-      dataIndex: 'endDate',
-      key: 'endDate',
-      render: (value) => <span>{new Date(value).toLocaleDateString()}</span>,
+      title: 'Duration',
+      key: 'duration',
+      render: (_, record) => (
+        <div>
+          <p className="m-0 text-sm font-semibold text-[#582f08]">
+            {fmtDuration(record.startDate, record.endDate)}
+          </p>
+          <p className="m-0 text-[11px] text-[#7a6859]">Standard 12-month cycle</p>
+        </div>
+      ),
     },
-
+    {
+      title: 'Status',
+      key: 'status',
+      render: (_, record) =>
+        record.closed ? (
+          <Tag className="rounded-full border-[#d6c3b7] bg-[#ece0da] px-3 py-0.5 text-[11px] font-bold uppercase text-[#51443b]">
+            Closed
+          </Tag>
+        ) : record.id === activeYear?.id ? (
+          <Tag className="rounded-full border-[#A5D6A7] bg-[#E8F5E9] px-3 py-0.5 text-[11px] font-bold uppercase text-[#2E7D32]">
+            Open
+          </Tag>
+        ) : (
+          <Tag className="rounded-full border-[#ffb787] bg-[#ffdcc7] px-3 py-0.5 text-[11px] font-bold uppercase text-[#723600]">
+            Upcoming
+          </Tag>
+        ),
+    },
     {
       title: 'Actions',
-      key: 'id',
-      dataIndex: 'id',
-      render: (value, record) => (
-        <div className={'flex gap-2'}>
-          <EditOutlined
+      key: 'actions',
+      align: 'right',
+      render: (_, record) => (
+        <div className="flex justify-end gap-2">
+          <Button
+            type="text"
+            icon={<EditOutlined />}
             onClick={() => {
-              setOpenModal(true);
               setSelectedRecord(record);
+              setOpenModal(true);
             }}
           />
-
           <Popconfirm
             disabled={record.closed}
-            title="Confirm Closing the year"
-            onConfirm={() => {
-              !record.closed
-                ? lockFinancialYear(value)
-                : message.error('Financial Year is already closed');
-            }}
+            title="Close this financial year?"
+            description="Closed years cannot accept new budget submissions."
+            onConfirm={() => lockFinancialYear(record.id)}
           >
             {!record.closed ? (
-              <UnlockOutlined
-                className="text-red-500 cursor-pointer text-xl"
-                size={22}
-              />
+              <Button type="text" icon={<UnlockOutlined className="text-[#ba1a1a]" />} />
             ) : (
-              <LockOutlined
-                className="text-gray-400 cursor-pointer text-xl"
-                disabled={true}
-              />
+              <Button type="text" disabled icon={<LockOutlined />} />
             )}
           </Popconfirm>
         </div>
@@ -153,67 +203,121 @@ const FinancialYear = () => {
     },
   ];
 
-  const qClient = useQueryClient();
-
-  const handleSubmit = (values) => {
-    saveFinancialYear(values);
-  };
-
   return (
     <>
       <Modal
         open={openModal}
         maskClosable={false}
-        onCancel={() => setOpenModal(false)}
-        footer={false}
+        onCancel={() => {
+          setOpenModal(false);
+          setSelectedRecord(null);
+          form.resetFields();
+        }}
+        footer={null}
+        title={
+          <span className="font-bold text-[#582f08]">
+            {selectedRecord ? 'Update Financial Year' : 'Create Financial Year'}
+          </span>
+        }
       >
         <Form
           layout="vertical"
-          onFinish={(values) => {
-            handleSubmit(values);
-          }}
+          onFinish={(values) => saveFinancialYear(values)}
           requiredMark
           form={form}
+          className="mt-4"
         >
-          <Form.Item name="startDate" label="Start Date" required>
-            <DatePicker className="w-full" />
+          <Form.Item name="startDate" label="Start Date" rules={[{ required: true }]}>
+            <DatePicker className="w-full" size="large" />
           </Form.Item>
-          <Form.Item name="endDate" label="End Date" required>
-            <DatePicker className="w-full" />
+          <Form.Item name="endDate" label="End Date" rules={[{ required: true }]}>
+            <DatePicker className="w-full" size="large" />
           </Form.Item>
-
-          <Button htmlType="submit" className="w-full bg-[#694421] text-white">
-            Submit
+          <Button
+            htmlType="submit"
+            block
+            size="large"
+            className="rounded-xl font-bold"
+            style={{ background: '#9D4D01', color: '#fff', border: 'none' }}
+          >
+            {selectedRecord ? 'Save Changes' : 'Create Financial Year'}
           </Button>
         </Form>
       </Modal>
+
       <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
-        <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e6da]">
-            <h2 className="text-lg font-bold text-[#582F08]">Financial Years</h2>
-            <div className="flex gap-3 items-center">
+        <div className="mx-auto max-w-7xl space-y-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="m-0 text-xs font-bold uppercase tracking-[0.18em] text-[#9D4D01]">
+                Administration
+              </p>
+              <h1 className="m-0 mt-2 text-3xl font-extrabold tracking-tight text-[#582f08]">
+                Financial Year Administration
+              </h1>
+              <p className="m-0 mt-2 max-w-2xl text-sm leading-6 text-[#7a6859]">
+                Manage institutional fiscal cycles, compliance deadlines, and operational status.
+              </p>
+            </div>
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setSelectedRecord(null);
+                form.resetFields();
+                setOpenModal(true);
+              }}
+              className="rounded-xl px-6 font-bold"
+              style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
+            >
+              Create Financial Year
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <SummaryTile
+              label="Current Active Year"
+              value={activeYear ? fmtYearRange(activeYear.startDate, activeYear.endDate) : '—'}
+              caption={activeYear ? 'Open for submissions' : 'No active year configured'}
+              tone={activeYear ? 'success' : 'default'}
+            />
+            <SummaryTile
+              label="Next Planning Cycle"
+              value={
+                upcomingYear
+                  ? fmtYearRange(upcomingYear.startDate, upcomingYear.endDate)
+                  : '—'
+              }
+              caption={
+                upcomingYear
+                  ? `Starts ${dayjs(upcomingYear.startDate).format('MMM DD, YYYY')}`
+                  : 'No upcoming cycle scheduled'
+              }
+            />
+            <SummaryTile
+              label="Configured Years"
+              value={String(rows.length)}
+              caption={`${rows.filter((year) => year.closed).length} closed · ${rows.filter((year) => !year.closed).length} open/upcoming`}
+            />
+          </div>
+
+          <div className="overflow-hidden rounded-[28px] border border-[#ead9cb] bg-white shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f0e6db] px-6 py-4">
+              <h2 className="m-0 text-lg font-bold text-[#582f08]">Fiscal Year Registry</h2>
               <Input.Search
-                placeholder="Search by date..."
+                placeholder="Search fiscal years..."
                 className="w-72"
                 allowClear
                 onChange={(e) => setSearchText(e.target.value)}
               />
-              <Button
-                type="primary"
-                onClick={() => setOpenModal(true)}
-                style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
-              >
-                Add
-              </Button>
             </div>
-          </div>
-          <div className="p-4">
             <Table
               columns={columns}
-              dataSource={_data}
+              dataSource={filteredRows}
               loading={isLoading}
-              className="backoffice-table"
-              rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
+              pagination={{ pageSize: 8, hideOnSinglePage: true }}
+              rowClassName={(_, index) => (index % 2 !== 0 ? 'bg-[#fdf5ef]' : 'bg-[#fffaf7]')}
             />
           </div>
         </div>

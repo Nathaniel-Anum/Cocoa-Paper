@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Budget - BAMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fdf1eb;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6c3b7;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #84746a;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fff8f5;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface-variant": "#51443b",
+                      "secondary-fixed": "#ffdcc7",
+                      "surface-dim": "#e3d8d2",
+                      "surface-container-highest": "#ece0da",
+                      "on-primary-fixed-variant": "#683c15",
+                      "on-primary-container": "#d29667",
+                      "on-tertiary-fixed-variant": "#174c65",
+                      "on-surface": "#201b17",
+                      "secondary-container": "#fd984e",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed": "#2f1500",
+                      "surface-bright": "#fff8f5",
+                      "on-tertiary": "#ffffff",
+                      "inverse-on-surface": "#faeee8",
+                      "primary-container": "#582f08",
+                      "on-error": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-container": "#003e57",
+                      "on-secondary-container": "#6d3300",
+                      "tertiary-fixed": "#c5e7ff",
+                      "inverse-surface": "#352f2b",
+                      "inverse-primary": "#fab987",
+                      "surface-tint": "#84532a",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#ffdcc4",
+                      "secondary-fixed-dim": "#ffb787",
+                      "surface-container-high": "#f1e6e0",
+                      "outline": "#84746a",
+                      "tertiary": "#002739",
+                      "surface-variant": "#ece0da",
+                      "background": "#fff8f5",
+                      "primary": "#3b1c00",
+                      "on-primary": "#ffffff",
+                      "on-background": "#201b17",
+                      "on-tertiary-container": "#7ba9c6",
+                      "on-tertiary-fixed": "#001e2d",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#9ecdeb",
+                      "on-secondary-fixed-variant": "#723600",
+                      "outline-variant": "#d6c3b7",
+                      "surface-container": "#f7ece5",
+                      "secondary": "#964900",
+                      "surface-container-low": "#fdf1eb",
+                      "error": "#ba1a1a",
+                      "surface": "#fff8f5",
+                      "on-secondary-fixed": "#311300",
+                      "primary-fixed-dim": "#fab987"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "container-max": "1440px",
+                      "stack-sm": "8px",
+                      "gutter": "24px",
+                      "stack-md": "16px",
+                      "margin-page": "40px",
+                      "sidebar-width": "280px",
+                      "stack-lg": "32px"
+              },
+              "fontFamily": {
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "table-data": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "title-lg": ["Inter"],
+                      "body-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "table-data": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container text-on-primary border-r border-outline-variant flex flex-col p-stack-md z-50">
+<div class="mb-stack-lg px-2">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">BAMS</h1>
+<p class="font-label-md text-label-md opacity-70">Institutional Oversight</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+                Budgets
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+                Financial Years
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+                Committee Reviews
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="rule">rule</span>
+                Approvals
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+                Reports
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+                Audit Trail
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Administration
+            </a>
+</nav>
+<div class="mt-auto pt-stack-md border-t border-outline-variant/30 px-2 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a senior financial officer in a corporate setting, soft daylight coming from a side window, realistic photography style, high-end professional aesthetic using the BAMS design system tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpMKvDPdpIHT5jMWkT30_Q0PAgUUCZ8OGBulsjJsNMpA8M72vvgrQoW3KfcxiaYYDCUiv0sTNxbKUBZYkjtjeRro4KXQpkxmJVC28ohnMrn8wHjSamZpD-r1FxomIYa51qsPLMpHRqDFmfDXyKH-20ZHNYuqD-d-BdEgVEjAy3IToiKDwleSMBjIx4ZCV0Pt76l1jliv0yY0ttQqGeCiQD3p_cI6NCNRn4IX-rdiloRZTQ-Up0vi-vs0VP0is-fgWTg57iHFbEeSeE"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-primary">Arthur J. Vance</p>
+<p class="text-[10px] opacity-60 text-on-primary">Chief Comptroller</p>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] min-h-screen flex flex-col relative pb-32">
+<!-- Top App Bar -->
+<header class="h-16 flex justify-between items-center px-gutter w-full bg-surface border-b border-outline-variant sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<nav class="flex items-center text-on-surface-variant font-label-md text-label-md">
+<a class="hover:text-secondary transition-colors" href="#">Budgets</a>
+<span class="material-symbols-outlined text-[16px] mx-2">chevron_right</span>
+<span class="text-secondary font-bold">Create New Budget</span>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="px-3 py-1 bg-surface-container-high rounded text-on-surface-variant font-label-md text-label-md border border-outline-variant">
+                    FY 2024-2025
+                </div>
+<button class="material-symbols-outlined text-primary hover:text-secondary transition-colors" data-icon="notifications">notifications</button>
+</div>
+</header>
+<!-- Form Content Container -->
+<div class="flex-1 max-w-[1000px] mx-auto w-full px-gutter py-stack-lg">
+<!-- Workflow Tracker (Stepper) -->
+<div class="mb-12">
+<div class="flex items-center justify-between relative">
+<!-- Progress Line -->
+<div class="absolute top-1/2 left-0 w-full h-[2px] bg-surface-container-high -translate-y-1/2 z-0"></div>
+<div class="absolute top-1/2 left-0 w-1/4 h-[2px] bg-secondary -translate-y-1/2 z-0"></div>
+<!-- Step 1: Active -->
+<div class="relative z-10 flex flex-col items-center gap-2 group">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-primary flex items-center justify-center font-bold shadow-md">1</div>
+<span class="font-label-md text-label-md text-secondary font-bold">Budget Details</span>
+</div>
+<!-- Step 2 -->
+<div class="relative z-10 flex flex-col items-center gap-2 group">
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant text-on-surface-variant/50 flex items-center justify-center font-bold">2</div>
+<span class="font-label-md text-label-md text-on-surface-variant opacity-50">Budget Lines</span>
+</div>
+<!-- Step 3 -->
+<div class="relative z-10 flex flex-col items-center gap-2 group">
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant text-on-surface-variant/50 flex items-center justify-center font-bold">3</div>
+<span class="font-label-md text-label-md text-on-surface-variant opacity-50">Supporting Docs</span>
+</div>
+<!-- Step 4 -->
+<div class="relative z-10 flex flex-col items-center gap-2 group">
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant text-on-surface-variant/50 flex items-center justify-center font-bold">4</div>
+<span class="font-label-md text-label-md text-on-surface-variant opacity-50">Review &amp; Save</span>
+</div>
+</div>
+</div>
+<!-- Header Section -->
+<div class="mb-stack-lg">
+<h2 class="font-display-lg text-display-lg text-primary mb-2">Initialize New Budget</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Define the high-level governance parameters for your institutional budget cycle.</p>
+</div>
+<div class="grid grid-cols-12 gap-stack-lg">
+<!-- Left Column: Form -->
+<div class="col-span-12 lg:col-span-8 space-y-stack-md">
+<div class="bg-white p-stack-lg rounded-xl border border-outline-variant shadow-sm space-y-stack-md">
+<div class="grid grid-cols-2 gap-stack-md">
+<div class="col-span-2">
+<label class="block font-label-md text-label-md text-on-surface mb-2">Budget Title</label>
+<input class="w-full bg-background border border-outline-variant rounded-lg p-3 font-body-md text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" placeholder="e.g. Q3 Infrastructure Modernization" type="text"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Financial Year</label>
+<select class="w-full bg-background border border-outline-variant rounded-lg p-3 font-body-md text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none appearance-none">
+<option>FY 2024-2025</option>
+<option>FY 2025-2026</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Department</label>
+<select class="w-full bg-background border border-outline-variant rounded-lg p-3 font-body-md text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none appearance-none">
+<option>Information Technology</option>
+<option>Human Resources</option>
+<option>Strategic Operations</option>
+<option>Capital Projects</option>
+</select>
+</div>
+<div class="col-span-2">
+<label class="block font-label-md text-label-md text-on-surface mb-2">Budget Manager</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-3 pl-10 font-body-md text-body-md text-on-surface-variant cursor-not-allowed" readonly="" type="text" value="Arthur J. Vance"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant" data-icon="lock">lock</span>
+</div>
+</div>
+<div class="col-span-2">
+<label class="block font-label-md text-label-md text-on-surface mb-2">Description</label>
+<textarea class="w-full bg-background border border-outline-variant rounded-lg p-3 font-body-md text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all resize-none" placeholder="Briefly describe the purpose and scope of this budget..." rows="4"></textarea>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Quick Options -->
+<div class="col-span-12 lg:col-span-4 space-y-4">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Entry Method</p>
+<!-- Option 1 -->
+<label class="block cursor-pointer group">
+<input checked="" class="hidden peer" name="entry_method" type="radio"/>
+<div class="p-stack-md rounded-xl border border-outline-variant bg-white peer-checked:border-secondary peer-checked:bg-secondary-fixed/30 hover:border-secondary/50 transition-all">
+<div class="flex items-start gap-3">
+<div class="p-2 bg-surface-container rounded-lg group-hover:bg-secondary-fixed/50 transition-colors">
+<span class="material-symbols-outlined text-secondary" data-icon="edit_note">edit_note</span>
+</div>
+<div>
+<h4 class="font-title-lg text-title-lg text-primary">Create Manually</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Build from scratch adding individual items.</p>
+</div>
+</div>
+</div>
+</label>
+<!-- Option 2 -->
+<label class="block cursor-pointer group">
+<input class="hidden peer" name="entry_method" type="radio"/>
+<div class="p-stack-md rounded-xl border border-outline-variant bg-white peer-checked:border-secondary peer-checked:bg-secondary-fixed/30 hover:border-secondary/50 transition-all">
+<div class="flex items-start gap-3">
+<div class="p-2 bg-surface-container rounded-lg group-hover:bg-secondary-fixed/50 transition-colors">
+<span class="material-symbols-outlined text-secondary" data-icon="content_copy">content_copy</span>
+</div>
+<div>
+<h4 class="font-title-lg text-title-lg text-primary">Copy Previous</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Clone structure from an approved budget.</p>
+</div>
+</div>
+</div>
+</label>
+<!-- Option 3 -->
+<label class="block cursor-pointer group">
+<input class="hidden peer" name="entry_method" type="radio"/>
+<div class="p-stack-md rounded-xl border border-outline-variant bg-white peer-checked:border-secondary peer-checked:bg-secondary-fixed/30 hover:border-secondary/50 transition-all">
+<div class="flex items-start gap-3">
+<div class="p-2 bg-surface-container rounded-lg group-hover:bg-secondary-fixed/50 transition-colors">
+<span class="material-symbols-outlined text-secondary" data-icon="upload_file">upload_file</span>
+</div>
+<div>
+<h4 class="font-title-lg text-title-lg text-primary">Upload Sheet</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Import data from institutional Excel template.</p>
+</div>
+</div>
+</div>
+</label>
+<div class="p-4 bg-primary-container text-on-primary rounded-xl mt-6 relative overflow-hidden">
+<div class="relative z-10">
+<h5 class="font-title-lg text-title-lg mb-2">Need Help?</h5>
+<p class="font-body-sm text-body-sm opacity-80 mb-4">Read our guide on institutional budget standards to ensure compliance.</p>
+<a class="inline-flex items-center gap-2 text-secondary-fixed font-bold text-label-md" href="#">
+                                VIEW DOCUMENTATION
+                                <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</a>
+</div>
+<span class="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] opacity-10 pointer-events-none" data-icon="help_center">help_center</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Footer -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-280px)] bg-surface-container-low border-t border-outline-variant px-gutter py-4 flex justify-between items-center z-50">
+<div>
+<button class="px-6 py-2 font-label-md text-label-md text-primary hover:bg-surface-container-highest rounded-lg transition-colors">Cancel</button>
+</div>
+<div class="flex items-center gap-4">
+<p class="font-body-sm text-body-sm text-on-surface-variant hidden md:block italic">Draft auto-saved 2 mins ago</p>
+<button class="bg-secondary text-on-primary px-8 py-3 rounded-lg font-bold font-title-lg shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center gap-2">
+                    Next Step
+                    <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</footer>
+</main>
+<script>
+        // Micro-interactions for form focus
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.closest('.bg-white')?.classList.add('ring-1', 'ring-secondary/20');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.closest('.bg-white')?.classList.remove('ring-1', 'ring-secondary/20');
+            });
+        });
+
+        // Simple Radio Selector behavior (simulated)
+        const radioCards = document.querySelectorAll('input[name="entry_method"]');
+        radioCards.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                console.log('Method changed to:', e.target.parentElement.querySelector('h4').textContent);
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f7ece5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6c3b7;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #84746a;
+        }
+        .workflow-step::after {
+            content: '';
+            position: absolute;
+            right: -24px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 1px;
+            background: #d6c3b7;
+        }
+        .workflow-step:last-child::after {
+            display: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#51443b",
+                        "secondary-fixed": "#ffdcc7",
+                        "surface-dim": "#e3d8d2",
+                        "surface-container-highest": "#ece0da",
+                        "on-primary-fixed-variant": "#683c15",
+                        "on-primary-container": "#d29667",
+                        "on-tertiary-fixed-variant": "#174c65",
+                        "on-surface": "#201b17",
+                        "secondary-container": "#fd984e",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#2f1500",
+                        "surface-bright": "#fff8f5",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#faeee8",
+                        "primary-container": "#582f08",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#003e57",
+                        "on-secondary-container": "#6d3300",
+                        "tertiary-fixed": "#c5e7ff",
+                        "inverse-surface": "#352f2b",
+                        "inverse-primary": "#fab987",
+                        "surface-tint": "#84532a",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#ffdcc4",
+                        "secondary-fixed-dim": "#ffb787",
+                        "surface-container-high": "#f1e6e0",
+                        "outline": "#84746a",
+                        "tertiary": "#002739",
+                        "surface-variant": "#ece0da",
+                        "background": "#fff8f5",
+                        "primary": "#3b1c00",
+                        "on-primary": "#ffffff",
+                        "on-background": "#201b17",
+                        "on-tertiary-container": "#7ba9c6",
+                        "on-tertiary-fixed": "#001e2d",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#9ecdeb",
+                        "on-secondary-fixed-variant": "#723600",
+                        "outline-variant": "#d6c3b7",
+                        "surface-container": "#f7ece5",
+                        "secondary": "#964900",
+                        "surface-container-low": "#fdf1eb",
+                        "error": "#ba1a1a",
+                        "surface": "#fff8f5",
+                        "on-secondary-fixed": "#311300",
+                        "primary-fixed-dim": "#fab987"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-max": "1440px",
+                        "stack-sm": "8px",
+                        "gutter": "24px",
+                        "stack-md": "16px",
+                        "margin-page": "40px",
+                        "sidebar-width": "280px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "table-data": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "table-data": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container flex flex-col p-stack-md border-r border-outline-variant z-50">
+<div class="mb-stack-lg">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">BAMS</h1>
+<p class="font-label-md text-label-md text-on-primary-container opacity-80 uppercase tracking-widest">Institutional Oversight</p>
+</div>
+<nav class="flex-grow space-y-2">
+<div class="flex items-center gap-3 p-3 font-label-md text-label-md text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 cursor-pointer rounded-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</div>
+<div class="flex items-center gap-3 p-3 font-label-md text-label-md bg-secondary-container text-on-secondary-container font-bold rounded-lg cursor-pointer active:scale-95 transition-transform">
+<span class="material-symbols-outlined">payments</span>
+<span>Budgets</span>
+</div>
+<div class="flex items-center gap-3 p-3 font-label-md text-label-md text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 cursor-pointer rounded-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined">calendar_today</span>
+<span>Financial Years</span>
+</div>
+<div class="flex items-center gap-3 p-3 font-label-md text-label-md text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 cursor-pointer rounded-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined">groups</span>
+<span>Committee Reviews</span>
+</div>
+<div class="flex items-center gap-3 p-3 font-label-md text-label-md text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 cursor-pointer rounded-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined">rule</span>
+<span>Approvals</span>
+</div>
+<div class="flex items-center gap-3 p-3 font-label-md text-label-md text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 cursor-pointer rounded-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined">assessment</span>
+<span>Reports</span>
+</div>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-stack-md flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-on-primary-container flex items-center justify-center text-primary-container font-bold">JD</div>
+<div class="overflow-hidden">
+<p class="font-label-md text-label-md text-on-primary truncate">John Doe</p>
+<p class="text-[10px] text-on-primary-container opacity-60 truncate">Senior Comptroller</p>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] h-screen flex flex-col relative">
+<!-- Top App Bar -->
+<header class="h-16 flex justify-between items-center px-gutter w-full bg-surface border-b border-outline-variant z-40">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">arrow_back</span>
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">Budget Approval Management System</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span>FY 2024-25</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined text-primary cursor-pointer active:opacity-70">notifications</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-error rounded-full border border-surface"></span>
+</div>
+<img class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A professional portrait of a senior financial executive in a corporate setting, with soft studio lighting and a neutral blurred background, emphasizing authority and professional oversight for the user profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrbWKiK92rtLRrDSW44ujr5jWsMxwAA7lfWSuhJ416hGzy6WM9cDYVx1e4EFjAOVeTjDpnwh5USXBw5xKxot260fM9ctOGlYRQ_-uGV3NfVhSG0_dI0s2IGmnD5SqQDQ52a8h99UDFp3rHIYYLBylFe1dKVK3XdRHQ4rX1gDRJh7Q6pRwsY6z7TQuS4AYAtZGlLFXMAdPHxQ_FP5c03LC1MXwuLYSZPZoiHdj8Eh_4X9WStCW7SGbib8gmKJXqPVGrFypsWpbkMEzX"/>
+</div>
+</header>
+<!-- Editor Canvas -->
+<div class="flex-grow overflow-y-auto bg-background p-margin-page pb-32">
+<div class="max-w-[1440px] mx-auto">
+<!-- Page Header & Workflow -->
+<div class="mb-stack-lg flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-secondary-container/20 text-on-secondary-container px-2 py-0.5 rounded font-label-md text-[10px] uppercase tracking-wider border border-secondary-container/30">Work in Progress</span>
+<span class="text-on-surface-variant font-label-md text-label-md">ID: B-2024-OP-0042</span>
+</div>
+<h3 class="font-display-lg text-display-lg text-primary">Draft: FY 2024-25 Corporate Operations</h3>
+</div>
+<!-- Workflow Tracker -->
+<div class="flex items-center gap-8 bg-surface-container-low p-stack-md rounded-xl border border-outline-variant">
+<div class="workflow-step relative flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-secondary text-on-primary flex items-center justify-center font-bold font-label-md">1</div>
+<span class="font-label-md text-label-md mt-1 text-secondary font-bold">Draft</span>
+</div>
+<div class="workflow-step relative flex flex-col items-center opacity-40">
+<div class="w-8 h-8 rounded-full bg-outline-variant text-on-surface-variant flex items-center justify-center font-bold font-label-md">2</div>
+<span class="font-label-md text-label-md mt-1">Submitted</span>
+</div>
+<div class="workflow-step relative flex flex-col items-center opacity-40">
+<div class="w-8 h-8 rounded-full bg-outline-variant text-on-surface-variant flex items-center justify-center font-bold font-label-md">3</div>
+<span class="font-label-md text-label-md mt-1">Review</span>
+</div>
+<div class="workflow-step relative flex flex-col items-center opacity-40">
+<div class="w-8 h-8 rounded-full bg-outline-variant text-on-surface-variant flex items-center justify-center font-bold font-label-md">4</div>
+<span class="font-label-md text-label-md mt-1">Recommended</span>
+</div>
+<div class="flex flex-col items-center opacity-40">
+<div class="w-8 h-8 rounded-full bg-outline-variant text-on-surface-variant flex items-center justify-center font-bold font-label-md">5</div>
+<span class="font-label-md text-label-md mt-1">Approved</span>
+</div>
+</div>
+</div>
+<!-- Summary Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-stack-md mb-stack-lg">
+<div class="bg-surface-container rounded-xl p-stack-md border border-outline-variant">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-1">Total Requested</p>
+<p class="font-headline-md text-headline-md text-primary">$4,850,000.00</p>
+<p class="text-[10px] text-on-surface-variant mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-error">trending_up</span>
+                            +12.4% vs Previous FY
+                        </p>
+</div>
+<div class="bg-surface-container rounded-xl p-stack-md border border-outline-variant">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-1">Last Saved</p>
+<p class="font-headline-md text-headline-md text-on-surface">14:32 Today</p>
+<p class="text-[10px] text-on-surface-variant mt-2">By System Admin (Autosave)</p>
+</div>
+<div class="bg-surface-container rounded-xl p-stack-md border border-outline-variant">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-1">Line Items</p>
+<p class="font-headline-md text-headline-md text-on-surface">124 Rows</p>
+<p class="text-[10px] text-on-surface-variant mt-2">12 Items Pending Validation</p>
+</div>
+<div class="bg-surface-container rounded-xl p-stack-md border border-outline-variant">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-1">Max Allocation</p>
+<p class="font-headline-md text-headline-md text-on-surface">$5,000,000.00</p>
+<div class="w-full bg-outline-variant h-1 rounded-full mt-3 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 97%;"></div>
+</div>
+</div>
+</div>
+<!-- Main Editor Layout -->
+<div class="flex flex-col lg:flex-row gap-stack-lg">
+<!-- Editor Left (Tabs & Table) -->
+<div class="flex-grow space-y-stack-md">
+<!-- Navigation Tabs -->
+<div class="flex gap-1 border-b border-outline-variant overflow-x-auto pb-px">
+<button class="px-6 py-3 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">Overview</button>
+<button class="px-6 py-3 font-label-md text-label-md text-secondary font-bold border-b-2 border-secondary">Budget Lines</button>
+<button class="px-6 py-3 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">Comparison</button>
+<button class="px-6 py-3 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">Documents</button>
+<button class="px-6 py-3 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2">
+                                Validation
+                                <span class="w-4 h-4 bg-error text-white text-[10px] rounded-full flex items-center justify-center">3</span>
+</button>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface border border-outline-variant rounded shadow-sm overflow-hidden">
+<div class="flex justify-between items-center p-4 bg-surface-container-low border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<div class="relative">
+<input class="bg-white border border-outline-variant rounded-lg px-8 py-2 text-body-sm w-64 focus:ring-2 focus:ring-secondary focus:border-transparent outline-none" placeholder="Search budget lines..." type="text"/>
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+</div>
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">filter_list</span>
+</button>
+</div>
+<button class="flex items-center gap-2 bg-secondary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                                    Add Line
+                                </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-primary-container text-on-primary">
+<th class="p-4 font-label-md text-label-md uppercase tracking-wider w-16">Item</th>
+<th class="p-4 font-label-md text-label-md uppercase tracking-wider w-32">Code</th>
+<th class="p-4 font-label-md text-label-md uppercase tracking-wider">Description</th>
+<th class="p-4 font-label-md text-label-md uppercase tracking-wider w-24 text-right">Qty</th>
+<th class="p-4 font-label-md text-label-md uppercase tracking-wider w-40 text-right">Unit Cost</th>
+<th class="p-4 font-label-md text-label-md uppercase tracking-wider w-40 text-right">Total</th>
+<th class="p-4 w-12"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="bg-surface hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4 font-table-data text-table-data">01</td>
+<td class="p-4 font-table-data text-table-data text-secondary font-bold">OP-IT-001</td>
+<td class="p-4 font-table-data text-table-data">Server Infrastructure Maintenance &amp; Cloud Licenses</td>
+<td class="p-4 font-table-data text-table-data text-right">12</td>
+<td class="p-4 font-table-data text-table-data text-right font-mono">$12,450.00</td>
+<td class="p-4 font-table-data text-table-data text-right font-bold font-mono">$149,400.00</td>
+<td class="p-4 text-right">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">more_vert</span>
+</td>
+</tr>
+<tr class="bg-surface-container/30 hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4 font-table-data text-table-data">02</td>
+<td class="p-4 font-table-data text-table-data text-secondary font-bold">OP-HR-242</td>
+<td class="p-4 font-table-data text-table-data">Annual Executive Compensation Packages (Provisional)</td>
+<td class="p-4 font-table-data text-table-data text-right">48</td>
+<td class="p-4 font-table-data text-table-data text-right font-mono">$52,000.00</td>
+<td class="p-4 font-table-data text-table-data text-right font-bold font-mono">$2,496,000.00</td>
+<td class="p-4 text-right">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">more_vert</span>
+</td>
+</tr>
+<tr class="bg-surface hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4 font-table-data text-table-data">03</td>
+<td class="p-4 font-table-data text-table-data text-secondary font-bold">OP-FAC-09</td>
+<td class="p-4 font-table-data text-table-data flex items-center gap-2">
+                                                Facility Management - Headquarters
+                                                <span class="material-symbols-outlined text-error text-[16px]" title="Over allocation limit">warning</span>
+</td>
+<td class="p-4 font-table-data text-table-data text-right">1</td>
+<td class="p-4 font-table-data text-table-data text-right font-mono">$820,000.00</td>
+<td class="p-4 font-table-data text-table-data text-right font-bold font-mono">$820,000.00</td>
+<td class="p-4 text-right">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">more_vert</span>
+</td>
+</tr>
+<tr class="bg-surface-container/30 hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4 font-table-data text-table-data">04</td>
+<td class="p-4 font-table-data text-table-data text-secondary font-bold">OP-MKT-33</td>
+<td class="p-4 font-table-data text-table-data">Global Brand Awareness Campaign Q3-Q4</td>
+<td class="p-4 font-table-data text-table-data text-right">2</td>
+<td class="p-4 font-table-data text-table-data text-right font-mono">$350,000.00</td>
+<td class="p-4 font-table-data text-table-data text-right font-bold font-mono">$700,000.00</td>
+<td class="p-4 text-right">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">more_vert</span>
+</td>
+</tr>
+<tr class="bg-surface hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4 font-table-data text-table-data">05</td>
+<td class="p-4 font-table-data text-table-data text-secondary font-bold">OP-LG-012</td>
+<td class="p-4 font-table-data text-table-data">Professional Service Fees: Legal Oversight</td>
+<td class="p-4 font-table-data text-table-data text-right">12</td>
+<td class="p-4 font-table-data text-table-data text-right font-mono">$15,000.00</td>
+<td class="p-4 font-table-data text-table-data text-right font-bold font-mono">$180,000.00</td>
+<td class="p-4 text-right">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">more_vert</span>
+</td>
+</tr>
+</tbody>
+<tfoot class="bg-surface-container-high border-t-2 border-primary-container">
+<tr>
+<td class="p-4 font-bold text-primary text-right font-title-lg" colspan="5">Page Total</td>
+<td class="p-4 font-bold text-primary text-right font-title-lg font-mono">$4,345,400.00</td>
+<td></td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+<!-- Notes Area -->
+<div class="bg-surface p-stack-md border border-outline-variant rounded-lg">
+<label class="font-label-md text-label-md text-on-surface-variant block mb-2">Budget Rationale / Justification</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded p-stack-md text-body-sm focus:ring-2 focus:ring-secondary focus:border-transparent outline-none h-24" placeholder="Enter administrative notes or strategic alignment details..."></textarea>
+</div>
+</div>
+<!-- Editor Right (Validation Panel) -->
+<div class="w-full lg:w-[320px] shrink-0 space-y-stack-md">
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="bg-primary-container p-4">
+<h4 class="text-on-primary font-title-lg text-title-lg flex items-center gap-2">
+<span class="material-symbols-outlined">fact_check</span>
+                                    Validation Checklist
+                                </h4>
+</div>
+<div class="p-4 space-y-4">
+<div class="flex items-start gap-3 p-3 bg-surface-container rounded-lg">
+<span class="material-symbols-outlined text-success text-[20px] font-bold" style="color: #2e7d32;">check_circle</span>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Total within allocation</p>
+<p class="text-[11px] text-on-surface-variant">Remaining headroom: $150,000.00</p>
+</div>
+</div>
+<div class="flex items-start gap-3 p-3 bg-surface-container rounded-lg border-l-4 border-error">
+<span class="material-symbols-outlined text-error text-[20px] font-bold">error</span>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Mandatory docs missing</p>
+<p class="text-[11px] text-on-surface-variant">Departmental sign-off PDF required for line OP-FAC-09.</p>
+<button class="mt-2 text-secondary font-bold text-[11px] hover:underline">Upload Document</button>
+</div>
+</div>
+<div class="flex items-start gap-3 p-3 bg-surface-container rounded-lg border-l-4 border-secondary-container">
+<span class="material-symbols-outlined text-secondary-container text-[20px] font-bold">warning</span>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Y-o-Y Increase (&gt;10%)</p>
+<p class="text-[11px] text-on-surface-variant">Explanation note required for current total variance.</p>
+</div>
+</div>
+<div class="flex items-start gap-3 p-3 bg-surface-container rounded-lg opacity-50">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">radio_button_unchecked</span>
+<div>
+<p class="font-label-md text-label-md text-on-surface">External Auditor Ready</p>
+<p class="text-[11px] text-on-surface-variant">Unlock after submission.</p>
+</div>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low border-t border-outline-variant">
+<p class="font-label-md text-label-md text-on-surface-variant mb-2">Audit Score</p>
+<div class="flex items-center gap-4">
+<div class="flex-grow bg-outline-variant h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full" style="width: 65%;"></div>
+</div>
+<span class="font-bold text-secondary font-label-md">65%</span>
+</div>
+</div>
+</div>
+<!-- Budget Timeline Card -->
+<div class="bg-white border border-outline-variant rounded-xl p-4 shadow-sm">
+<h4 class="font-title-lg text-title-lg text-primary mb-4">Submission Timeline</h4>
+<div class="space-y-4">
+<div class="flex gap-4 border-l-2 border-outline-variant ml-2 pl-4 relative">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-secondary"></div>
+<div>
+<p class="text-body-sm font-bold">Draft Started</p>
+<p class="text-[11px] text-on-surface-variant">Oct 12, 2023 • 09:00 AM</p>
+</div>
+</div>
+<div class="flex gap-4 border-l-2 border-outline-variant ml-2 pl-4 relative">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-outline-variant"></div>
+<div>
+<p class="text-body-sm text-on-surface-variant">Submission Deadline</p>
+<p class="text-[11px] text-on-surface-variant">Dec 15, 2023 • 05:00 PM</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Action Bar -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-280px)] bg-surface-container-low border-t border-outline-variant z-50 shadow-[0_-4px_20px_rgba(88,47,8,0.08)]">
+<div class="flex justify-between items-center px-gutter py-stack-md w-full">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+<span>Auto-saving in 15s</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-6 py-2.5 rounded-lg border border-outline font-label-md text-label-md text-primary hover:bg-surface-container transition-colors active:scale-95">
+                        Discard Draft
+                    </button>
+<button class="px-6 py-2.5 rounded-lg border border-secondary font-label-md text-label-md text-secondary hover:bg-secondary/5 transition-colors active:scale-95">
+                        Preview &amp; Export
+                    </button>
+<button class="px-6 py-2.5 rounded-lg bg-outline font-label-md text-label-md text-on-primary hover:bg-primary transition-colors active:scale-95">
+                        Save Draft
+                    </button>
+<button class="px-8 py-2.5 rounded-lg bg-secondary text-on-primary font-label-md text-label-md font-bold shadow-lg hover:opacity-90 active:scale-95 transition-all">
+                        Submit for Review
+                    </button>
+</div>
+</div>
+</footer>
+</main>
+<script>
+        // Simple UI Micro-interactions
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Focus interaction for high-density editing
+                console.log('Row selected for editing');
+            });
+        });
+
+        // Toggle validation tooltips
+        const tooltips = document.querySelectorAll('[title]');
+        tooltips.forEach(t => {
+            t.addEventListener('mouseenter', () => {
+                // Future: implementation of custom floating tooltips
+            });
+        });
+    </script>
+</body></html>

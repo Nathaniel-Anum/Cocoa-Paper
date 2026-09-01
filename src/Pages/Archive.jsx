@@ -21,7 +21,9 @@ import {
   SearchOutlined,
   MoreOutlined,
   FolderOpenOutlined,
+  UsergroupAddOutlined,
 } from '@ant-design/icons';
+import { Tag, Tooltip } from 'antd';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import {
   MdDriveFileMoveOutline,
@@ -32,6 +34,7 @@ import axiosInstance from '../Components/axiosInstance';
 import useArchiveTransform from './CustomHook/useArchiveTransform';
 import CreateFolder from '../Components/modals/Archive/CreateFolder';
 import UploadFile from '../Components/modals/Archive/UploadFile';
+import ShareFolder from '../Components/modals/Archive/ShareFolder';
 import {
   hasPermission,
   requiredPermissions,
@@ -55,7 +58,10 @@ const Archive = () => {
     editModal: false,
     moveModal: false,
     fileViewer: false,
+    shareModal: false,
   });
+
+  const [shareTarget, setShareTarget] = useState(null);
 
   const [selectedItem, setSelectedItem] = useState({
     record: null,
@@ -161,7 +167,16 @@ const Archive = () => {
           record.type === 'Folder'
             ? `/archive/${record.folderId}`
             : `/archive/${record.fileId}`;
-        return axiosInstance.patch(endpoint, values);
+
+        // Only send fields that are being edited; omit undefined values so the
+        // backend doesn't misinterpret them as a request to move the item.
+        const payload = {};
+        if (values.folderName !== undefined) payload.folderName = values.folderName;
+        if (values.fileName !== undefined) payload.fileName = values.fileName;
+        if (values.subject !== undefined) payload.subject = values.subject;
+        if (values.ref !== undefined) payload.ref = values.ref;
+
+        return axiosInstance.patch(endpoint, payload);
       },
       onSuccess: () => {
         message.success('Successfully Updated');
@@ -171,6 +186,10 @@ const Archive = () => {
           refetchType: 'all',
         });
         setModalStates((prev) => ({ ...prev, editModal: false }));
+      },
+      onError: (error) => {
+        console.error('Edit error:', error);
+        message.error(error?.response?.data?.error || 'Failed to update');
       },
     }),
 
@@ -303,6 +322,57 @@ const Archive = () => {
     }
   };
 
+  // Build the row action menu with permission gating for shared folders.
+  const getFolderMenuItems = (record) => {
+    const isFolder = record.type === 'Folder';
+    const isSharedIn = record.isShared === true; // shared with me (I'm not owner)
+    const canRename = !isSharedIn || record.sharedRole === 'EDITOR';
+    const canDelete = !isSharedIn || record.sharedCanDelete;
+    const canShare = isFolder && !isSharedIn;
+
+    const items = [];
+    if (canRename) {
+      items.push({
+        key: 'edit',
+        label: 'Rename',
+        icon: <EditOutlined />,
+        onClick: () => {
+          setSelectedItem((prev) => ({ ...prev, record }));
+          setModalStates((prev) => ({ ...prev, editModal: true }));
+        },
+      });
+    }
+    if (canShare) {
+      items.push({
+        key: 'share',
+        label: 'Share',
+        icon: <UsergroupAddOutlined />,
+        onClick: () => {
+          setShareTarget(record);
+          setModalStates((prev) => ({ ...prev, shareModal: true }));
+        },
+      });
+    }
+    if (record.document?.docID) {
+      items.push({
+        key: 'unarchive',
+        label: 'Unarchive',
+        icon: <MdUnarchive />,
+        onClick: () => mutations.unarchive.mutate(record),
+      });
+    }
+    if (canDelete) {
+      items.push({
+        key: 'delete',
+        label: 'Delete',
+        icon: <DeleteOutlined />,
+        danger: true,
+        onClick: () => mutations.delete.mutate(record),
+      });
+    }
+    return items;
+  };
+
   // Table Configuration
   const columns = [
     {
@@ -321,14 +391,29 @@ const Archive = () => {
       },
       render: (value, record) => (
         <div
-          className="flex gap-2 cursor-pointer"
+          className="flex gap-2 cursor-pointer items-center"
           onClick={() => handleBreadcrumbUpdate(record)}
         >
           {record.type === 'Folder' ? (
             <Link to={`/archive/${record.folderId}`}>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <FolderFilled className="text-[24px] text-[#FFAC28]" />
                 {value}
+                {record.isShared && (
+                  <Tooltip
+                    title={`Shared by ${record.sharedBy?.name || 'someone'} · ${
+                      record.sharedRole === 'EDITOR' ? 'Editor' : 'Viewer'
+                    }${record.sharedCanDelete ? ' · can delete' : ''}`}
+                  >
+                    <Tag
+                      icon={<UsergroupAddOutlined />}
+                      color="orange"
+                      className="!ml-1 !text-[10px]"
+                    >
+                      Shared
+                    </Tag>
+                  </Tooltip>
+                )}
               </div>
             </Link>
           ) : (
@@ -368,32 +453,7 @@ const Archive = () => {
       key: 'actions',
       width: 50,
       render: (_, record) => {
-        const items = [
-          {
-            key: 'edit',
-            label: 'Rename',
-            icon: <EditOutlined />,
-            onClick: () => {
-              setSelectedItem((prev) => ({ ...prev, record }));
-              setModalStates((prev) => ({ ...prev, editModal: true }));
-            },
-          },
-          ...(record.document?.docID
-            ? [{
-                key: 'unarchive',
-                label: 'Unarchive',
-                icon: <MdUnarchive />,
-                onClick: () => mutations.unarchive.mutate(record),
-              }]
-            : []),
-          {
-            key: 'delete',
-            label: 'Delete',
-            icon: <DeleteOutlined />,
-            danger: true,
-            onClick: () => mutations.delete.mutate(record),
-          },
-        ];
+        const items = getFolderMenuItems(record);
         return (
           <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
             <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed] transition-colors">
@@ -595,31 +655,22 @@ const Archive = () => {
                       else handleFileClick(record);
                     }}
                   >
-                    <p className="text-sm font-semibold text-[#582F08] truncate">
+                    <p className="text-sm font-semibold text-[#582F08] truncate flex items-center gap-1">
                       {record.type === 'Folder' ? record.folderName : record.fileName}
+                      {record.isShared && (
+                        <Tag icon={<UsergroupAddOutlined />} color="orange" className="!text-[9px] !leading-4 !m-0">
+                          Shared
+                        </Tag>
+                      )}
                     </p>
                     <p className="text-xs text-gray-400">
-                      {record.ref || record.type} · {new Date(record.createdAt).toLocaleDateString()}
+                      {record.isShared
+                        ? `Shared by ${record.sharedBy?.name || 'someone'}`
+                        : `${record.ref || record.type} · ${new Date(record.createdAt).toLocaleDateString()}`}
                     </p>
                   </div>
                   <Dropdown
-                    menu={{
-                      items: [
-                        {
-                          key: 'edit',
-                          label: 'Rename',
-                          icon: <EditOutlined />,
-                          onClick: () => {
-                            setSelectedItem((prev) => ({ ...prev, record }));
-                            setModalStates((prev) => ({ ...prev, editModal: true }));
-                          },
-                        },
-                        ...(record.document?.docID
-                          ? [{ key: 'unarchive', label: 'Unarchive', icon: <MdUnarchive />, onClick: () => mutations.unarchive.mutate(record) }]
-                          : []),
-                        { key: 'delete', label: 'Delete', icon: <DeleteOutlined />, danger: true, onClick: () => mutations.delete.mutate(record) },
-                      ],
-                    }}
+                    menu={{ items: getFolderMenuItems(record) }}
                     trigger={['click']}
                     placement="bottomRight"
                   >
@@ -689,6 +740,13 @@ const Archive = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Share Modal */}
+      <ShareFolder
+        open={modalStates.shareModal}
+        setOpen={(value) => setModalStates((prev) => ({ ...prev, shareModal: value }))}
+        folder={shareTarget}
+      />
 
       {/* Move Modal */}
       <Modal

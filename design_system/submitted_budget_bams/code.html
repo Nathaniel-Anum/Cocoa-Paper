@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Submitted Budget | Budget Approval Management System</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#51443b",
+                        "secondary-fixed": "#ffdcc7",
+                        "surface-dim": "#e3d8d2",
+                        "surface-container-highest": "#ece0da",
+                        "on-primary-fixed-variant": "#683c15",
+                        "on-primary-container": "#d29667",
+                        "on-tertiary-fixed-variant": "#174c65",
+                        "on-surface": "#201b17",
+                        "secondary-container": "#fd984e",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#2f1500",
+                        "surface-bright": "#fff8f5",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#faeee8",
+                        "primary-container": "#582f08",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#003e57",
+                        "on-secondary-container": "#6d3300",
+                        "tertiary-fixed": "#c5e7ff",
+                        "inverse-surface": "#352f2b",
+                        "inverse-primary": "#fab987",
+                        "surface-tint": "#84532a",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#ffdcc4",
+                        "secondary-fixed-dim": "#ffb787",
+                        "surface-container-high": "#f1e6e0",
+                        "outline": "#84746a",
+                        "tertiary": "#002739",
+                        "surface-variant": "#ece0da",
+                        "background": "#fff8f5",
+                        "primary": "#3b1c00",
+                        "on-primary": "#ffffff",
+                        "on-background": "#201b17",
+                        "on-tertiary-container": "#7ba9c6",
+                        "on-tertiary-fixed": "#001e2d",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#9ecdeb",
+                        "on-secondary-fixed-variant": "#723600",
+                        "outline-variant": "#d6c3b7",
+                        "surface-container": "#f7ece5",
+                        "secondary": "#964900",
+                        "surface-container-low": "#fdf1eb",
+                        "error": "#ba1a1a",
+                        "surface": "#fff8f5",
+                        "on-secondary-fixed": "#311300",
+                        "primary-fixed-dim": "#fab987"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-max": "1440px",
+                        "stack-sm": "8px",
+                        "gutter": "24px",
+                        "stack-md": "16px",
+                        "margin-page": "40px",
+                        "sidebar-width": "280px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "table-data": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "table-data": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .zebra-striping tr:nth-child(even) {
+            background-color: #f7eee6;
+        }
+        .zebra-striping tr:nth-child(odd) {
+            background-color: #fdf5ef;
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-surface antialiased overflow-x-hidden">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[280px] bg-primary-container flex flex-col p-stack-md border-r border-outline-variant z-50">
+<div class="mb-stack-lg flex items-center gap-3">
+<span class="material-symbols-outlined text-on-primary text-headline-md">account_balance</span>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">BAMS</h1>
+<p class="font-label-md text-label-md text-on-primary opacity-70">Institutional Oversight</p>
+</div>
+</div>
+<div class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">payments</span>
+                Budgets
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+                Financial Years
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">groups</span>
+                Committee Reviews
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">rule</span>
+                Approvals
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">assessment</span>
+                Reports
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">history</span>
+                Audit Trail
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Administration
+            </a>
+</div>
+<div class="mt-auto pt-stack-md border-t border-outline-variant/30">
+<div class="flex items-center gap-3 px-4 py-2">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Professional headshot of a female executive in business attire, clean corporate background, high resolution photography with soft studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4c1u8nDxPfTRhB_WyzRzp_tFXQNtxeuZq-FnU_R7XXvXpKG9S3B0-4hKiOq7sQj0IhjvRLrueUhtO25Rt2I_Oz_t9BUcTFJ76FJ0XgdT_TayW4uMuSm1qDWyEO9TJO0TNOLU-UArN8fs9VQ4M_AZ6F_WbCHybMaGJ2lzRBSfq6upm7TldQQiF2xf73fWvgIKwF709_46BST_ofUkNZNWKO7_0DmKrKcxVbevFj6gQ8O5e_IxeKT_KLdvmRgX3qXfvbsp0J4bbEj5W"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md text-on-primary truncate">Admin User</p>
+<p class="text-[10px] text-on-primary/60 truncate">S. Jenkins</p>
+</div>
+<span class="material-symbols-outlined text-on-primary cursor-pointer hover:text-secondary-container">logout</span>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="ml-[280px] min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface flex justify-between items-center px-gutter z-40 border-b border-outline-variant shadow-none">
+<div class="flex items-center gap-4">
+<nav class="flex items-center text-on-surface-variant font-label-md text-label-md">
+<span>Budgets</span>
+<span class="material-symbols-outlined mx-2 text-[16px]">chevron_right</span>
+<span class="text-secondary font-bold">FY 2024 Final Submission</span>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 bg-surface-container-high px-3 py-1.5 rounded-lg border border-outline-variant">
+<span class="material-symbols-outlined text-primary text-[18px]">calendar_month</span>
+<span class="font-label-md text-label-md text-primary">FY 2024-25</span>
+<span class="material-symbols-outlined text-primary text-[16px]">arrow_drop_down</span>
+</div>
+<div class="relative cursor-pointer active:opacity-70 transition-all">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="mt-16 p-margin-page max-w-container-max mx-auto">
+<!-- Workflow Tracker -->
+<div class="mb-stack-lg">
+<div class="flex items-center w-full max-w-3xl mx-auto">
+<!-- Step 1 -->
+<div class="flex flex-col items-center flex-1">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center mb-2">
+<span class="material-symbols-outlined">check</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Drafting</span>
+</div>
+<div class="h-[2px] flex-1 bg-primary-container -mt-6"></div>
+<!-- Step 2 (Active) -->
+<div class="flex flex-col items-center flex-1">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center mb-2 ring-4 ring-secondary-fixed">
+<span class="material-symbols-outlined">outgoing_mail</span>
+</div>
+<span class="font-label-md text-label-md text-secondary font-bold">Submitted</span>
+</div>
+<div class="h-[2px] flex-1 bg-surface-container-highest -mt-6"></div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center flex-1">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant/50 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined">groups</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant/50">Committee Review</span>
+</div>
+<div class="h-[2px] flex-1 bg-surface-container-highest -mt-6"></div>
+<!-- Step 4 -->
+<div class="flex flex-col items-center flex-1">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant/50 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined">verified</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant/50">Final Approval</span>
+</div>
+</div>
+</div>
+<!-- Banner & Header -->
+<div class="grid grid-cols-12 gap-stack-lg mb-stack-lg">
+<div class="col-span-12 lg:col-span-8">
+<div class="bg-surface-container-low border border-outline-variant p-stack-md flex items-start gap-4 rounded-lg mb-stack-md">
+<span class="material-symbols-outlined text-secondary mt-1">lock</span>
+<div>
+<p class="font-title-lg text-title-lg text-on-surface mb-1">Budget Locked</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">This budget is locked and undergoing initial processing. Modifications are disabled until the current review cycle is completed or a revision is requested by the committee.</p>
+</div>
+</div>
+<h2 class="font-display-lg text-display-lg text-primary mb-2">Institutional Budget FY 2024-25</h2>
+<div class="flex items-center gap-6 text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">person</span>
+                            Submitted by Sarah Jenkins
+                        </div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                            Oct 12, 2024
+                        </div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">history</span>
+                            Version 1.2 (Latest)
+                        </div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4">
+<div class="bg-primary-container text-on-primary p-stack-lg rounded-xl flex flex-col justify-between h-full">
+<p class="font-label-md text-label-md uppercase tracking-widest opacity-70">Total Requested Amount</p>
+<div class="mt-4">
+<span class="font-display-lg text-display-lg">$14,250,000.00</span>
+<p class="font-body-sm text-body-sm opacity-60 mt-1">Institutional Gross Allocation</p>
+</div>
+<div class="mt-6 flex items-center justify-between border-t border-on-primary/10 pt-4">
+<span class="font-label-md text-label-md">Risk Profile: Low</span>
+<span class="px-2 py-1 bg-on-primary/10 rounded font-label-md text-label-md">STABLE</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Budget Detail Sections (Bento-ish Layout) -->
+<div class="grid grid-cols-12 gap-stack-md mb-stack-lg">
+<!-- Main Budget Lines Table -->
+<div class="col-span-12">
+<div class="bg-surface border border-outline-variant overflow-hidden">
+<div class="bg-primary-container px-gutter py-stack-md flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm text-on-primary">Operational Budget Lines</h3>
+<span class="material-symbols-outlined text-on-primary opacity-60">print</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse zebra-striping">
+<thead class="bg-primary-container text-on-primary font-label-md text-label-md uppercase tracking-wider">
+<tr>
+<th class="px-gutter py-3">Code</th>
+<th class="px-gutter py-3">Description</th>
+<th class="px-gutter py-3">Category</th>
+<th class="px-gutter py-3 text-right">Last Year Actual</th>
+<th class="px-gutter py-3 text-right">Requested FY24</th>
+<th class="px-gutter py-3 text-center">Status</th>
+</tr>
+</thead>
+<tbody class="font-table-data text-table-data text-on-surface">
+<tr>
+<td class="px-gutter py-4 font-bold">100-OP-01</td>
+<td class="px-gutter py-4">Salaries &amp; Faculty Compensation</td>
+<td class="px-gutter py-4">Personnel</td>
+<td class="px-gutter py-4 text-right">$8,450,000</td>
+<td class="px-gutter py-4 text-right font-bold">$9,100,000</td>
+<td class="px-gutter py-4 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary-fixed text-on-secondary-fixed">PENDING</span>
+</td>
+</tr>
+<tr>
+<td class="px-gutter py-4 font-bold">200-IT-04</td>
+<td class="px-gutter py-4">Software Licensing &amp; Cloud Infrastructure</td>
+<td class="px-gutter py-4">Technology</td>
+<td class="px-gutter py-4 text-right">$1,200,000</td>
+<td class="px-gutter py-4 text-right font-bold">$1,450,000</td>
+<td class="px-gutter py-4 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary-fixed text-on-secondary-fixed">PENDING</span>
+</td>
+</tr>
+<tr>
+<td class="px-gutter py-4 font-bold">300-FM-02</td>
+<td class="px-gutter py-4">Campus Facility Maintenance &amp; Repairs</td>
+<td class="px-gutter py-4">Infrastructure</td>
+<td class="px-gutter py-4 text-right">$2,800,000</td>
+<td class="px-gutter py-4 text-right font-bold">$3,000,000</td>
+<td class="px-gutter py-4 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary-fixed text-on-secondary-fixed">PENDING</span>
+</td>
+</tr>
+<tr>
+<td class="px-gutter py-4 font-bold">400-AD-10</td>
+<td class="px-gutter py-4">Institutional Marketing &amp; Recruitment</td>
+<td class="px-gutter py-4">Administrative</td>
+<td class="px-gutter py-4 text-right">$650,000</td>
+<td class="px-gutter py-4 text-right font-bold">$700,000</td>
+<td class="px-gutter py-4 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary-fixed text-on-secondary-fixed">PENDING</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Supplemental Read-Only Fields -->
+<div class="col-span-12 md:col-span-6">
+<div class="bg-surface-container p-stack-lg border border-outline-variant">
+<h4 class="font-title-lg text-title-lg text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">description</span>
+                            Strategic Rationale
+                        </h4>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-stack-md rounded border border-outline-variant/30 flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-outline mt-1">lock</span>
+<p class="text-body-sm text-on-surface-variant italic">"This year's budget focuses on expanding our digital footprint and enhancing faculty retention through a 4% salary adjustment. We are prioritizing critical infrastructure upgrades to mitigate long-term maintenance costs."</p>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 md:col-span-6">
+<div class="bg-surface-container p-stack-lg border border-outline-variant">
+<h4 class="font-title-lg text-title-lg text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">attachment</span>
+                            Supporting Documentation
+                        </h4>
+<div class="space-y-2">
+<div class="flex items-center justify-between bg-surface p-3 border border-outline-variant">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">picture_as_pdf</span>
+<span class="font-label-md text-label-md">Personnel_Detailed_Breakdown.pdf</span>
+</div>
+<span class="material-symbols-outlined text-outline cursor-not-allowed">lock</span>
+</div>
+<div class="flex items-center justify-between bg-surface p-3 border border-outline-variant">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">table_chart</span>
+<span class="font-label-md text-label-md">Facility_Audit_2023.xlsx</span>
+</div>
+<span class="material-symbols-outlined text-outline cursor-not-allowed">lock</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Action Bar -->
+<div class="fixed bottom-14 right-0 w-[calc(100%-280px)] bg-surface/80 backdrop-blur-md border-t border-outline-variant p-stack-md flex justify-end gap-stack-md z-30">
+<button class="px-6 py-2.5 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors active:opacity-70">
+                    Download Full Report
+                </button>
+<button class="px-8 py-2.5 bg-secondary text-on-secondary font-bold font-label-md text-label-md shadow-lg active:scale-95 transition-transform" onclick="startReview()">
+                    Start Committee Review
+                </button>
+</div>
+</div>
+<!-- Footer -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-280px)] bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm flex justify-between items-center px-gutter py-stack-sm border-t border-outline-variant z-40">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-bold text-primary">BAMS</span>
+<span class="opacity-60">© 2024 Institutional Budget Governance</span>
+</div>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">Help Desk</a>
+</div>
+</footer>
+</main>
+<script>
+        function startReview() {
+            alert('Initiating Committee Review phase. All relevant stakeholders will be notified.');
+        }
+
+        // Add a subtle entrance animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const main = document.querySelector('main');
+            main.style.opacity = '0';
+            main.style.transform = 'translateY(10px)';
+            main.style.transition = 'all 0.6s ease-out';
+            
+            setTimeout(() => {
+                main.style.opacity = '1';
+                main.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body></html>

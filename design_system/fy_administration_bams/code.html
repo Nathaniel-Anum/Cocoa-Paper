@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Year Administration | BAMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fff8f5;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1e6e0;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d6c3b7;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#51443b",
+                        "secondary-fixed": "#ffdcc7",
+                        "surface-dim": "#e3d8d2",
+                        "surface-container-highest": "#ece0da",
+                        "on-primary-fixed-variant": "#683c15",
+                        "on-primary-container": "#d29667",
+                        "on-tertiary-fixed-variant": "#174c65",
+                        "on-surface": "#201b17",
+                        "secondary-container": "#fd984e",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#2f1500",
+                        "surface-bright": "#fff8f5",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#faeee8",
+                        "primary-container": "#582f08",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#003e57",
+                        "on-secondary-container": "#6d3300",
+                        "tertiary-fixed": "#c5e7ff",
+                        "inverse-surface": "#352f2b",
+                        "inverse-primary": "#fab987",
+                        "surface-tint": "#84532a",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#ffdcc4",
+                        "secondary-fixed-dim": "#ffb787",
+                        "surface-container-high": "#f1e6e0",
+                        "outline": "#84746a",
+                        "tertiary": "#002739",
+                        "surface-variant": "#ece0da",
+                        "background": "#fff8f5",
+                        "primary": "#3b1c00",
+                        "on-primary": "#ffffff",
+                        "on-background": "#201b17",
+                        "on-tertiary-container": "#7ba9c6",
+                        "on-tertiary-fixed": "#001e2d",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#9ecdeb",
+                        "on-secondary-fixed-variant": "#723600",
+                        "outline-variant": "#d6c3b7",
+                        "surface-container": "#f7ece5",
+                        "secondary": "#964900",
+                        "surface-container-low": "#fdf1eb",
+                        "error": "#ba1a1a",
+                        "surface": "#fff8f5",
+                        "on-secondary-fixed": "#311300",
+                        "primary-fixed-dim": "#fab987"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-max": "1440px",
+                        "stack-sm": "8px",
+                        "gutter": "24px",
+                        "stack-md": "16px",
+                        "margin-page": "40px",
+                        "sidebar-width": "280px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "table-data": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "table-data": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container flex flex-col p-stack-md border-r border-outline-variant z-50">
+<div class="mb-stack-lg px-2">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">BAMS</h1>
+<p class="font-label-md text-label-md text-on-primary-container uppercase tracking-widest opacity-70">Institutional Oversight</p>
+</div>
+<nav class="flex-1 space-y-1 custom-scrollbar overflow-y-auto">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg group active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<!-- Budgets -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg group active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Budgets</span>
+</a>
+<!-- Financial Years (ACTIVE) -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg active:scale-95 transition-transform shadow-sm" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Financial Years</span>
+</a>
+<!-- Committee Reviews -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg group active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Committee Reviews</span>
+</a>
+<!-- Approvals -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg group active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">rule</span>
+<span class="font-label-md text-label-md">Approvals</span>
+</a>
+<!-- Reports -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg group active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<!-- Audit Trail -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg group active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">Audit Trail</span>
+</a>
+<!-- Administration -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg group active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Administration</span>
+</a>
+</nav>
+<div class="mt-auto pt-stack-md border-t border-outline-variant/30 flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<div class="overflow-hidden">
+<p class="font-label-md text-label-md text-on-primary truncate">Admin Portal</p>
+<p class="font-body-sm text-[10px] text-on-primary-container opacity-60 truncate">v2.4.0-PRO</p>
+</div>
+</div>
+</aside>
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface flex justify-between items-center px-gutter z-40 border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">Budget Approval Management System</h2>
+<div class="h-6 w-px bg-outline-variant mx-2"></div>
+<nav class="flex items-center gap-4">
+<span class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">home</span> / Financial Years
+                </span>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-on-surface-variant hover:text-secondary transition-colors cursor-pointer active:opacity-70">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface group-hover:text-secondary transition-colors">Director Finance</p>
+<p class="font-body-sm text-[11px] text-on-surface-variant">Global Access</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover" data-alt="A professional close-up portrait of a high-level corporate executive with a serious yet approachable expression. The lighting is studio-quality with soft shadows, reflecting a professional light-mode aesthetic. The individual is wearing a sharp, tailored business suit in a deep charcoal grey. The background is a clean, minimalist office setting with muted tones of beige and white." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnQTPzi8jvVLDzwc0Aemv8IX2cpK6TuTWEjSw_4FrMf74AtPOqw7nPXYHmOhZXxd7gNW6NzSV_Nw5yZdQSnhXB5jLi9zUgolHUXR3MOigN5i6gxEGAdmQTCNXf0ovXP10AQuXqGT_PePgPNDEM-KPwL7_n8ejr1ggc6BjAEpCw-CSqZaw5DRgJzKn9QOJMlBBayyImbY7W6xQhhuRC0g03E36u9mrC-iVa7pAnPW9IozwlA_K_TglyCVvUoccHTfkJtGys5AlM7PlQ"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="pt-16 pl-[280px] min-h-screen">
+<div class="p-margin-page max-w-container-max mx-auto pb-24">
+<!-- Page Header Actions -->
+<div class="flex justify-between items-end mb-stack-lg">
+<div>
+<h3 class="font-display-lg text-display-lg text-primary">Financial Year Administration</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Manage institutional fiscal cycles, compliance deadlines, and operational status.</p>
+</div>
+<button class="flex items-center gap-2 bg-secondary text-on-secondary px-6 py-3 rounded hover:opacity-90 active:scale-95 transition-all shadow-md">
+<span class="material-symbols-outlined">add</span>
+<span class="font-label-md text-label-md">Create Financial Year</span>
+</button>
+</div>
+<!-- Dashboard Summary Tiles (Quick Metrics) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-lg">
+<div class="bg-surface-container-low p-stack-md border border-outline-variant rounded-lg">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase">Current Active Year</p>
+<p class="font-headline-md text-headline-md text-primary mt-2">FY 2023-24</p>
+<div class="mt-3 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-600 animate-pulse"></span>
+<span class="font-body-sm text-body-sm text-green-700">Open for Submissions</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-stack-md border border-outline-variant rounded-lg">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase">Next Planning Cycle</p>
+<p class="font-headline-md text-headline-md text-primary mt-2">FY 2024-25</p>
+<div class="mt-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]">event</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Starts in 124 days</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-stack-md border border-outline-variant rounded-lg">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase">Audit Compliance</p>
+<p class="font-headline-md text-headline-md text-primary mt-2">98.2%</p>
+<div class="mt-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-container text-[18px]">verified</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Previous Year Finalized</span>
+</div>
+</div>
+</div>
+<!-- Financial Year List Table -->
+<div class="bg-surface border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full border-collapse">
+<thead>
+<tr class="bg-primary-container">
+<th class="px-6 py-4 text-left font-label-md text-label-md text-on-primary uppercase tracking-wider">Fiscal Year</th>
+<th class="px-6 py-4 text-left font-label-md text-label-md text-on-primary uppercase tracking-wider">Duration</th>
+<th class="px-6 py-4 text-left font-label-md text-label-md text-on-primary uppercase tracking-wider">Key Deadlines</th>
+<th class="px-6 py-4 text-left font-label-md text-label-md text-on-primary uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-right font-label-md text-label-md text-on-primary uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- FY 2024-25 (Upcoming) -->
+<tr class="bg-[#FDF5EF] hover:bg-[#F7EEE6] transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">calendar_month</span>
+<span class="font-title-lg text-title-lg text-primary">FY 2024-25</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="font-body-sm text-body-sm text-on-surface flex flex-col">
+<span>Apr 01, 2024 — Mar 31, 2025</span>
+<span class="text-[11px] text-on-surface-variant opacity-60">Standard 12-month cycle</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="space-y-2">
+<div class="flex items-center justify-between text-[11px]">
+<span class="text-on-surface-variant font-medium">Submission:</span>
+<span class="text-on-surface font-semibold">Jan 15, 2024</span>
+</div>
+<div class="flex items-center justify-between text-[11px]">
+<span class="text-on-surface-variant font-medium">Review:</span>
+<span class="text-on-surface font-semibold">Feb 20, 2024</span>
+</div>
+<div class="flex items-center justify-between text-[11px]">
+<span class="text-on-surface-variant font-medium">Approval:</span>
+<span class="text-on-surface font-semibold">Mar 15, 2024</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[11px] font-bold uppercase tracking-wider border border-secondary-fixed-dim">
+                                        Upcoming
+                                    </span>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- FY 2023-24 (Open/Current) -->
+<tr class="bg-[#F7EEE6] hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">verified</span>
+<span class="font-title-lg text-title-lg text-primary">FY 2023-24</span>
+<span class="bg-primary text-on-primary text-[10px] px-1.5 py-0.5 rounded uppercase font-bold">Live</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="font-body-sm text-body-sm text-on-surface flex flex-col font-semibold">
+<span>Apr 01, 2023 — Mar 31, 2024</span>
+<span class="text-[11px] text-secondary">Currently in Q3 Processing</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="space-y-2">
+<div class="flex items-center justify-between text-[11px]">
+<span class="text-on-surface-variant font-medium">Submission:</span>
+<span class="text-green-700 font-bold flex items-center gap-1">Completed <span class="material-symbols-outlined text-[14px]">check_circle</span></span>
+</div>
+<div class="flex items-center justify-between text-[11px]">
+<span class="text-on-surface-variant font-medium">Review:</span>
+<span class="text-green-700 font-bold flex items-center gap-1">Completed <span class="material-symbols-outlined text-[14px]">check_circle</span></span>
+</div>
+<div class="flex items-center justify-between text-[11px]">
+<span class="text-on-surface-variant font-medium">Approval:</span>
+<span class="text-on-surface font-semibold">Oct 30, 2023</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-[#E8F5E9] text-[#2E7D32] text-[11px] font-bold uppercase tracking-wider border border-[#A5D6A7]">
+                                        Open
+                                    </span>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">settings_applications</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- FY 2022-23 (Closed) -->
+<tr class="bg-[#FDF5EF] hover:bg-[#F7EEE6] transition-colors group opacity-80 hover:opacity-100">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">history</span>
+<span class="font-title-lg text-title-lg text-on-surface-variant">FY 2022-23</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="font-body-sm text-body-sm text-on-surface-variant flex flex-col">
+<span>Apr 01, 2022 — Mar 31, 2023</span>
+<span class="text-[11px]">Archived &amp; Audited</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="space-y-2 opacity-60">
+<div class="flex items-center justify-between text-[11px]">
+<span class="text-on-surface-variant font-medium">Finalized:</span>
+<span class="text-on-surface font-semibold">May 12, 2023</span>
+</div>
+<div class="flex items-center justify-between text-[11px]">
+<span class="text-on-surface-variant font-medium">Audit:</span>
+<span class="text-on-surface font-semibold">Jun 10, 2023</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-[11px] font-bold uppercase tracking-wider border border-outline-variant">
+                                        Closed
+                                    </span>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="flex items-center gap-1 font-label-md text-label-md text-secondary hover:underline">
+                                            View Archive
+                                        </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination / Table Footer -->
+<div class="bg-surface-container-low px-6 py-4 border-t border-outline-variant flex justify-between items-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Showing 1 to 3 of 12 Financial Years</p>
+<div class="flex items-center gap-2">
+<button class="p-1 border border-outline-variant rounded disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="px-3 py-1 bg-primary text-on-primary rounded font-label-md text-label-md">1</button>
+<button class="px-3 py-1 hover:bg-surface-container rounded font-label-md text-label-md transition-colors">2</button>
+<button class="px-3 py-1 hover:bg-surface-container rounded font-label-md text-label-md transition-colors">3</button>
+<button class="p-1 border border-outline-variant rounded hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Management Notes Section (Asymmetric Bento Element) -->
+<div class="mt-stack-lg grid grid-cols-1 lg:grid-cols-4 gap-gutter">
+<div class="lg:col-span-3 bg-white p-6 rounded-lg border border-outline-variant shadow-sm flex gap-6 items-start">
+<div class="p-4 bg-tertiary-container rounded-lg text-on-tertiary-container">
+<span class="material-symbols-outlined text-[32px]">info</span>
+</div>
+<div>
+<h4 class="font-title-lg text-title-lg text-primary mb-2">Administrative Guidelines</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            New financial years must be created at least 90 days before the current cycle ends to allow for departmental budget drafting. Once a year is marked as 'Closed', it moves into a read-only state and triggers the automated Audit Trail generation for institutional compliance.
+                        </p>
+<div class="mt-4 flex gap-4">
+<button class="text-secondary font-label-md text-label-md hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">file_download</span> Compliance Handbook
+                            </button>
+<button class="text-secondary font-label-md text-label-md hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">help</span> Contact Audit Office
+                            </button>
+</div>
+</div>
+</div>
+<div class="bg-primary-container p-6 rounded-lg border border-outline-variant text-on-primary flex flex-col justify-between relative overflow-hidden">
+<div class="relative z-10">
+<h4 class="font-label-md text-label-md uppercase opacity-60 mb-1">Upcoming Deadline</h4>
+<p class="font-headline-sm text-headline-sm font-bold">FY 2024-25 Opening</p>
+<p class="font-body-sm text-body-sm mt-4 opacity-80">Phase: Departmental Submission</p>
+<p class="text-[24px] font-bold mt-1">Jan 15, 2024</p>
+</div>
+<div class="mt-6 z-10">
+<button class="w-full py-2 bg-on-primary text-primary font-bold rounded hover:bg-secondary-fixed transition-colors text-label-md">Set Reminders</button>
+</div>
+<!-- Subtle background decoration -->
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-[120px] opacity-10">notifications_active</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-280px)] bg-surface-container-low flex justify-between items-center px-gutter py-stack-sm border-t border-outline-variant z-40">
+<p class="font-body-sm text-body-sm text-on-surface-variant">© 2024 Institutional Budget Governance</p>
+<div class="flex gap-6">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Help Desk</a>
+</div>
+</footer>
+<script>
+        // Simple micro-interaction for row hovering effects or status updates
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                // Potential for dynamic tooltips or data fetching
+            });
+        });
+
+        // Search bar animation (even if hidden in JSON, keeping skeleton for potential toggle)
+        console.log("BAMS FY-Admin UI Initialized");
+    </script>
+</body></html>

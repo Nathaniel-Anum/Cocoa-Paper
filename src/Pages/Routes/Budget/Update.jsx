@@ -1,239 +1,163 @@
-import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  Button,
-  Form,
-  Input,
-  InputNumber,
-  message,
-  Select,
-  Tooltip,
-} from 'antd';
+import { Form, Modal, Skeleton, message } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { updateBudget } from '../../../http/budget';
+import { submitBudget, updateBudget } from '../../../http/budget';
 import useStore from '../../../store/store';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../../Components/axiosInstance';
+import { useUser } from '../../CustomHook/useUser';
+import { getAllRolePermissions, hasPermission, requiredPermissions } from '../../../../utils/Roles';
+import { useGetBudgetById, useGetFinancialYear } from '../../../queryHooks/budget';
+import BudgetFormShell from './BudgetFormShell';
+import DraftEditorShell from './DraftEditorShell';
 
 const UpdateBudget = () => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const chosenRecord = useStore((state) => state.chosenRecord);
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [selectedDivision, setSelectedDivision] = useState('');
   const handleDivisionChange = (value) => setSelectedDivision(value);
+  const { user: authUser } = useUser();
+  const allRolePermissions = getAllRolePermissions(authUser);
+  const isGlobal = hasPermission(allRolePermissions, [requiredPermissions.READ_BUDGET_GLOBAL]);
+  const canSubmit = hasPermission(allRolePermissions, [requiredPermissions.SUBMIT_BUDGET]);
+  const { data: budgetRes, isLoading: budgetLoading } = useGetBudgetById(id, {
+    enabled: !chosenRecord?.id && !!id,
+  });
+  const activeBudget = chosenRecord?.id === id ? chosenRecord : budgetRes?.data?.data;
+  const isDraftEditor = ['DRAFT', 'RETURNED'].includes(activeBudget?.status);
 
   const { data: divisions } = useQuery({
     queryKey: ['divisions'],
     queryFn: () => axiosInstance.get('/division'),
+    enabled: isGlobal,
   });
 
   const { data: departments } = useQuery({
-    queryKey: ['departments', selectedDivision],
+    queryKey: ['departments', selectedDivision || activeBudget?.department?.divisionId],
     queryFn: () =>
-      axiosInstance.get(`/department/${chosenRecord?.department?.divisionId}`),
-    enabled: !!chosenRecord?.department?.divisionId,
+      axiosInstance.get(
+        `/department/${selectedDivision || activeBudget?.department?.divisionId}`,
+      ),
+    enabled: isGlobal && !!(selectedDivision || activeBudget?.department?.divisionId),
   });
+  const { data: financialYears } = useGetFinancialYear({});
 
   useEffect(() => {
     if (selectedDivision) {
       form.setFieldValue('departmentId', '');
     }
-  }, [selectedDivision]);
+  }, [selectedDivision, form]);
 
-  const navigate = useNavigate();
-
-  const { mutate: saveBudgetItem } = useMutation({
+  const { mutate: saveBudgetItem, isPending, mutateAsync: saveBudgetItemAsync } = useMutation({
     mutationKey: ['budget'],
-    mutationFn: (data) => updateBudget(chosenRecord?.id, data),
+    mutationFn: (data) => updateBudget(activeBudget?.id ?? id, data),
     onSuccess: () => {
-      message.success('BudgetItem Updated Successfully!');
-
+      message.success('Budget updated successfully!');
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
-
-      setTimeout(() => {
-        navigate('/budget');
-      }, 1000);
+      queryClient.invalidateQueries({ queryKey: ['budget', id] });
+      if (!isDraftEditor) {
+        setTimeout(() => navigate('/budget'), 1000);
+      }
     },
     onError: (err) => {
       message.error(err?.response?.data?.error || 'Something went wrong');
     },
   });
 
-  console.log({ chosenRecord });
+  const { mutate: submitBudgetItem, isPending: submitting, mutateAsync: submitBudgetItemAsync } = useMutation({
+    mutationFn: () => submitBudget(activeBudget?.id ?? id),
+    onSuccess: () => {
+      message.success('Budget submitted for review.');
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      queryClient.invalidateQueries({ queryKey: ['budget', id] });
+      navigate(`/budget/${id}`);
+    },
+    onError: (err) => message.error(err?.response?.data?.error || 'Submit failed'),
+  });
 
   useEffect(() => {
-    if (chosenRecord) {
+    if (activeBudget) {
       form.setFieldsValue({
-        name: chosenRecord.name,
-        divisionId: chosenRecord?.department?.divisionId,
-        departmentId: chosenRecord.departmentId,
-        budgetItems: chosenRecord?.budgetItems?.map((item) => ({
+        name: activeBudget.name,
+        divisionId: activeBudget?.department?.divisionId,
+        departmentId: activeBudget.departmentId,
+        budgetItems: activeBudget?.budgetItems?.map((item) => ({
           item: item?.item,
           amount: item?.amount,
           dollarAmount: item?.dollarAmount,
-          quantity: item?.quantity || 0,
+          quantity: item?.quantity ?? 1,
         })),
       });
+      setSelectedDivision(activeBudget?.department?.divisionId || '');
     }
-  }, [chosenRecord, form]);
+  }, [activeBudget, form]);
 
-  return (
-    <div className="bg-white rounded-md px-6 md:px-12 w-full max-w-6xl mx-auto py-8">
-      <div className="flex flex-col justify-center">
-        <div className="font-bold text-[29px] text-[#694421] py-2 flex justify-center items-center flex-col text-center">
-          <p>Update Budgetary Item</p>
-          <hr className="w-[11rem] h-1 bg-[#694421] mt-2" />
+  const handleFinish = (values) => {
+    const { financialYearId, ...rest } = values;
+    const payload = isGlobal
+      ? rest
+      : { ...rest, departmentId: authUser?.departmentId };
+    saveBudgetItem(payload);
+  };
+
+  const handleSubmitForReview = () => {
+    Modal.confirm({
+      title: 'Submit budget for review?',
+      content:
+        'The budget will be locked for editing until committee review begins or a return is issued.',
+      okText: 'Submit for Review',
+      okButtonProps: { style: { background: '#9D4D01', borderColor: '#9D4D01' } },
+      onOk: async () => {
+        const values = await form.validateFields();
+        const { financialYearId, ...rest } = values;
+        const payload = isGlobal ? rest : { ...rest, departmentId: authUser?.departmentId };
+        await saveBudgetItemAsync(payload);
+        await submitBudgetItemAsync();
+        navigate(`/budget/${id}`);
+      },
+    });
+  };
+
+  const sharedProps = {
+    mode: 'edit',
+    form,
+    isGlobal,
+    divisions: divisions?.data,
+    departments: departments?.data?.data,
+    financialYears: financialYears?.data?.data,
+    selectedDivision,
+    onDivisionChange: handleDivisionChange,
+    onFinish: handleFinish,
+    onCancel: () => navigate(activeBudget?.id ? `/budget/${activeBudget.id}` : '/budget'),
+    isPending: isPending || submitting,
+    managerName: authUser?.name,
+  };
+
+  if (budgetLoading && !activeBudget) {
+    return (
+      <div className="mx-auto w-full max-w-7xl">
+        <div className="rounded-[28px] border border-[#ead9cb] bg-white p-8 shadow-sm">
+          <Skeleton active paragraph={{ rows: 10 }} />
         </div>
-
-        <Form
-          form={form}
-          className="mt-10 w-full"
-          name="UpdateBudgetForm"
-          onFinish={saveBudgetItem}
-          layout="vertical"
-          autoComplete="off"
-          requiredMark={true}
-        >
-          <Form.Item
-            name="divisionId"
-            label="Division"
-            rules={[{ required: true, message: 'Choose your Division!' }]}
-          >
-            <Select
-              placeholder="Choose your Division"
-              allowClear
-              options={divisions?.data.map((division) => ({
-                label: division?.divisionName,
-                value: division?.divisionId,
-              }))}
-              onChange={handleDivisionChange}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="departmentId"
-            label="Department"
-            rules={[{ required: true, message: 'Choose your Department!' }]}
-          >
-            <Select
-              placeholder="Choose your Department"
-              allowClear
-              options={departments?.data?.data?.map((department) => ({
-                label: department?.departmentName,
-                value: department?.departmentId,
-              }))}
-              // onChange={handleDepartmentChange}
-            />
-          </Form.Item>
-          <Form.Item
-            name="name"
-            label="Budget Title"
-            rules={[{ required: true, message: 'Name of field required' }]}
-          >
-            <Input placeholder="Enter Budgetary Item..." />
-          </Form.Item>
-
-          <Form.List name="budgetItems">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <div
-                    key={key}
-                    className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto] gap-4 items-start mb-4"
-                  >
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'item']}
-                      label="Item Name"
-                      rules={[
-                        { required: true, message: 'Item name is required' },
-                      ]}
-                      className="w-full"
-                    >
-                      <Input placeholder="Item name" />
-                    </Form.Item>
-
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'quantity']}
-                      label="Quantity"
-                      className="w-full"
-                    >
-                      <InputNumber
-                        min={0}
-                        className="w-full"
-                        placeholder="Quantity"
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'amount']}
-                      label="Amount"
-                      rules={[
-                        { required: true, message: 'Amount is required' },
-                      ]}
-                      className="w-full"
-                    >
-                      <InputNumber
-                        min={0}
-                        placeholder="Enter Amount"
-                        className="w-full"
-                        formatter={(value) =>
-                          `₵ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                        }
-                        parser={(value) => value?.replace(/₵\s?|(,*)/g, '')}
-                      />
-                    </Form.Item>
-
-                    {/* <Form.Item
-                      {...restField}
-                      name={[name, 'dollarAmount']}
-                      label="Dollar Amount"
-                    >
-                      <InputNumber
-                        placeholder="Enter Amount"
-                        className="w-full"
-                        formatter={(value) =>
-                          `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                        }
-                        parser={(value) => value?.replace(/\$\s?|(,*)/g, '')}
-                      />
-                    </Form.Item> */}
-
-                    <div className="flex items-center mt-6">
-                      <MinusCircleOutlined
-                        onClick={() => remove(name)}
-                        className="text-red-500 text-xl cursor-pointer"
-                      />
-                    </div>
-                  </div>
-                ))}
-
-                <Form.Item>
-                  <Tooltip title="Add Budget Item">
-                    <PlusCircleOutlined
-                      onClick={() => add()}
-                      className="text-2xl text-green-600 cursor-pointer flex justify-center"
-                    />
-                  </Tooltip>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
-
-          <Form.Item>
-            <Button
-              htmlType="submit"
-              className="w-full bg-[#582F08] text-white"
-            >
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (isDraftEditor) {
+    return (
+      <DraftEditorShell
+        budget={activeBudget}
+        {...sharedProps}
+        canSubmit={canSubmit}
+        onSubmitForReview={handleSubmitForReview}
+      />
+    );
+  }
+
+  return <BudgetFormShell {...sharedProps} />;
 };
 
 export default UpdateBudget;

@@ -11,7 +11,7 @@ const Layout = () => {
     <div>
       <Navbar />
       <Sidebar />
-      <div className="min-h-screen w-full pl-4 md:pl-[200px] pr-4 md:pr-[72px] pb-8">
+      <div className="min-h-screen w-full pl-4 md:pl-[230px] pr-4 md:pr-[72px] pb-8">
         {pathname !== '/' && (
           <button
             onClick={() => navigate(-1)}

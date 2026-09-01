@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BAMS - Version Comparison</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Design System Tokens -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#51443b",
+                    "secondary-fixed": "#ffdcc7",
+                    "surface-dim": "#e3d8d2",
+                    "surface-container-highest": "#ece0da",
+                    "on-primary-fixed-variant": "#683c15",
+                    "on-primary-container": "#d29667",
+                    "on-tertiary-fixed-variant": "#174c65",
+                    "on-surface": "#201b17",
+                    "secondary-container": "#fd984e",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#2f1500",
+                    "surface-bright": "#fff8f5",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#faeee8",
+                    "primary-container": "#582f08",
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#003e57",
+                    "on-secondary-container": "#6d3300",
+                    "tertiary-fixed": "#c5e7ff",
+                    "inverse-surface": "#352f2b",
+                    "inverse-primary": "#fab987",
+                    "surface-tint": "#84532a",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed": "#ffdcc4",
+                    "secondary-fixed-dim": "#ffb787",
+                    "surface-container-high": "#f1e6e0",
+                    "outline": "#84746a",
+                    "tertiary": "#002739",
+                    "surface-variant": "#ece0da",
+                    "background": "#fff8f5",
+                    "primary": "#3b1c00",
+                    "on-primary": "#ffffff",
+                    "on-background": "#201b17",
+                    "on-tertiary-container": "#7ba9c6",
+                    "on-tertiary-fixed": "#001e2d",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#9ecdeb",
+                    "on-secondary-fixed-variant": "#723600",
+                    "outline-variant": "#d6c3b7",
+                    "surface-container": "#f7ece5",
+                    "secondary": "#964900",
+                    "surface-container-low": "#fdf1eb",
+                    "error": "#ba1a1a",
+                    "surface": "#fff8f5",
+                    "on-secondary-fixed": "#311300",
+                    "primary-fixed-dim": "#fab987"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "container-max": "1440px",
+                    "stack-sm": "8px",
+                    "gutter": "24px",
+                    "stack-md": "16px",
+                    "margin-page": "40px",
+                    "sidebar-width": "280px",
+                    "stack-lg": "32px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "table-data": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "table-data": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Custom Zebra Stripping from Style Guidance */
+        .zebra-row:nth-child(even) { background-color: #F7EEE6; }
+        .zebra-row:nth-child(odd) { background-color: #FDF5EF; }
+        
+        /* Financial Table Alignment */
+        .numeric-cell { text-align: right; font-family: 'Inter', monospace; }
+        .text-cell { text-align: left; }
+
+        /* Delta Markers */
+        .delta-positive { color: #ba1a1a; } /* Over budget/Increase in spending in this context might be bad, but following standard financial: Up = Green for revenue, Red for cost. Let's use institutional branding */
+        .delta-increase { color: #964900; }
+        .delta-decrease { color: #003e57; }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-background selection:bg-secondary-fixed">
+<!-- Sidebar Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container dark:bg-primary-container border-r border-outline-variant flex flex-col p-stack-md z-50">
+<div class="mb-stack-lg px-2">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">BAMS</h1>
+<p class="font-label-md text-label-md text-on-primary-container opacity-80">Institutional Oversight</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Navigation Items Mapping -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 font-label-md text-label-md hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg transition-transform scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined">payments</span>
+                Budgets
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 font-label-md text-label-md hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+                Financial Years
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 font-label-md text-label-md hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">groups</span>
+                Committee Reviews
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 font-label-md text-label-md hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">rule</span>
+                Approvals
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 font-label-md text-label-md hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">assessment</span>
+                Reports
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 font-label-md text-label-md hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">history</span>
+                Audit Trail
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 font-label-md text-label-md hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Administration
+            </a>
+</nav>
+<div class="mt-auto pt-stack-md border-t border-outline-variant/20 flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed font-bold">
+                AD
+            </div>
+<div>
+<p class="font-label-md text-label-md text-on-primary">Admin Director</p>
+<p class="text-[10px] text-on-primary-container opacity-60 uppercase tracking-widest">Master Access</p>
+</div>
+</div>
+</aside>
+<!-- Top AppBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface border-b border-outline-variant flex justify-between items-center px-gutter z-40">
+<div class="flex items-center gap-stack-md">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">Budget Approval Management System</h2>
+<div class="h-6 w-[1px] bg-outline-variant"></div>
+<nav class="flex items-center gap-4">
+<span class="text-on-surface-variant font-label-md text-label-md flex items-center gap-1 cursor-pointer hover:text-secondary transition-colors">
+                    Budgets <span class="material-symbols-outlined text-[16px]">chevron_right</span> Comparison
+                </span>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container rounded-full border border-outline-variant">
+<span class="font-label-md text-label-md text-on-surface-variant">FY 2024-25</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-secondary transition-colors cursor-pointer">notifications</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional corporate headshot of a middle-aged finance executive in a dark tailored suit, set against a clean, neutral office background with soft lighting. The image conveys authority, experience, and stability, consistent with a high-stakes financial governance tool aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDINFRzdev8YoS-L2GlIbWPEc6W-ewRDDSn-fWATryqofDlbRmwhhMYIyKj12e7EJiUuBrQOGz2jIA64e5wuhKAjDH2XHQpwZzLuSHvVeeeeeILkQ5vVBJzC9W1QEz1mr5ns8r32hRnlVCAIZ_ati0Ym5e7eO59RvU9ueTBcKyRgZsfz2q_snor8Jt6Wt7gtdsBtDgJpeioFAE8w2Jybo6T6M1yXP2OdUdG38M--nKhOzWyEsqLwUEK49Y7lUh888cHzk-we-s-UYpO"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-16 pb-20 min-h-screen">
+<div class="max-w-[1440px] mx-auto p-margin-page">
+<!-- Header & Comparison Controls -->
+<section class="mb-stack-lg flex flex-col gap-stack-md">
+<div class="flex justify-between items-end">
+<div>
+<h3 class="font-display-lg text-display-lg text-primary">Version Comparison</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Compare institutional budget submissions across timeline milestones. Identify deltas in capital expenditure and operational allocations.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="flex items-center gap-2 px-4 py-2 bg-secondary text-on-secondary font-label-md text-label-md rounded shadow-sm hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                            Export Report
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2 border border-secondary text-secondary font-label-md text-label-md rounded hover:bg-secondary-fixed transition-colors">
+<span class="material-symbols-outlined text-[18px]">share</span>
+                            Share View
+                        </button>
+</div>
+</div>
+<!-- Bento-style Control Card -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-stack-md grid grid-cols-12 gap-stack-md items-center">
+<div class="col-span-4 flex flex-col gap-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Base Version</label>
+<select class="w-full bg-surface border border-outline-variant rounded p-2 font-body-sm text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none">
+<option>v1.0 - Initial Departmental Submission (Sept 12)</option>
+<option>v1.1 - Internal Audit Adjustments (Oct 05)</option>
+</select>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">compare_arrows</span>
+</div>
+<div class="col-span-4 flex flex-col gap-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Comparison Version</label>
+<select class="w-full bg-surface border border-outline-variant rounded p-2 font-body-sm text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none">
+<option>v1.2 - Committee Final Revision (Nov 20)</option>
+<option>v1.3 - Pending Executive Review</option>
+</select>
+</div>
+<div class="col-span-3 flex flex-col gap-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">View Preference</label>
+<div class="flex border border-outline-variant rounded overflow-hidden">
+<button class="flex-1 py-2 bg-secondary-container text-on-secondary-container font-bold text-label-md">Side-by-Side</button>
+<button class="flex-1 py-2 bg-surface text-on-surface-variant text-label-md hover:bg-surface-variant">Unified Delta</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Analytical Filter Rail -->
+<section class="mb-stack-md flex flex-wrap items-center gap-stack-md">
+<span class="font-label-md text-label-md text-on-surface-variant">Quick Filters:</span>
+<button class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface border border-outline-variant text-label-md hover:bg-secondary-fixed transition-colors">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+                    Increased
+                </button>
+<button class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface border border-outline-variant text-label-md hover:bg-secondary-fixed transition-colors">
+<span class="w-2 h-2 rounded-full bg-tertiary-container"></span>
+                    Reduced
+                </button>
+<button class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface border border-outline-variant text-label-md hover:bg-secondary-fixed transition-colors">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+                    New Items
+                </button>
+<button class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface border border-outline-variant text-label-md hover:bg-secondary-fixed transition-colors opacity-50">
+<span class="w-2 h-2 rounded-full bg-on-surface-variant"></span>
+                    Removed
+                </button>
+<div class="flex-1"></div>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface border border-outline-variant rounded-full text-body-sm w-64 focus:ring-1 focus:ring-secondary outline-none" placeholder="Search line items..." type="text"/>
+</div>
+</section>
+<!-- Data-Dense Comparison Table -->
+<div class="bg-surface border border-outline-variant rounded overflow-hidden shadow-sm">
+<table class="w-full border-collapse">
+<thead>
+<tr class="bg-primary-container text-on-primary">
+<th class="p-3 text-left font-label-md text-label-md border-r border-on-primary-container/20">Line Item / Account Code</th>
+<th class="p-3 text-left font-label-md text-label-md border-r border-on-primary-container/20">Category</th>
+<th class="p-3 text-right font-label-md text-label-md border-r border-on-primary-container/20">v1.0 Submission</th>
+<th class="p-3 text-right font-label-md text-label-md border-r border-on-primary-container/20">v1.2 Revision</th>
+<th class="p-3 text-right font-label-md text-label-md border-r border-on-primary-container/20 bg-primary/20">Delta ($)</th>
+<th class="p-3 text-right font-label-md text-label-md">% Change</th>
+<th class="p-3 text-center font-label-md text-label-md">Status</th>
+</tr>
+</thead>
+<tbody class="font-table-data text-table-data">
+<!-- Row 1: Increase -->
+<tr class="zebra-row hover:bg-secondary-fixed/30 transition-colors">
+<td class="p-3 border-r border-outline-variant/30">
+<div class="font-bold">70102 - Infrastructure Hardware</div>
+<div class="text-[11px] opacity-60">IT Department / Capital Expenditure</div>
+</td>
+<td class="p-3 border-r border-outline-variant/30">CAPEX</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30">$450,000.00</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30">$512,500.00</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30 font-bold text-error">+$62,500.00</td>
+<td class="p-3 numeric-cell text-error font-bold">+13.8%</td>
+<td class="p-3 text-center">
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container text-[10px] font-bold uppercase tracking-tighter">Increased</span>
+</td>
+</tr>
+<!-- Row 2: Decrease -->
+<tr class="zebra-row hover:bg-secondary-fixed/30 transition-colors">
+<td class="p-3 border-r border-outline-variant/30">
+<div class="font-bold">60215 - External Consultant Fees</div>
+<div class="text-[11px] opacity-60">Admin / Operational</div>
+</td>
+<td class="p-3 border-r border-outline-variant/30">OPEX</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30">$120,000.00</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30">$85,000.00</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30 font-bold text-tertiary-container">-$35,000.00</td>
+<td class="p-3 numeric-cell text-tertiary-container font-bold">-29.1%</td>
+<td class="p-3 text-center">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-[10px] font-bold uppercase tracking-tighter">Reduced</span>
+</td>
+</tr>
+<!-- Row 3: New -->
+<tr class="zebra-row hover:bg-secondary-fixed/30 transition-colors">
+<td class="p-3 border-r border-outline-variant/30">
+<div class="font-bold">70588 - Cyber Security Audit</div>
+<div class="text-[11px] opacity-60">Compliance / Professional Services</div>
+</td>
+<td class="p-3 border-r border-outline-variant/30">OPEX</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30 text-on-surface-variant/40">—</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30">$22,000.00</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30 font-bold text-secondary">+$22,000.00</td>
+<td class="p-3 numeric-cell text-secondary font-bold">NEW</td>
+<td class="p-3 text-center">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold uppercase tracking-tighter">New</span>
+</td>
+</tr>
+<!-- Row 4: No Change -->
+<tr class="zebra-row hover:bg-secondary-fixed/30 transition-colors">
+<td class="p-3 border-r border-outline-variant/30">
+<div class="font-bold">50100 - Staff Salaries (Base)</div>
+<div class="text-[11px] opacity-60">Human Resources / Recurring</div>
+</td>
+<td class="p-3 border-r border-outline-variant/30">FIXED</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30">$2,440,000.00</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30">$2,440,000.00</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30 text-on-surface-variant/40">$0.00</td>
+<td class="p-3 numeric-cell text-on-surface-variant/40">0%</td>
+<td class="p-3 text-center">
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter">Unchanged</span>
+</td>
+</tr>
+<!-- More Rows for Density -->
+<tr class="zebra-row hover:bg-secondary-fixed/30 transition-colors">
+<td class="p-3 border-r border-outline-variant/30">
+<div class="font-bold">60500 - Travel &amp; Logistics</div>
+<div class="text-[11px] opacity-60">All Depts / Variable</div>
+</td>
+<td class="p-3 border-r border-outline-variant/30">OPEX</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30">$45,000.00</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30">$38,200.00</td>
+<td class="p-3 numeric-cell border-r border-outline-variant/30 font-bold text-tertiary-container">-$6,800.00</td>
+<td class="p-3 numeric-cell text-tertiary-container font-bold">-15.1%</td>
+<td class="p-3 text-center">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-[10px] font-bold uppercase tracking-tighter">Reduced</span>
+</td>
+</tr>
+</tbody>
+<tfoot>
+<tr class="bg-surface-container-high border-t-2 border-outline font-bold">
+<td class="p-4 text-right font-label-md text-label-md" colspan="2">AGGREGATE TOTALS</td>
+<td class="p-4 numeric-cell font-label-md text-label-md border-r border-outline-variant/30">$3,055,000.00</td>
+<td class="p-4 numeric-cell font-label-md text-label-md border-r border-outline-variant/30">$3,097,700.00</td>
+<td class="p-4 numeric-cell font-label-md text-label-md border-r border-outline-variant/30 text-error">+$42,700.00</td>
+<td class="p-4 numeric-cell font-label-md text-label-md text-error">+1.4%</td>
+<td></td>
+</tr>
+</tfoot>
+</table>
+</div>
+<!-- Analysis Summary Bento Section -->
+<div class="mt-stack-lg grid grid-cols-1 md:grid-cols-3 gap-stack-md">
+<div class="bg-surface border border-outline-variant p-stack-md rounded-xl flex flex-col gap-2">
+<h4 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">trending_up</span>
+                        Major Upside Drivers
+                    </h4>
+<div class="space-y-3 mt-2">
+<div class="flex justify-between items-center text-body-sm">
+<span>IT Infrastructure</span>
+<span class="font-bold text-error">+$62,500</span>
+</div>
+<div class="flex justify-between items-center text-body-sm">
+<span>Compliance Software</span>
+<span class="font-bold text-error">+$12,400</span>
+</div>
+<div class="h-[1px] bg-outline-variant/30"></div>
+<p class="text-[12px] text-on-surface-variant italic">Increases predominantly attributed to mandatory technology lifecycle upgrades.</p>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant p-stack-md rounded-xl flex flex-col gap-2">
+<h4 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">savings</span>
+                        Efficiency Gains
+                    </h4>
+<div class="space-y-3 mt-2">
+<div class="flex justify-between items-center text-body-sm">
+<span>Professional Services</span>
+<span class="font-bold text-tertiary-container">-$35,000</span>
+</div>
+<div class="flex justify-between items-center text-body-sm">
+<span>Logistics Optimization</span>
+<span class="font-bold text-tertiary-container">-$6,800</span>
+</div>
+<div class="h-[1px] bg-outline-variant/30"></div>
+<p class="text-[12px] text-on-surface-variant italic">Committee enforced a 15% reduction cap on all non-essential operational travel.</p>
+</div>
+</div>
+<div class="bg-primary-container text-on-primary p-stack-md rounded-xl flex flex-col justify-center relative overflow-hidden">
+<div class="relative z-10">
+<p class="text-[11px] uppercase tracking-[0.2em] opacity-70">Governance Status</p>
+<h4 class="font-headline-sm text-headline-sm mt-1">Variance Alert</h4>
+<p class="text-body-sm mt-2 opacity-90">Net variation exceeds established 1% threshold for manual approval. Institutional review required.</p>
+<button class="mt-4 w-full py-2 bg-secondary text-white font-label-md text-label-md rounded hover:bg-secondary/90 transition-transform active:scale-95">Flag for Committee</button>
+</div>
+<!-- Subtle background graphic effect -->
+<div class="absolute -bottom-8 -right-8 opacity-10">
+<span class="material-symbols-outlined text-[120px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-280px)] bg-surface-container-low border-t border-outline-variant flex justify-between items-center px-gutter py-stack-sm z-40">
+<div class="flex items-center gap-4">
+<span class="font-label-md text-label-md font-bold text-primary">BAMS Governance</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">© 2024 Institutional Budget Governance</span>
+</div>
+<div class="flex gap-stack-md">
+<a class="text-on-surface-variant font-body-sm text-body-sm hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant font-body-sm text-body-sm hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="text-on-surface-variant font-body-sm text-body-sm hover:text-primary transition-colors" href="#">Help Desk</a>
+</div>
+</footer>
+<!-- Micro-interactions Script -->
+<script>
+        // Simple row highlight and tooltips could be added here
+        document.querySelectorAll('.zebra-row').forEach(row => {
+            row.addEventListener('click', () => {
+                // Potential for expanding detail view
+                console.log('Line item selected for detail audit');
+            });
+        });
+    </script>
+</body></html>

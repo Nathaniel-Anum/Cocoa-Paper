@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Returned Budget - BAMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d6c3b7;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface-variant": "#51443b",
+                      "secondary-fixed": "#ffdcc7",
+                      "surface-dim": "#e3d8d2",
+                      "surface-container-highest": "#ece0da",
+                      "on-primary-fixed-variant": "#683c15",
+                      "on-primary-container": "#d29667",
+                      "on-tertiary-fixed-variant": "#174c65",
+                      "on-surface": "#201b17",
+                      "secondary-container": "#fd984e",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed": "#2f1500",
+                      "surface-bright": "#fff8f5",
+                      "on-tertiary": "#ffffff",
+                      "inverse-on-surface": "#faeee8",
+                      "primary-container": "#582f08",
+                      "on-error": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-container": "#003e57",
+                      "on-secondary-container": "#6d3300",
+                      "tertiary-fixed": "#c5e7ff",
+                      "inverse-surface": "#352f2b",
+                      "inverse-primary": "#fab987",
+                      "surface-tint": "#84532a",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#ffdcc4",
+                      "secondary-fixed-dim": "#ffb787",
+                      "surface-container-high": "#f1e6e0",
+                      "outline": "#84746a",
+                      "tertiary": "#002739",
+                      "surface-variant": "#ece0da",
+                      "background": "#fff8f5",
+                      "primary": "#3b1c00",
+                      "on-primary": "#ffffff",
+                      "on-background": "#201b17",
+                      "on-tertiary-container": "#7ba9c6",
+                      "on-tertiary-fixed": "#001e2d",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#9ecdeb",
+                      "on-secondary-fixed-variant": "#723600",
+                      "outline-variant": "#d6c3b7",
+                      "surface-container": "#f7ece5",
+                      "secondary": "#964900",
+                      "surface-container-low": "#fdf1eb",
+                      "error": "#ba1a1a",
+                      "surface": "#fff8f5",
+                      "on-secondary-fixed": "#311300",
+                      "primary-fixed-dim": "#fab987"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "container-max": "1440px",
+                      "stack-sm": "8px",
+                      "gutter": "24px",
+                      "stack-md": "16px",
+                      "margin-page": "40px",
+                      "sidebar-width": "280px",
+                      "stack-lg": "32px"
+              },
+              "fontFamily": {
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "table-data": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "title-lg": ["Inter"],
+                      "body-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "table-data": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen">
+<!-- SIDEBAR NAVIGATION -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container text-on-primary flex flex-col h-full p-stack-md border-r border-outline-variant z-50">
+<div class="mb-stack-lg px-4">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">BAMS</h1>
+<p class="font-label-md text-label-md text-on-primary-container opacity-80 uppercase tracking-widest">Institutional Oversight</p>
+</div>
+<nav class="flex-grow space-y-1 overflow-y-auto custom-scrollbar">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Budgets</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Financial Years</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Committee Reviews</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">rule</span>
+<span class="font-label-md text-label-md">Approvals</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">Audit Trail</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Administration</span>
+</a>
+</nav>
+<div class="mt-auto pt-stack-md border-t border-outline-variant/30 px-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full border border-outline-variant" data-alt="Corporate headshot of a senior financial analyst in a modern office environment, high-key lighting, professional tone, focus on corporate stability and expertise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIGR4KvYAfEqXhvdGT4VsqyeP3Hp5Rk1jByErlMsuPuCFwnA-GtjBuSWTGULBVSicqAZn1bpTWxbNjvXl-AFuhj3ojCefISc58l4DJ_kCsUZKgkvNPLXLOG78wkQof8vAVQmKHftP0CREAsVdOSnJJR8MV9pZq4UUzMoSva-SMJcPqjnkzlhOZHknJxYegU1-DR8ZqLiLZSD57kQVL9pJjC0dxqlMyhZxlyO9kSbxUtFxK7qPtrs94B5yWTFreNOn1K50tRZxOGflR"/>
+<div>
+<p class="font-label-md text-label-md text-on-primary">Admin User</p>
+<p class="text-[10px] text-on-primary-container opacity-70">Finance Division</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TOP BAR -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface flex justify-between items-center px-gutter z-40 border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<nav class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
+<span>Budgets</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-secondary font-bold">Returned Budgets</span>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-low border border-outline-variant rounded cursor-pointer">
+<span class="material-symbols-outlined text-primary text-[18px]">calendar_month</span>
+<span class="font-label-md text-label-md text-primary">FY 2024-25</span>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-secondary transition-colors cursor-pointer">notifications</button>
+</div>
+</header>
+<!-- MAIN CONTENT -->
+<main class="ml-[280px] mt-16 p-margin-page pb-24 max-w-[1440px]">
+<!-- ALERT BANNER -->
+<section class="mb-stack-lg">
+<div class="bg-[#f0e6db] border-l-4 border-secondary p-stack-md rounded-lg flex items-start gap-4 shadow-sm">
+<div class="bg-secondary p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">error</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary mb-1">Returned for Correction</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+                        This budget proposal (ID: B-2024-089) requires immediate revision following a review by the Financial Committee. Action is required to address documentation gaps before final approval can proceed.
+                    </p>
+</div>
+</div>
+</section>
+<!-- TWO COLUMN GRID FOR DETAILS AND CHECKLIST -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- LEFT COLUMN: RETURN INFO & AFFECTED LINES -->
+<div class="col-span-12 lg:col-span-8 space-y-gutter">
+<!-- RETURN DETAILS CARD -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-stack-md">
+<div class="flex items-center justify-between mb-4 pb-2 border-b border-outline-variant">
+<h3 class="font-title-lg text-title-lg text-primary uppercase tracking-wide">Return Specification</h3>
+<span class="font-label-md text-label-md bg-error-container text-on-error-container px-3 py-1 rounded-full uppercase">Priority: Urgent</span>
+</div>
+<div class="grid grid-cols-2 gap-stack-md">
+<div class="space-y-4">
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-1">Returned By</label>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">account_circle</span>
+<span class="font-body-md text-body-md font-bold">Arthur Vance</span>
+</div>
+<p class="text-[12px] text-on-surface-variant ml-7">Senior Budget Analyst, Oversight Division</p>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-1">Return Date</label>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">event</span>
+<span class="font-body-md text-body-md">October 24, 2024 • 14:35 GMT</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-highest p-4 rounded-lg border border-outline-variant/50">
+<label class="font-label-md text-label-md text-on-surface-variant block mb-2 font-bold">Primary Reason for Return</label>
+<p class="font-body-md text-body-md italic text-primary leading-relaxed">
+                                "Documentation missing for IT expansion. The current submission lacks the vendor quote comparative analysis and the 3-year depreciation schedule for hardware assets."
+                            </p>
+</div>
+</div>
+</div>
+<!-- AFFECTED LINES TABLE -->
+<div class="bg-white border border-outline-variant rounded-lg overflow-hidden">
+<div class="bg-primary-container px-gutter py-stack-sm flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-white">Affected Budget Lines</h3>
+<span class="text-white/60 font-label-md text-label-md">3 items flagged</span>
+</div>
+<table class="w-full border-collapse">
+<thead class="bg-surface-container-high border-b border-outline-variant">
+<tr>
+<th class="px-gutter py-3 text-left font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Line ID</th>
+<th class="px-gutter py-3 text-left font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Description</th>
+<th class="px-gutter py-3 text-right font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Amount</th>
+<th class="px-gutter py-3 text-center font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Issue</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="bg-surface-container-lowest hover:bg-surface-container transition-colors">
+<td class="px-gutter py-4 font-table-data text-table-data font-bold">IT-EXP-001</td>
+<td class="px-gutter py-4 font-table-data text-table-data text-on-surface-variant">Server Infrastructure Upgrade (Phase 1)</td>
+<td class="px-gutter py-4 font-table-data text-table-data text-right font-bold">$145,000.00</td>
+<td class="px-gutter py-4 text-center">
+<span class="material-symbols-outlined text-error" title="Missing Documentation">attachment</span>
+</td>
+</tr>
+<tr class="bg-surface-container-low/30 hover:bg-surface-container transition-colors">
+<td class="px-gutter py-4 font-table-data text-table-data font-bold">IT-EXP-004</td>
+<td class="px-gutter py-4 font-table-data text-table-data text-on-surface-variant">Cloud Integration Services Contract</td>
+<td class="px-gutter py-4 font-table-data text-table-data text-right font-bold">$42,500.00</td>
+<td class="px-gutter py-4 text-center">
+<span class="material-symbols-outlined text-error" title="Price Discrepancy">priority_high</span>
+</td>
+</tr>
+<tr class="bg-surface-container-lowest hover:bg-surface-container transition-colors">
+<td class="px-gutter py-4 font-table-data text-table-data font-bold">TRAIN-882</td>
+<td class="px-gutter py-4 font-table-data text-table-data text-on-surface-variant">Staff Development - Cloud Certification</td>
+<td class="px-gutter py-4 font-table-data text-table-data text-right font-bold">$12,000.00</td>
+<td class="px-gutter py-4 text-center">
+<span class="material-symbols-outlined text-error" title="Justification Required">rate_review</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- RIGHT COLUMN: CHECKLIST & ACTIONS -->
+<div class="col-span-12 lg:col-span-4 space-y-gutter">
+<!-- RESOLUTION CHECKLIST -->
+<div class="bg-surface-container border border-outline-variant rounded-lg p-stack-md flex flex-col h-full">
+<h3 class="font-title-lg text-title-lg text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">checklist_rtl</span>
+                        Resolution Tasks
+                    </h3>
+<div class="space-y-4 flex-grow">
+<label class="flex items-start gap-3 p-3 bg-surface-container-low rounded border border-outline-variant/30 cursor-pointer group hover:bg-surface-bright transition-colors">
+<input class="mt-1 w-5 h-5 text-secondary border-outline rounded focus:ring-secondary cursor-pointer" type="checkbox"/>
+<div>
+<p class="font-body-md text-body-md font-bold text-on-surface group-hover:text-secondary transition-colors">Attach Vendor Comparison Table</p>
+<p class="text-[12px] text-on-surface-variant">Requires at least 3 competitive quotes for line IT-EXP-001.</p>
+</div>
+</label>
+<label class="flex items-start gap-3 p-3 bg-surface-container-low rounded border border-outline-variant/30 cursor-pointer group hover:bg-surface-bright transition-colors">
+<input class="mt-1 w-5 h-5 text-secondary border-outline rounded focus:ring-secondary cursor-pointer" type="checkbox"/>
+<div>
+<p class="font-body-md text-body-md font-bold text-on-surface group-hover:text-secondary transition-colors">Hardware Depreciation Schedule</p>
+<p class="text-[12px] text-on-surface-variant">Standard 3-year amortization table needed for all hardware assets.</p>
+</div>
+</label>
+<label class="flex items-start gap-3 p-3 bg-surface-container-low rounded border border-outline-variant/30 cursor-pointer group hover:bg-surface-bright transition-colors">
+<input class="mt-1 w-5 h-5 text-secondary border-outline rounded focus:ring-secondary cursor-pointer" type="checkbox"/>
+<div>
+<p class="font-body-md text-body-md font-bold text-on-surface group-hover:text-secondary transition-colors">Update Training Justification</p>
+<p class="text-[12px] text-on-surface-variant">Clarify why internal trainers cannot provide certification prep.</p>
+</div>
+</label>
+</div>
+<div class="mt-8 space-y-3">
+<button class="w-full bg-secondary text-white font-bold py-4 px-6 rounded-lg shadow-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">edit_note</span>
+                            Create Corrected Version
+                        </button>
+<button class="w-full bg-transparent border border-secondary text-secondary font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 hover:bg-secondary/5 transition-colors">
+<span class="material-symbols-outlined">chat_bubble</span>
+                            Reply to Reviewer
+                        </button>
+<button class="w-full bg-transparent text-on-surface-variant font-label-md text-label-md py-2 px-6 rounded-lg flex items-center justify-center gap-2 hover:text-primary transition-colors">
+                            Cancel &amp; Archive Draft
+                        </button>
+</div>
+</div>
+<!-- SYSTEM STATUS CARD (COMPACT) -->
+<div class="bg-primary-container p-4 rounded-lg text-white">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary-container text-[18px]">lock_clock</span>
+<span class="font-label-md text-label-md">Correction Window</span>
+</div>
+<p class="font-body-sm text-body-sm opacity-80 mb-3">You have 48 hours to resubmit this version to maintain the current approval slot in the next Board meeting.</p>
+<div class="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+<div class="bg-secondary-container h-full w-[72%]"></div>
+</div>
+<div class="flex justify-between mt-1">
+<span class="text-[10px] opacity-60">Expired</span>
+<span class="text-[10px] opacity-60">Deadline: Oct 26</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FOOTER -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-280px)] bg-surface-container-low text-on-surface-variant flex justify-between items-center px-gutter py-stack-sm z-40 border-t border-outline-variant">
+<p class="font-label-md text-label-md font-bold text-primary">© 2024 Institutional Budget Governance</p>
+<div class="flex gap-6 font-body-sm text-body-sm">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Help Desk</a>
+</div>
+</footer>
+<!-- INTERACTION SCRIPTS -->
+<script>
+        // Simple logic for the 'Create Corrected Version' transition
+        document.querySelector('button.bg-secondary').addEventListener('click', function() {
+            const btn = this;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Initializing Workspace...';
+            btn.classList.add('opacity-70');
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                alert('Success: A new revision draft (v1.1) has been created from the original submission. You may now edit the flagged lines.');
+                btn.innerHTML = originalContent;
+                btn.classList.remove('opacity-70');
+                btn.disabled = false;
+            }, 1200);
+        });
+
+        // Hover effect for table rows to show action intent
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            row.addEventListener('click', () => {
+                const lineId = row.querySelector('td:first-child').innerText;
+                console.log(`Navigating to Line Editor for: ${lineId}`);
+                // In a real app, this would route to a line-specific edit view
+            });
+            row.classList.add('cursor-pointer');
+        });
+    </script>
+</body></html>

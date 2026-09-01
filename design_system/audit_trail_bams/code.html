@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Audit Trail | Budget Approval Management System</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#51443b",
+                        "secondary-fixed": "#ffdcc7",
+                        "surface-dim": "#e3d8d2",
+                        "surface-container-highest": "#ece0da",
+                        "on-primary-fixed-variant": "#683c15",
+                        "on-primary-container": "#d29667",
+                        "on-tertiary-fixed-variant": "#174c65",
+                        "on-surface": "#201b17",
+                        "secondary-container": "#fd984e",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#2f1500",
+                        "surface-bright": "#fff8f5",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#faeee8",
+                        "primary-container": "#582f08",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#003e57",
+                        "on-secondary-container": "#6d3300",
+                        "tertiary-fixed": "#c5e7ff",
+                        "inverse-surface": "#352f2b",
+                        "inverse-primary": "#fab987",
+                        "surface-tint": "#84532a",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#ffdcc4",
+                        "secondary-fixed-dim": "#ffb787",
+                        "surface-container-high": "#f1e6e0",
+                        "outline": "#84746a",
+                        "tertiary": "#002739",
+                        "surface-variant": "#ece0da",
+                        "background": "#fff8f5",
+                        "primary": "#3b1c00",
+                        "on-primary": "#ffffff",
+                        "on-background": "#201b17",
+                        "on-tertiary-container": "#7ba9c6",
+                        "on-tertiary-fixed": "#001e2d",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#9ecdeb",
+                        "on-secondary-fixed-variant": "#723600",
+                        "outline-variant": "#d6c3b7",
+                        "surface-container": "#f7ece5",
+                        "secondary": "#964900",
+                        "surface-container-low": "#fdf1eb",
+                        "error": "#ba1a1a",
+                        "surface": "#fff8f5",
+                        "on-secondary-fixed": "#311300",
+                        "primary-fixed-dim": "#fab987"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-max": "1440px",
+                        "stack-sm": "8px",
+                        "gutter": "24px",
+                        "stack-md": "16px",
+                        "margin-page": "40px",
+                        "sidebar-width": "280px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "table-data": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "table-data": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .audit-timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #d6c3b7;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container border-r border-outline-variant flex flex-col p-stack-md z-50">
+<div class="mb-stack-lg">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">BAMS</h1>
+<p class="font-label-md text-label-md text-on-primary opacity-70">Institutional Oversight</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">payments</span> Budgets
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">calendar_today</span> Financial Years
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">groups</span> Committee Reviews
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">rule</span> Approvals
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">assessment</span> Reports
+            </a>
+<!-- Active State -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg font-label-md text-label-md scale-95 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">history</span> Audit Trail
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-secondary-container/50 transition-colors duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings</span> Administration
+            </a>
+</nav>
+</aside>
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface flex justify-between items-center px-gutter border-b border-outline-variant z-40">
+<div class="flex items-center gap-4">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">Budget Approval Management System</span>
+<div class="h-6 w-px bg-outline-variant mx-2"></div>
+<nav class="flex items-center gap-4 font-title-lg text-title-lg">
+<span class="text-on-surface-variant cursor-pointer hover:text-secondary transition-colors">FY 2024-25</span>
+<span class="text-on-surface-variant">/</span>
+<span class="text-secondary font-bold">Audit Trail</span>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-primary cursor-pointer active:opacity-70">notifications</span>
+<div class="flex items-center gap-3 cursor-pointer">
+<img class="w-8 h-8 rounded-full border border-outline" data-alt="Professional headshot of a senior financial auditor in a business suit, looking confident against a clean corporate office background. The lighting is bright and professional, adhering to a high-end corporate aesthetic with warm wood and neutral tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1zi73W1HKKhhPTx9oaUpw7TL3LqS4f7di26SZFtoIZCPWFHGboeicNG8x9CDGQRK2K1-5xX7sVMMKXy_VY27NN0aQJjcEgRWv9Z9toS69SI3CUOXr-x3jUyFo__xyJonrSWOzCjcSJ7cmxYRCpV39FyDeMnhlasyCPtjooHbRimbwRpcdNJTGC3PuCsIpSmh8hI1RFk226vuR0JvKcKS8DdjRFP-DirZp5H5jlWtLO2iGFdlcndFDT8xAwP3TqcsILAhvUk5A99D_"/>
+<div class="hidden lg:block text-right">
+<p class="font-label-md text-label-md text-primary leading-none">A. Sterling</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">Lead Comptroller</p>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-[280px] pt-16 pb-12 min-h-screen">
+<div class="max-w-[1440px] mx-auto p-margin-page">
+<!-- Page Header & Filters -->
+<div class="mb-stack-lg">
+<h2 class="font-display-lg text-display-lg text-primary mb-2">Immutable Governance Record</h2>
+<p class="text-on-surface-variant max-w-2xl font-body-md mb-stack-lg">
+                    Comprehensive ledger of all modifications, approvals, and system state changes. This log is cryptographically chained and represents the definitive institutional truth.
+                </p>
+<!-- Filters Bar -->
+<div class="bg-surface-container border border-outline-variant p-stack-md flex flex-wrap gap-4 items-end">
+<div class="flex flex-col gap-1.5 flex-1 min-w-[180px]">
+<label class="font-label-md text-label-md text-on-surface-variant">Entity / User</label>
+<select class="bg-surface border border-outline-variant rounded px-3 py-2 font-body-sm focus:ring-2 focus:ring-secondary focus:outline-none">
+<option>All Personnel</option>
+<option>Sterling, A. (Comptroller)</option>
+<option>Vance, J. (Director)</option>
+</select>
+</div>
+<div class="flex flex-col gap-1.5 flex-1 min-w-[180px]">
+<label class="font-label-md text-label-md text-on-surface-variant">Event Type</label>
+<select class="bg-surface border border-outline-variant rounded px-3 py-2 font-body-sm focus:ring-2 focus:ring-secondary focus:outline-none">
+<option>All Activity</option>
+<option>Value Modification</option>
+<option>Status Change</option>
+<option>User Permission</option>
+</select>
+</div>
+<div class="flex flex-col gap-1.5 flex-1 min-w-[180px]">
+<label class="font-label-md text-label-md text-on-surface-variant">Budget ID</label>
+<input class="bg-surface border border-outline-variant rounded px-3 py-2 font-body-sm focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. BDG-2024-08" type="text"/>
+</div>
+<div class="flex flex-col gap-1.5 flex-1 min-w-[180px]">
+<label class="font-label-md text-label-md text-on-surface-variant">Date Range</label>
+<div class="flex gap-2">
+<input class="bg-surface border border-outline-variant rounded px-2 py-2 font-body-sm w-full focus:ring-2 focus:ring-secondary focus:outline-none" type="date"/>
+</div>
+</div>
+<button class="bg-secondary text-on-primary font-label-md text-label-md px-6 py-2.5 hover:opacity-90 transition-opacity active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">filter_list</span> Apply Filters
+                    </button>
+<button class="text-secondary border border-secondary font-label-md text-label-md px-6 py-2.5 hover:bg-secondary/5 transition-colors active:scale-95">
+                        Export CSV
+                    </button>
+</div>
+</div>
+<!-- Forensic Timeline -->
+<div class="relative audit-timeline ml-5 mt-10 space-y-10">
+<!-- Timeline Group: Today -->
+<div>
+<div class="relative z-10 flex items-center mb-6">
+<div class="bg-primary-container text-on-primary px-3 py-1 font-label-md text-label-md rounded">TODAY, OCT 24, 2024</div>
+</div>
+<div class="space-y-6">
+<!-- Event Card 1 -->
+<div class="relative pl-10">
+<div class="absolute left-[-26px] top-4 w-4 h-4 rounded-full bg-secondary border-4 border-background z-20"></div>
+<div class="bg-surface-container-low border border-outline-variant p-stack-md flex gap-gutter hover:bg-surface-container-high transition-colors group">
+<img class="w-12 h-12 rounded-lg flex-shrink-0 object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="Close up of a professional identification photo. The subject is a financial analyst with a serious expression, wearing a tailored navy blazer. The background is a blurred office interior with soft natural lighting, reflecting a corporate environment with high-contrast brown and cream tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8yHrqIU7JXeUvjNk7Zesr-xjzLeVfk6hV6WsglPqSgAohyVQUE5isPLOk2oKn0dqoR10xqIcs8WXPY6vySGBJ7f90ZcJO9w-gzvx-BsDCusA7G2izA28gLA53IO9_5U6vahdtcKmQTkLgL11pra8-is4M6Zo3UaQwWrlOJPCL_5xqqYNLZqd2-4asgeVR9UGfIo6ICdg9DYwZvh5OLCPYxIQILaxTdeUV505eaeyioABsoqgd18e_V7tLZN5chGkFNw4LlhCRdzkm"/>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h4 class="font-title-lg text-title-lg text-primary">Sterling, A. <span class="font-normal text-on-surface-variant text-body-sm">modified Budget</span> <span class="font-bold underline">BDG-FY24-001</span></h4>
+<p class="font-label-md text-label-md text-on-secondary-fixed-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 14:32:01 GMT-5
+                                            </p>
+</div>
+<span class="bg-secondary-fixed text-on-secondary-fixed px-2 py-0.5 font-label-md text-[10px] rounded uppercase tracking-tighter">Value Modification</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-lg border-t border-outline-variant/30 pt-stack-md mt-stack-md">
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Line Item</p>
+<p class="font-body-md font-bold text-on-surface">Line 002: Infrastructure Dev</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Previous Value</p>
+<p class="font-table-data text-table-data text-on-surface-variant line-through">$5,000,000.00</p>
+</div>
+<span class="material-symbols-outlined text-secondary">trending_down</span>
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">New Value</p>
+<p class="font-table-data text-table-data text-on-surface font-bold">$4,500,000.00</p>
+</div>
+</div>
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Reason for Change</p>
+<p class="font-body-sm italic text-on-surface-variant">"Efficiency adjustment following Q3 procurement review. Re-allocation of surplus to contingency fund."</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Event Card 2 -->
+<div class="relative pl-10">
+<div class="absolute left-[-26px] top-4 w-4 h-4 rounded-full bg-primary-container border-4 border-background z-20"></div>
+<div class="bg-surface-container-low border border-outline-variant p-stack-md flex gap-gutter hover:bg-surface-container-high transition-colors group">
+<img class="w-12 h-12 rounded-lg flex-shrink-0 object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="A portrait of an executive woman in her 40s, exuding authority and calmness. She is wearing a dark brown structured suit. The photo is taken in a boardroom setting with elegant wooden panels and soft desk lighting, maintaining a professional and serious atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAO9XdfnJe63iYxeaShoYTZiKZVNTEyGrIooCgxKyVrA5Aj8Mk-i3ALnpQ8rRC67XRuAoQZWvdFJEolfJOjVXNW0TToWIqO7xHw_p7mQDo9LsnnvMm_z4QZyqpnCMohK3wlB1AMLgqk6hRixyEUHxNyocaBtHLQIhJfcHuW7QRniwwymDMf1RNssyMJLCbuywWmzKG-zojfVdoUu0Yd3W8ucu80n3_QqQrGDLd1O-J2MwPood_f840QzCWKsnUh6IMaovTK0zu-SXRL"/>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h4 class="font-title-lg text-title-lg text-primary">Vance, J. <span class="font-normal text-on-surface-variant text-body-sm">triggered</span> <span class="font-bold">Final Committee Review</span></h4>
+<p class="font-label-md text-label-md text-on-secondary-fixed-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 11:15:44 GMT-5
+                                            </p>
+</div>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 font-label-md text-[10px] rounded uppercase tracking-tighter">Status Change</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-lg border-t border-outline-variant/30 pt-stack-md mt-stack-md">
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Workflow Stage</p>
+<p class="font-body-md font-bold text-on-surface">Budget ID: BDG-FY24-001</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Previous Status</p>
+<p class="font-table-data text-table-data text-secondary">Drafting</p>
+</div>
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Current Status</p>
+<p class="font-table-data text-table-data text-on-tertiary-fixed-variant font-bold">Committee Review</p>
+</div>
+</div>
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Action Details</p>
+<p class="font-body-sm text-on-surface-variant">Locking editing permissions for all departmental users until review is finalized.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Group: Yesterday -->
+<div>
+<div class="relative z-10 flex items-center mb-6">
+<div class="bg-surface-dim text-on-surface px-3 py-1 font-label-md text-label-md rounded border border-outline-variant">YESTERDAY, OCT 23, 2024</div>
+</div>
+<div class="space-y-6">
+<!-- Event Card 3 -->
+<div class="relative pl-10 opacity-75 hover:opacity-100 transition-opacity">
+<div class="absolute left-[-26px] top-4 w-4 h-4 rounded-full bg-error border-4 border-background z-20"></div>
+<div class="bg-surface-container-low border border-outline-variant p-stack-md flex gap-gutter hover:bg-surface-container-high transition-colors group">
+<img class="w-12 h-12 rounded-lg flex-shrink-0 object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="Portrait of a young male IT security specialist wearing a clean white shirt and dark vest. He has a focused and neutral expression. The background is a clean, bright server room with soft blue and grey tones, conveying a sense of digital security and precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyx7eeVxqcwrf4xhR5T4y_S-I59lpChFwy8j7JMw69_PN7077Q92-_uH9uGT8nrx3TxNZgqcvoA5-OM5jx-tLOehanYmwNQo54O0gZsD-zhqMaY8QVg8eO-vtG7pFW4BTCYzQeJ58Jzy1Hn-T-pR_MhOsQcUvHpdnQka0QsJDU7GEAMCyBAVtOrlJplDURg4-l2QdmlWDIFgvuQQPIjC4glNYFiuL-ifIRA1x2ExhFyNS0E_bRgaA6GjHkbMvu6zMS3P2YoXrwBrE9"/>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h4 class="font-title-lg text-title-lg text-primary">System Admin <span class="font-normal text-on-surface-variant text-body-sm">revoked access for</span> <span class="font-bold">H. Chen</span></h4>
+<p class="font-label-md text-label-md text-on-secondary-fixed-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 17:05:12 GMT-5
+                                            </p>
+</div>
+<span class="bg-error-container text-on-error-container px-2 py-0.5 font-label-md text-[10px] rounded uppercase tracking-tighter">Security Alert</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-lg border-t border-outline-variant/30 pt-stack-md mt-stack-md">
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Resource</p>
+<p class="font-body-md font-bold text-on-surface">Financial Year 2024 Portal</p>
+</div>
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Action</p>
+<p class="font-body-md text-error font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">no_accounts</span> Access Terminated
+                                            </p>
+</div>
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Verification</p>
+<p class="font-body-sm text-on-surface-variant">Automated task triggered by HR departure notification ID: 88219-X.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Event Card 4 -->
+<div class="relative pl-10 opacity-75 hover:opacity-100 transition-opacity">
+<div class="absolute left-[-26px] top-4 w-4 h-4 rounded-full bg-outline border-4 border-background z-20"></div>
+<div class="bg-surface-container-low border border-outline-variant p-stack-md flex gap-gutter hover:bg-surface-container-high transition-colors group">
+<div class="w-12 h-12 bg-surface-dim rounded-lg flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[32px]">database</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h4 class="font-title-lg text-title-lg text-primary">System Cron <span class="font-normal text-on-surface-variant text-body-sm">performed</span> <span class="font-bold">Automatic Data Backup</span></h4>
+<p class="font-label-md text-label-md text-on-secondary-fixed-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 03:00:00 GMT-5
+                                            </p>
+</div>
+<span class="bg-surface-container-highest text-on-surface-variant px-2 py-0.5 font-label-md text-[10px] rounded uppercase tracking-tighter">System Maintenance</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-lg border-t border-outline-variant/30 pt-stack-md mt-stack-md">
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Backup ID</p>
+<p class="font-body-md font-bold text-on-surface">BK-FY24-OCT23</p>
+</div>
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Integrity Status</p>
+<p class="font-body-md text-on-tertiary-fixed-variant font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-[#2e7d32]">verified</span> Hash Matched
+                                            </p>
+</div>
+<div class="space-y-1">
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Storage Location</p>
+<p class="font-body-sm text-on-surface-variant">Encrypted Vault Alpha (Primary Cluster).</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Load More -->
+<div class="mt-stack-lg pt-stack-lg border-t border-outline-variant flex justify-center">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary font-label-md text-label-md py-2 px-4 transition-colors">
+<span class="material-symbols-outlined">expand_more</span>
+                    Load Previous Records (Oct 22 and older)
+                </button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-280px)] bg-surface-container-low text-on-surface-variant border-t border-outline-variant flex justify-between items-center px-gutter py-stack-sm w-full z-40">
+<div class="flex items-center gap-6">
+<span class="font-label-md text-label-md font-bold text-primary">BAMS Audit</span>
+<span class="font-body-sm text-body-sm opacity-70">© 2024 Institutional Budget Governance</span>
+</div>
+<div class="flex gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">Help Desk</a>
+</div>
+</footer>
+<script>
+        // Simple micro-interaction for filter highlighting
+        document.querySelectorAll('select, input').forEach(el => {
+            el.addEventListener('focus', () => {
+                el.parentElement.querySelector('label').classList.add('text-secondary');
+            });
+            el.addEventListener('blur', () => {
+                el.parentElement.querySelector('label').classList.remove('text-secondary');
+            });
+        });
+    </script>
+</body></html>

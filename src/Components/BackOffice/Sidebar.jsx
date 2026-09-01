@@ -103,6 +103,11 @@ const BackOfficeSideBar = () => {
               <LuCalendar className="text-[#E3BC97] text-base flex-shrink-0" />
               <span>Retention Policy</span>
             </NavLink>
+
+            <NavLink to="/backoffice/scripts" className={navLink}>
+              <HiOutlineWrenchScrewdriver className="text-[#E3BC97] text-base flex-shrink-0" />
+              <span>Scripts</span>
+            </NavLink>
           </>
         )}
 
