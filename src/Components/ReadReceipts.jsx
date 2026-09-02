@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, List, Avatar, Tag, Spin, Empty, Tabs, Typography, Space, Tooltip } from 'antd';
+import { List, Avatar, Tag, Spin, Empty, Tabs, Typography, Space, Tooltip } from 'antd';
 import { EyeOutlined, ClockCircleOutlined, UserOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -8,7 +8,7 @@ import { getDocumentViewStats, getUnviewedRecipients } from '../http/documentVie
 
 dayjs.extend(relativeTime);
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 const { TabPane } = Tabs;
 
 /**
@@ -63,27 +63,25 @@ const ReadReceipts = ({ documentId }) => {
   return (
     <div className="space-y-4">
       {/* Statistics Summary */}
-      <Card className="shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <EyeOutlined className="text-3xl text-blue-500 mb-2" />
-            <div className="text-2xl font-bold text-blue-600">{stats?.totalViews || 0}</div>
-            <div className="text-gray-600 text-sm">Total Views</div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="text-center p-4 bg-[#fffaf6] rounded-xl border border-[#f0e6da]">
+            <EyeOutlined className="text-xl text-[#9D4D01] mb-2" />
+            <div className="text-2xl font-semibold text-[#582F08]">{stats?.totalViews || 0}</div>
+            <div className="text-[#7a6859] text-xs uppercase tracking-[0.12em] mt-1">Total views</div>
           </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <UserOutlined className="text-3xl text-green-500 mb-2" />
-            <div className="text-2xl font-bold text-green-600">{stats?.uniqueViewers || 0}</div>
-            <div className="text-gray-600 text-sm">Unique Viewers</div>
+          <div className="text-center p-4 bg-[#fffaf6] rounded-xl border border-[#f0e6da]">
+            <UserOutlined className="text-xl text-[#9D4D01] mb-2" />
+            <div className="text-2xl font-semibold text-[#582F08]">{stats?.uniqueViewers || 0}</div>
+            <div className="text-[#7a6859] text-xs uppercase tracking-[0.12em] mt-1">Unique viewers</div>
           </div>
-          <div className="text-center p-4 bg-orange-50 rounded-lg">
-            <ClockCircleOutlined className="text-3xl text-orange-500 mb-2" />
-            <div className="text-2xl font-bold text-orange-600">
-              {stats?.firstView ? dayjs(stats.firstView).fromNow() : 'N/A'}
+          <div className="text-center p-4 bg-[#fffaf6] rounded-xl border border-[#f0e6da]">
+            <ClockCircleOutlined className="text-xl text-[#9D4D01] mb-2" />
+            <div className="text-lg font-semibold text-[#582F08]">
+              {stats?.firstView ? dayjs(stats.firstView).fromNow() : '—'}
             </div>
-            <div className="text-gray-600 text-sm">First Viewed</div>
+            <div className="text-[#7a6859] text-xs uppercase tracking-[0.12em] mt-1">First viewed</div>
           </div>
         </div>
-      </Card>
 
       {/* Tabs for Viewed and Unviewed */}
       <Tabs defaultActiveKey="viewed">

@@ -245,7 +245,7 @@ const FinancialYear = () => {
         </Form>
       </Modal>
 
-      <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+      <div className="page-shell">
         <div className="mx-auto max-w-7xl space-y-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>

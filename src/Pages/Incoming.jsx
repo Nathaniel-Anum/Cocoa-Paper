@@ -18,10 +18,14 @@ import {
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  CheckOutlined,
-  CloseOutlined,
   UploadOutlined,
   MoreOutlined,
+  EyeOutlined,
+  LinkOutlined,
+  SendOutlined,
+  FolderOutlined,
+  FileTextOutlined,
+  NodeIndexOutlined,
 } from '@ant-design/icons';
 import { SlOptionsVertical } from 'react-icons/sl';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -42,6 +46,9 @@ import { set } from 'lodash';
 import Trail from '../Components/Trail/Trail';
 import { useGetAllUserGroups, useGetAllUsers } from '../queryHooks/user';
 import { FiFilter } from 'react-icons/fi';
+import DocumentLinksModal from '../Components/modals/DocumentLinksModal';
+import ReadReceipts from '../Components/ReadReceipts';
+import PageHeader from '../Components/PageHeader';
 
 // Helper function to capitalize each word
 const capitalizeWords = (str) => {
@@ -73,6 +80,9 @@ const Incoming = () => {
   const [filterDepartment, setFilterDepartment] = useState(null);
   const [tempFilterDivision, setTempFilterDivision] = useState(null);
   const [tempFilterDepartment, setTempFilterDepartment] = useState(null);
+  const [isLinksModalOpen, setIsLinksModalOpen] = useState(false);
+  const [isReceiptsModalOpen, setIsReceiptsModalOpen] = useState(false);
+  const [actionRecord, setActionRecord] = useState(null);
 
   const setShowToolbar = useStore((state) => state.setShowToolbar);
   const setChosenRecord = useStore((state) => state.setChosenRecord);
@@ -281,15 +291,14 @@ const Incoming = () => {
   };
 
   const getItems = (selectedRecord) => {
-    // Check if CC recipient can forward (either not a CC or has enableForward permission)
     const canForward = !selectedRecord.isCarbonCopy || selectedRecord.ccEnableForward;
-    
+
     return [
       {
         label: 'View',
-        key: 0,
+        key: 'view',
+        icon: <FileTextOutlined />,
         onClick: () => {
-          // Hide toolbar for all CC documents (copied documents should not have annotation toolbar)
           selectedRecord.isCarbonCopy
             ? setShowToolbar(false)
             : setShowToolbar(true);
@@ -298,28 +307,56 @@ const Incoming = () => {
       },
       canForward && {
         label: 'Forward',
-        key: 1,
+        key: 'forward',
+        icon: <SendOutlined />,
         onClick: () => handleClick(selectedRecord),
+      },
+      { type: 'divider' },
+      canForward && {
+        label: 'Trail',
+        key: 'trail',
+        icon: <NodeIndexOutlined />,
+        onClick: () => handleView(selectedRecord),
+      },
+      {
+        label: 'View receipt',
+        key: 'receipts',
+        icon: <EyeOutlined />,
+        onClick: () => {
+          setActionRecord(selectedRecord);
+          setIsReceiptsModalOpen(true);
+        },
+      },
+      {
+        label: 'Linking',
+        key: 'linking',
+        icon: <LinkOutlined />,
+        onClick: () => {
+          setActionRecord(selectedRecord);
+          setIsLinksModalOpen(true);
+        },
       },
       hasPermission(allRolePermissions, [
         requiredPermissions.ARCHIVE_DOCUMENT,
       ]) &&
         !selectedRecord.isCarbonCopy && {
+          type: 'divider',
+        },
+      hasPermission(allRolePermissions, [
+        requiredPermissions.ARCHIVE_DOCUMENT,
+      ]) &&
+        !selectedRecord.isCarbonCopy && {
           label: 'Archive',
-          key: 2,
+          key: 'archive',
+          icon: <FolderOutlined />,
           onClick: () => handleFile(selectedRecord),
         },
-      canForward && {
-        label: 'Trail',
-        key: 3,
-        onClick: () => handleView(selectedRecord),
-      },
     ].filter(Boolean);
   };
 
   const columns = [
     {
-      title: 'Subject',
+      title: 'Document',
       key: 'subject',
       filteredValue: [searchText],
       onFilter: (value, record) => {
@@ -333,66 +370,66 @@ const Incoming = () => {
           record.sender?.department?.departmentName?.toLowerCase().includes(search)
         );
       },
-      render: (data) => {
-        return (
-          <div className="flex items-start gap-1">
-            <span className="font-medium text-[#582F08]">{capitalizeWords(data.document.subject)}</span>{' '}
-            {data.isCarbonCopy ? (
-              <span className="flex gap-1">
-                <Tag color="warning">CC</Tag>
-                {data.ccEnableForward && (
-                  <Tag color="success">Can Forward</Tag>
-                )}
-              </span>
-            ) : (
-              ''
+      render: (data) => (
+        <div className="min-w-0 max-w-[28rem]">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-[#582F08] line-clamp-1">
+              {capitalizeWords(data.document.subject)}
+            </span>
+            {data.isCarbonCopy && (
+              <Tag color="warning" className="m-0">CC</Tag>
+            )}
+            {data.isCarbonCopy && data.ccEnableForward && (
+              <Tag color="success" className="m-0">Forward</Tag>
             )}
           </div>
-        );
-      },
+          <p className="mt-0.5 font-mono text-xs text-[#7a6859]">{data.document.ref}</p>
+        </div>
+      ),
     },
     {
-      title: 'Reference',
-      dataIndex: 'document',
-      key: 'ref',
+      title: 'From',
+      key: 'sender',
+      width: 180,
       responsive: ['md'],
-      render: (document) => {
-        return <div className="text-gray-600 font-mono text-sm">{document.ref}</div>;
-      },
-    },
-
-    {
-      title: 'Sender',
-      dataIndex: ['sender', 'name'],
-      key: 'receiver',
-      responsive: ['lg'],
-      render: (name) => <span>{capitalizeWords(name)}</span>,
+      render: (data) => (
+        <div className="min-w-0">
+          <p className="m-0 text-[#201b17] line-clamp-1">{capitalizeWords(data.sender?.name)}</p>
+          <p className="m-0 text-xs text-[#7a6859] line-clamp-1">
+            {capitalizeWords(data.sender?.department?.departmentName)}
+          </p>
+        </div>
+      ),
     },
     {
-      title: 'Intended Receipients',
-      dataIndex: ['userIntendedFor', 'name'],
+      title: 'For',
       key: 'userIntendedFor',
+      width: 160,
       responsive: ['lg'],
-      render: (name) => <span>{capitalizeWords(name)}</span>,
+      render: (data) => (
+        <span className="line-clamp-1">{capitalizeWords(data.userIntendedFor?.name) || '—'}</span>
+      ),
     },
     hasPermission(allRolePermissions, [
       requiredPermissions.READ_AUDIT_STATUS,
     ]) && {
-      title: 'Audited',
+      title: 'Audit',
       dataIndex: 'audited',
       key: 'audited',
+      width: 110,
       render: (audited) =>
         audited ? (
-          <Tag color="green">Audited</Tag>
+          <Tag color="green" className="m-0">Audited</Tag>
         ) : (
-          <Tag color="red">UnAudited</Tag>
+          <Tag className="m-0">Pending</Tag>
         ),
     },
-
     {
       title: 'Division',
       key: 'division',
-      responsive: ['lg'],
+      width: 160,
+      ellipsis: true,
+      responsive: ['xl'],
       filters: divisions?.data?.map((div) => ({
         text: div.divisionName,
         value: div.divisionName,
@@ -401,50 +438,39 @@ const Incoming = () => {
       onFilter: (value, record) => {
         return record.document?.division?.divisionName === value;
       },
-      render: (document) => {
-        return <div>{capitalizeWords(document.document.division.divisionName)}</div>;
-      },
-    },
-
-    {
-      title: 'Department',
-      key: 'department',
-      responsive: ['lg'],
-      filters: allDepartments?.data?.map((dept) => ({
-        text: dept.departmentName,
-        value: dept.departmentName,
-      })) || [],
-      filteredValue: filterDepartment ? [filterDepartment] : null,
-      onFilter: (value, record) => {
-        return record.sender?.department?.departmentName === value;
-      },
-      render: (document) => {
-        return <div>{capitalizeWords(document.sender.department.departmentName)}</div>;
-      },
+      render: (document) => (
+        <span className="line-clamp-1">
+          {capitalizeWords(document.document.division.divisionName)}
+        </span>
+      ),
     },
     {
-      title: 'Date',
-      key: 'action',
+      title: 'Received',
+      key: 'received',
       dataIndex: 'createdAt',
+      width: 130,
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
-        return <div className="text-gray-600">{dateTime.toDateString()}</div>;
+        return (
+          <div>
+            <p className="m-0 text-[#201b17]">
+              {dateTime.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })}
+            </p>
+            <p className="m-0 text-xs text-[#7a6859]">
+              {dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </p>
+          </div>
+        );
       },
     },
     {
-      title: 'Time',
-      key: 'time',
-      dataIndex: 'createdAt',
-      responsive: ['md'],
-      render: (createdAt) => {
-        const dateTime = new Date(createdAt);
-        return <div className="text-gray-600">{dateTime.toLocaleTimeString()}</div>;
-      },
-    },
-    {
-      title: 'Actions',
+      title: '',
       key: 'action',
-
+      width: 48,
       render: (selectedRecord) => {
         return (
           <Dropdown
@@ -486,30 +512,16 @@ const Incoming = () => {
   console.log(_data);
 
   return (
-    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
-      {/* Header Card */}
-      <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-5">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 flex-shrink-0">
-              <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="28" cy="28" r="28" fill="#FDF4ED"/>
-                <rect x="14" y="18" width="28" height="22" rx="3" fill="#E3BC97"/>
-                <rect x="14" y="18" width="28" height="22" rx="3" stroke="#9D4D01" strokeWidth="1.5"/>
-                <path d="M14 22l14 9 14-9" stroke="#582F08" strokeWidth="1.5" strokeLinecap="round"/>
-                <path d="M22 32l-8 8" stroke="#9D4D01" strokeWidth="1" strokeLinecap="round"/>
-                <path d="M34 32l8 8" stroke="#9D4D01" strokeWidth="1" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-[#582F08]">Incoming Documents</h1>
-              <p className="text-sm text-gray-500 mt-0.5">Documents received and pending action</p>
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+    <div className="page-shell">
+      <PageHeader
+        title="Incoming"
+        description="Documents received and waiting for action"
+        meta={`${filteredData.length} document${filteredData.length === 1 ? '' : 's'}`}
+        extra={
+          <>
             <Input.Search
-              placeholder="Search by subject, reference, sender..."
-              className="w-full md:w-[22rem]"
+              placeholder="Search subject, reference, sender..."
+              className="w-full lg:w-[22rem]"
               allowClear
               onChange={(e) => setSearchText(e.target.value)}
             />
@@ -519,7 +531,7 @@ const Incoming = () => {
                 setTempFilterDepartment(filterDepartment);
                 setIsFilterModalOpen(true);
               }}
-              className="relative flex items-center justify-center gap-2 px-4 h-[32px] border border-[#E3BC97] rounded-lg hover:bg-[#fdf4ed] transition-colors"
+              className="relative inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[#E3BC97] px-3 hover:bg-[#fdf4ed] transition-colors"
             >
               <FiFilter className="text-[#9D4D01] text-base" />
               <span className="text-sm text-[#582F08] hidden md:inline">Filter</span>
@@ -529,12 +541,9 @@ const Incoming = () => {
                 </span>
               )}
             </button>
-          </div>
-        </div>
-        <div className="border-t border-[#f0e6da] px-6 py-3 flex gap-6 bg-[#fffaf6]">
-          <span className="text-sm text-gray-500"><span className="font-semibold text-[#582F08]">{filteredData.length}</span> documents</span>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Filter Modal */}
       <Modal
@@ -695,16 +704,15 @@ const Incoming = () => {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-[#f0e6da]">
-        <div className="p-4">
-          <Table 
-            columns={columns} 
-            dataSource={_data} 
-            loading={isLoading}
-            className="incoming-table"
-            rowClassName={(_, i) => i % 2 !== 0 ? 'bg-[#fffaf6]' : ''}
-          />
-        </div>
+      <div className="hidden md:block overflow-hidden rounded-xl border border-[#f0e6da] bg-white">
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          loading={isLoading}
+          className="cp-table incoming-table"
+          pagination={{ pageSize: 10, showSizeChanger: false }}
+          rowClassName={(_, i) => (i % 2 !== 0 ? 'bg-[#fffaf6]' : '')}
+        />
       </div>
       {isModalOpen && (
         <Modal
@@ -858,6 +866,9 @@ const Incoming = () => {
                     Upload Additional Docs
                   </Button>
                 </Upload>
+                <p className="text-xs text-[#7a6859] mt-2 mb-0">
+                  Added files are visible to the people you send this to, not the original sender.
+                </p>
               </Form.Item>
 
               <Form.Item>
@@ -915,6 +926,36 @@ const Incoming = () => {
         handleCancel={handleClose}
         trails={trailData?.data?.trails}
       />
+      <DocumentLinksModal
+        open={isLinksModalOpen}
+        onClose={() => {
+          setIsLinksModalOpen(false);
+          setActionRecord(null);
+        }}
+        documentId={actionRecord?.docID}
+        documentSubject={actionRecord?.document?.subject}
+      />
+      <Modal
+        title={null}
+        open={isReceiptsModalOpen}
+        onCancel={() => {
+          setIsReceiptsModalOpen(false);
+          setActionRecord(null);
+        }}
+        footer={null}
+        width={720}
+        destroyOnClose
+      >
+        <div className="mb-4">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-[#9D4D01] mb-1">
+            View receipt
+          </p>
+          <h2 className="text-lg font-semibold text-[#582F08] leading-tight">
+            {actionRecord?.document?.subject}
+          </h2>
+        </div>
+        {actionRecord?.docID && <ReadReceipts documentId={actionRecord.docID} />}
+      </Modal>
       {show ? (
         <ArchiveFiles
           show={show}

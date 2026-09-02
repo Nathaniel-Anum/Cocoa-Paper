@@ -628,3 +628,35 @@ table th {
 .backoffice-table .ant-pagination {
   margin: 12px 0 4px !important;
 }
+
+.page-shell {
+  min-width: 0;
+  max-width: 100%;
+  padding-top: 8px;
+  padding-bottom: 48px;
+}
+
+.cp-table .ant-table-thead > tr > th {
+  white-space: nowrap;
+  padding: 10px 14px !important;
+  font-size: 12px !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cp-table .ant-table-tbody > tr > td {
+  padding: 12px 14px !important;
+  vertical-align: middle;
+}
+
+.cp-table .ant-table {
+  border-radius: 12px !important;
+}
+
+.cp-table .ant-table-container {
+  border-radius: 12px !important;
+}
+
+.cp-table .ant-pagination {
+  margin: 16px 0 0 !important;
+}

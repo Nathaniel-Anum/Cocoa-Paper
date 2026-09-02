@@ -621,7 +621,7 @@ const UserGuide = () => {
   }, [searchQuery]);
 
   return (
-    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
+    <div className="page-shell">
       {/* ── Back button ── */}
       <div className="mb-4">
         <Button

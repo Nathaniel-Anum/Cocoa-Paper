@@ -280,7 +280,7 @@ const Staff = () => {
 
   return (
     <div>
-      <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+      <div className="page-shell">
         <Modal
           open={open}
           title="Add Staff"

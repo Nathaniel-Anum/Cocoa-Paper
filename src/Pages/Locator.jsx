@@ -1,19 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useUser } from './CustomHook/useUser';
 import { useTrail } from './CustomHook/useTrail';
-import { Modal, Button, Table, Dropdown, Input, Tag } from 'antd';
+import { Modal, Table, Dropdown, Input, Tag } from 'antd';
 import { useQuery } from '@tanstack/react-query';
-import { EyeOutlined, MoreOutlined, ApartmentOutlined, LinkOutlined, SearchOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { EyeOutlined, MoreOutlined, LinkOutlined, SearchOutlined } from '@ant-design/icons';
 import { FaTable, FaThLarge } from 'react-icons/fa';
 import axiosInstance from '../Components/axiosInstance';
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 import Trail from '../Components/Trail/Trail';
-import { LuLink } from 'react-icons/lu';
 import { isArray } from 'lodash';
-import LinkDocumentModal from '../Components/modals/LinkDocumentModal';
-import LinkedDocuments from '../Components/LinkedDocuments';
+import DocumentLinksModal from '../Components/modals/DocumentLinksModal';
 import ReadReceipts from '../Components/ReadReceipts';
+import PageHeader from '../Components/PageHeader';
 const Locator = () => {
   dayjs.extend(advancedFormat);
   const { user } = useUser();
@@ -21,9 +20,8 @@ const Locator = () => {
   const [trialId, setTrialId] = useState('');
   const [isGridView, setIsGridView] = useState(true);
   const [searchText, setSearchText] = useState('');
-  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
-  const [selectedDocForLinking, setSelectedDocForLinking] = useState(null);
   const [isLinksModalOpen, setIsLinksModalOpen] = useState(false);
+  const [selectedDocForLinks, setSelectedDocForLinks] = useState(null);
   const [isReadReceiptsModalOpen, setIsReadReceiptsModalOpen] = useState(false);
   const [selectedDocForReceipts, setSelectedDocForReceipts] = useState(null);
 
@@ -54,31 +52,18 @@ const Locator = () => {
     setIsModalOpen(false);
   };
 
-  const openLinkModal = (doc, e) => {
-    if (e) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-    setSelectedDocForLinking(doc);
-    setIsLinkModalOpen(true);
-  };
-
-  const closeLinkModal = () => {
-    setIsLinkModalOpen(false);
-    setSelectedDocForLinking(null);
-  };
-
   const openLinksModal = (doc, e) => {
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
-    setTrialId(doc?.docID);
+    setSelectedDocForLinks(doc);
     setIsLinksModalOpen(true);
   };
 
   const closeLinksModal = () => {
     setIsLinksModalOpen(false);
+    setSelectedDocForLinks(null);
   };
 
   const openReadReceiptsModal = (doc, e) => {
@@ -98,24 +83,37 @@ const Locator = () => {
   const { allTrails } = useTrail();
 
   // **Table Columns Configuration for Trail Data**
-  const getActionItems = (record) => [
+  const handleMenuClick = (record) => ({ key, domEvent }) => {
+    domEvent?.stopPropagation();
+    domEvent?.preventDefault();
+    if (key === 'trail') {
+      showModal(record);
+      return;
+    }
+    if (key === 'receipts') {
+      openReadReceiptsModal(record);
+      return;
+    }
+    if (key === 'links') {
+      openLinksModal(record);
+    }
+  };
+
+  const getActionItems = () => [
     {
       key: 'trail',
       label: 'View Trail',
       icon: <SearchOutlined />,
-      onClick: () => showModal(record),
     },
     {
       key: 'receipts',
-      label: 'Read Receipts',
+      label: 'View receipt',
       icon: <EyeOutlined />,
-      onClick: () => openReadReceiptsModal(record),
     },
     {
       key: 'links',
-      label: 'Document Links',
+      label: 'Linking',
       icon: <LinkOutlined />,
-      onClick: (e) => openLinksModal(record, e),
     },
   ];
 
@@ -174,11 +172,14 @@ const Locator = () => {
       width: 50,
       render: (_, record) => (
         <Dropdown
-          menu={{ items: getActionItems(record) }}
+          menu={{ items: getActionItems(), onClick: handleMenuClick(record) }}
           trigger={['click']}
           placement="bottomRight"
         >
-          <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed] transition-colors">
+          <button
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed] transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
             <MoreOutlined className="text-lg text-[#9D4D01]" />
           </button>
         </Dropdown>
@@ -187,67 +188,30 @@ const Locator = () => {
   ];
 
   return (
-    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
-
-      {/* ── Header ── */}
-      <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-5">
-          <div className="flex items-center gap-4">
-            {/* Inline SVG Illustration */}
-            <div className="w-14 h-14 flex-shrink-0">
-              <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="28" cy="28" r="28" fill="#FDF4ED"/>
-                {/* Map pin document */}
-                <rect x="16" y="12" width="18" height="24" rx="3" fill="#E3BC97"/>
-                <rect x="19" y="17" width="12" height="2" rx="1" fill="#9D4D01"/>
-                <rect x="19" y="21" width="8" height="2" rx="1" fill="#9D4D01" opacity="0.6"/>
-                <rect x="19" y="25" width="10" height="2" rx="1" fill="#9D4D01" opacity="0.6"/>
-                {/* Pin */}
-                <circle cx="36" cy="32" r="7" fill="#9D4D01"/>
-                <circle cx="36" cy="32" r="3" fill="white"/>
-                <path d="M36 39 L33 44 L36 42 L39 44 Z" fill="#9D4D01"/>
-                {/* Search glass */}
-                <circle cx="20" cy="40" r="5" stroke="#582F08" strokeWidth="2" fill="none"/>
-                <line x1="24" y1="44" x2="27" y2="47" stroke="#582F08" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-[#582F08]">Document Locator</h1>
-              <p className="text-sm text-gray-500 mt-0.5">Track the real-time location and trail of any document in the system.</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 w-full md:w-auto">
+    <div className="page-shell">
+      <PageHeader
+        title="Locator"
+        description="Track where a document is and who has seen it"
+        meta={`${isArray(trailDisplay?.data) ? trailDisplay.data.length : 0} documents tracked`}
+        extra={
+          <>
             <Input
               placeholder="Search by subject or recipient..."
               prefix={<SearchOutlined className="text-[#9D4D01]" />}
               allowClear
-              size="middle"
-              className="w-full md:w-72 rounded-lg"
+              className="w-full lg:w-72"
               onChange={(e) => setSearchText(e.target.value)}
             />
             <button
               onClick={() => setIsGridView(!isGridView)}
               className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-[#f0e6da] bg-white hover:bg-[#fdf4ed] transition-colors text-[#582F08]"
-              title={isGridView ? 'Switch to Table view' : 'Switch to Grid view'}
+              title={isGridView ? 'Switch to table view' : 'Switch to grid view'}
             >
               {isGridView ? <FaTable size={16} /> : <FaThLarge size={16} />}
             </button>
-          </div>
-        </div>
-
-        {/* Stats strip */}
-        <div className="border-t border-[#f0e6da] px-6 py-3 flex gap-6 bg-[#fffaf6]">
-          <div className="flex items-center gap-2">
-            <EnvironmentOutlined className="text-[#9D4D01]" />
-            <span className="text-sm text-gray-600">
-              <span className="font-bold text-[#582F08]">
-                {isArray(trailDisplay?.data) ? trailDisplay.data.length : 0}
-              </span> documents tracked
-            </span>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* ── Content ── */}
       {isGridView ? (
@@ -268,8 +232,7 @@ const Locator = () => {
                 return (
                   <div
                     key={trail.docID}
-                    className="bg-white border border-[#f0e6da] rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col cursor-pointer group"
-                    onClick={() => showModal(trail)}
+                    className="bg-white border border-[#f0e6da] rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col group"
                   >
                     {/* Card top accent */}
                     <div className="h-1 rounded-t-xl bg-gradient-to-r from-[#9D4D01] to-[#E3BC97]" />
@@ -281,12 +244,12 @@ const Locator = () => {
                           {trail.subject}
                         </h3>
                         <Dropdown
-                          menu={{ items: getActionItems(trail) }}
+                          menu={{ items: getActionItems(), onClick: handleMenuClick(trail) }}
                           trigger={['click']}
                           placement="bottomRight"
                         >
                           <button
-                            className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed] transition-colors opacity-0 group-hover:opacity-100"
+                            className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg hover:bg-[#fdf4ed] transition-colors"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <MoreOutlined className="text-[#9D4D01]" />
@@ -341,19 +304,16 @@ const Locator = () => {
         </div>
       ) : (
         /* Table View */
-        <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
-          <div className="p-4">
+        <div className="overflow-hidden rounded-xl border border-[#f0e6da] bg-white">
             <Table
               dataSource={isArray(trailDisplay?.data) ? trailDisplay.data : []}
               columns={columns}
               rowKey="docID"
-              pagination={{ pageSize: 10 }}
-              scroll={{ x: 600 }}
+              pagination={{ pageSize: 10, showSizeChanger: false }}
               size="small"
               rowClassName={(_, i) => i % 2 !== 0 ? 'bg-[#fffaf6]' : ''}
-              className="w-full"
+              className="cp-table w-full"
             />
-          </div>
         </div>
       )}
 
@@ -364,70 +324,29 @@ const Locator = () => {
         trails={documentTrial?.data?.trails}
       />
 
-      <LinkDocumentModal
-        open={isLinkModalOpen}
-        onClose={closeLinkModal}
-        documentId={selectedDocForLinking?.docID}
-        documentSubject={selectedDocForLinking?.subject}
+      <DocumentLinksModal
+        open={isLinksModalOpen}
+        onClose={closeLinksModal}
+        documentId={selectedDocForLinks?.docID}
+        documentSubject={selectedDocForLinks?.subject}
       />
 
       <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <LinkOutlined className="text-[#582F08]" />
-            <span>Linked Documents</span>
-          </div>
-        }
-        open={isLinksModalOpen}
-        onCancel={closeLinksModal}
-        footer={null}
-        width={800}
-      >
-        <div className="space-y-4">
-          <div className="flex justify-between items-center mb-4">
-            <Button
-              type="primary"
-              icon={<LinkOutlined />}
-              onClick={() => {
-                const currentDoc = trailDisplay?.data?.find(d => d.docID === trialId);
-                if (currentDoc) {
-                  closeLinksModal();
-                  openLinkModal(currentDoc);
-                }
-              }}
-              className="bg-[#582F08]"
-            >
-              Link New Document
-            </Button>
-          </div>
-          <LinkedDocuments
-            documentId={trialId}
-            onViewDocument={(docId) => {
-              closeLinksModal();
-              setTrialId(docId);
-              setIsLinksModalOpen(true);
-            }}
-            onViewTrail={(docId) => {
-              closeLinksModal();
-              setTrialId(docId);
-              setIsModalOpen(true);
-            }}
-          />
-        </div>
-      </Modal>
-
-      <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <EyeOutlined className="text-[#582F08]" />
-            <span>Read Receipts</span>
-          </div>
-        }
+        title={null}
         open={isReadReceiptsModalOpen}
         onCancel={closeReadReceiptsModal}
         footer={null}
-        width={800}
+        width={720}
+        destroyOnClose
       >
+        <div className="mb-4">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-[#9D4D01] mb-1">
+            View receipt
+          </p>
+          <h2 className="text-lg font-semibold text-[#582F08] leading-tight">
+            {selectedDocForReceipts?.subject}
+          </h2>
+        </div>
         {selectedDocForReceipts && (
           <ReadReceipts documentId={selectedDocForReceipts.docID} />
         )}

@@ -110,7 +110,7 @@ const AuditTrail = () => {
   );
 
   return (
-    <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+    <div className="page-shell">
       <div className="mx-auto max-w-7xl space-y-6">
         <div>
           <p className="m-0 text-xs font-bold uppercase tracking-[0.18em] text-[#9D4D01]">

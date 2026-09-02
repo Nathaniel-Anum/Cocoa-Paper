@@ -18,7 +18,7 @@ const HomeDashboard = () => {
   return (
     <>
       {/* Hero Banner - Desktop Only */}
-      <div className="hidden  md:mt-[10rem] md:block bg-gradient-to-r from-[#E3BC97] to-[#D4A574] rounded-2xl mt-12 overflow-hidden shadow-lg">
+      <div className="hidden md:block bg-gradient-to-r from-[#E3BC97] to-[#D4A574] rounded-2xl mt-2 overflow-hidden shadow-lg">
         <div className="grid grid-cols-5 min-h-[200px]">
           {/* Content Section */}
           <div className="col-span-3 flex flex-col justify-center py-8 pl-10 pr-6">

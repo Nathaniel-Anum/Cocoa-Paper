@@ -8,7 +8,7 @@ import {
 } from '../../utils/Roles';
 import { GiTakeMyMoney } from 'react-icons/gi';
 import { HiMiniPresentationChartLine } from 'react-icons/hi2';
-import { FaChartPie, FaTimes, FaBook, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaChartPie, FaTimes, FaBook, FaChevronRight } from 'react-icons/fa';
 import {
   AuditOutlined,
   CheckSquareOutlined,
@@ -18,7 +18,7 @@ import {
   SwapOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 const BUDGET_SUBNAV = [
   {
@@ -92,25 +92,76 @@ const Sidebar = () => {
   const { user } = useUser();
   const allRolePermissions = getAllRolePermissions(user);
   const [isOpen, setIsOpen] = useState(false);
-  const [budgetOpen, setBudgetOpen] = useState(false);
+  const [budgetFlyoutOpen, setBudgetFlyoutOpen] = useState(false);
+  const [flyoutPos, setFlyoutPos] = useState({ top: 12, left: 208 });
   const location = useLocation();
+  const sidebarRef = useRef(null);
+  const budgetTriggerRef = useRef(null);
+  const flyoutRef = useRef(null);
+  const closeTimerRef = useRef(null);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
-  const closeSidebar = () => setIsOpen(false);
+  const toggleSidebar = () => {
+    setIsOpen((open) => {
+      if (open) setBudgetFlyoutOpen(false);
+      return !open;
+    });
+  };
+  const closeSidebar = () => {
+    setIsOpen(false);
+    setBudgetFlyoutOpen(false);
+  };
 
   const isBudgetRoute =
     location.pathname.startsWith('/budget') ||
     location.pathname.startsWith('/add-budget') ||
     location.pathname.startsWith('/update-budget');
 
-  // Open when entering a budget route; allow manual collapse while staying on that page.
+  const isDesktopHover = () =>
+    typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
+
+  const openBudgetFlyout = () => {
+    clearTimeout(closeTimerRef.current);
+    setBudgetFlyoutOpen(true);
+  };
+
+  const scheduleCloseBudgetFlyout = () => {
+    clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => setBudgetFlyoutOpen(false), 160);
+  };
+
+  const updateFlyoutPosition = () => {
+    const sidebarEl = sidebarRef.current;
+    const triggerEl = budgetTriggerRef.current;
+    if (!sidebarEl || !triggerEl) return;
+
+    const sidebarRect = sidebarEl.getBoundingClientRect();
+    const triggerRect = triggerEl.getBoundingClientRect();
+    const flyoutHeight = flyoutRef.current?.offsetHeight ?? 360;
+    const maxTop = Math.max(12, window.innerHeight - flyoutHeight - 12);
+
+    setFlyoutPos({
+      top: Math.min(Math.max(12, triggerRect.top), maxTop),
+      left: Math.max(0, sidebarRect.right - 2),
+    });
+  };
+
+  useEffect(() => () => clearTimeout(closeTimerRef.current), []);
+
   useEffect(() => {
-    setBudgetOpen(isBudgetRoute);
-  }, [location.pathname, location.search, isBudgetRoute]);
+    setBudgetFlyoutOpen(false);
+  }, [location.pathname, location.search]);
 
-  const budgetExpanded = budgetOpen;
-
-  const toggleBudgetMenu = () => setBudgetOpen((open) => !open);
+  useLayoutEffect(() => {
+    if (!budgetFlyoutOpen) return;
+    updateFlyoutPosition();
+    const sidebarEl = sidebarRef.current;
+    window.addEventListener('resize', updateFlyoutPosition);
+    sidebarEl?.addEventListener('scroll', updateFlyoutPosition);
+    return () => {
+      window.removeEventListener('resize', updateFlyoutPosition);
+      sidebarEl?.removeEventListener('scroll', updateFlyoutPosition);
+    };
+  }, [budgetFlyoutOpen]);
 
   const canSeeBudget = hasPermission(allRolePermissions, [requiredPermissions.DISPLAY_BUDGET]);
   const canCreateBudget = hasPermission(allRolePermissions, [requiredPermissions.CREATE_BUDGET]);
@@ -161,16 +212,16 @@ const Sidebar = () => {
   const SubLink = ({ to, label, exact, icon }) => {
     const active = isSubLinkActive(to, exact);
     return (
-      <Link to={to} onClick={closeSidebar} className="block min-w-0" title={label}>
+      <Link to={to} onClick={closeSidebar} className="block" title={label}>
         <li
-          className={`group flex min-w-0 items-center gap-2 rounded-lg px-2 py-2 transition-all duration-150 ${
+          className={`group flex items-center gap-2.5 rounded-lg px-2.5 py-2 transition-all duration-150 ${
             active
               ? 'bg-[#fd984e] text-[#6d3300] shadow-sm'
               : 'text-[#E3BC97] hover:bg-white/10 hover:text-white'
           }`}
         >
           <span
-            className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md text-[13px] ${
+            className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[14px] ${
               active
                 ? 'bg-[#6d3300]/15 text-[#6d3300]'
                 : 'bg-white/10 text-[#E3BC97] group-hover:bg-white/15 group-hover:text-white'
@@ -178,7 +229,7 @@ const Sidebar = () => {
           >
             {icon}
           </span>
-          <span className="min-w-0 flex-1 break-words text-[11px] font-semibold leading-tight">
+          <span className="whitespace-nowrap text-[13px] font-semibold leading-tight">
             {label}
           </span>
         </li>
@@ -196,7 +247,7 @@ const Sidebar = () => {
           key={group}
           className={groupIndex > 0 ? 'mt-2 border-t border-white/10 pt-2' : ''}
         >
-          <p className="mb-1 px-2.5 text-[8px] font-bold uppercase tracking-[0.16em] text-white/40">
+          <p className="mb-1 px-2.5 text-[9px] font-bold uppercase tracking-[0.16em] text-white/40">
             {GROUP_LABELS[group]}
           </p>
           <ul className="flex flex-col gap-0.5">
@@ -241,12 +292,15 @@ const Sidebar = () => {
       )}
 
       {/* Sidebar */}
-      <div className={`
+      <div
+        ref={sidebarRef}
+        className={`
         fixed z-40 h-screen bg-[#582f08] overflow-y-auto no-scrollbar transition-transform duration-300 ease-in-out
         w-[13rem] px-3 py-[19px]
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0
-      `}>
+      `}
+      >
 
         <ul className="list-none px-1 py-[10px] flex flex-col gap-[20px] md:gap-[30px] cursor-pointer">
           {hasPermission(allRolePermissions, [requiredPermissions.READ_ANALYTICS]) && (
@@ -296,34 +350,44 @@ const Sidebar = () => {
             </Link>
           )}
 
-          {/* ── Budget expandable menu ───────────────────────────────────── */}
+          {/* ── Budget hover flyout ──────────────────────────────────────── */}
           {canSeeBudget && (
-            <li className="flex w-full min-w-0 flex-col">
+            <li
+              ref={budgetTriggerRef}
+              className="flex w-full flex-col"
+              onMouseEnter={() => {
+                if (isDesktopHover()) openBudgetFlyout();
+              }}
+              onMouseLeave={() => {
+                if (isDesktopHover()) scheduleCloseBudgetFlyout();
+              }}
+            >
               <button
-                onClick={toggleBudgetMenu}
+                type="button"
+                onClick={() => {
+                  if (!isDesktopHover()) {
+                    setBudgetFlyoutOpen((open) => !open);
+                  }
+                }}
                 className={`flex w-full flex-col items-center justify-center gap-1 rounded-lg px-2 py-2 transition-all duration-200 ${
-                  isBudgetRoute
+                  isBudgetRoute || budgetFlyoutOpen
                     ? 'bg-[#fd984e]/25 ring-1 ring-[#fd984e]/40'
                     : 'hover:bg-white/10'
                 }`}
-                aria-expanded={budgetExpanded}
+                aria-haspopup="menu"
+                aria-expanded={budgetFlyoutOpen}
               >
                 <GiTakeMyMoney className="text-[#E3BC97]" size={45} />
                 <span className="flex items-center gap-1 text-xs font-semibold text-white">
                   Budget
-                  {budgetExpanded ? (
-                    <FaChevronUp size={10} className="text-[#fd984e]" />
-                  ) : (
-                    <FaChevronDown size={10} className="text-[#E3BC97]" />
-                  )}
+                  <FaChevronRight
+                    size={10}
+                    className={`transition-transform duration-200 ${
+                      budgetFlyoutOpen ? 'translate-x-0.5 text-[#fd984e]' : 'text-[#E3BC97]'
+                    }`}
+                  />
                 </span>
               </button>
-
-              {budgetExpanded && (
-                <div className="mt-2 w-full min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-black/25 to-black/10 p-2 shadow-inner">
-                  {renderGroupedSubnav()}
-                </div>
-              )}
             </li>
           )}
 
@@ -342,6 +406,28 @@ const Sidebar = () => {
           </Link>
         </ul>
       </div>
+
+      {canSeeBudget && budgetFlyoutOpen && (
+        <div
+          ref={flyoutRef}
+          role="menu"
+          className={`fixed z-50 w-[15.5rem] rounded-2xl border border-[#E3BC97]/30 bg-[#4a2706] p-2.5 shadow-[0_16px_40px_rgba(0,0,0,0.38)] ${
+            isOpen ? '' : 'max-md:hidden'
+          }`}
+          style={{ top: flyoutPos.top, left: flyoutPos.left }}
+          onMouseEnter={() => {
+            if (isDesktopHover()) openBudgetFlyout();
+          }}
+          onMouseLeave={() => {
+            if (isDesktopHover()) scheduleCloseBudgetFlyout();
+          }}
+        >
+          <div className="absolute top-0 -left-3 h-full w-3" aria-hidden="true" />
+          <div className="max-h-[calc(100vh-1.5rem)] overflow-y-auto no-scrollbar rounded-xl bg-gradient-to-b from-black/20 to-black/10 p-2">
+            {renderGroupedSubnav()}
+          </div>
+        </div>
+      )}
     </>
   );
 };

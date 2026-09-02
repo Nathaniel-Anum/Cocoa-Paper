@@ -203,7 +203,7 @@ const UserGroups = () => {
   //   }
 
   return (
-    <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+    <div className="page-shell">
       <Modal
         title={editingGroup ? 'Edit User Group' : 'Add New User Group'}
         open={isModalVisible}

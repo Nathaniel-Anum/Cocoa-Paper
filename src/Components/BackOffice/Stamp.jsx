@@ -225,7 +225,7 @@ const Stamp = () => {
   };
 
   return (
-    <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+    <div className="page-shell">
       <Modal
         open={openModal}
         onCancel={() => {

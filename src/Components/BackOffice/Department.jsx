@@ -131,7 +131,7 @@ const Department = () => {
   ];
   return (
     <div>
-      <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+      <div className="page-shell">
         <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
           <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e6da]">
             <h2 className="text-lg font-bold text-[#582F08]">Departments</h2>

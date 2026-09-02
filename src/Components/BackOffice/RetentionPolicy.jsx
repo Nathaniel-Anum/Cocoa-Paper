@@ -141,7 +141,7 @@ const RetentionPolicy = () => {
   ];
 
   return (
-    <div className="pl-[236px] pr-8 pt-6 pb-8 min-h-screen">
+    <div className="page-shell">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-bold text-[#582F08]">Document Retention Policy</h2>
         <div className="flex gap-2">

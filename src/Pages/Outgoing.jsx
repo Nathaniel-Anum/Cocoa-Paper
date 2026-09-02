@@ -34,6 +34,7 @@ import { IoLocationOutline } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/store';
 import { FiFilter } from 'react-icons/fi';
+import PageHeader from '../Components/PageHeader';
 
 // Helper function to capitalize each word
 const capitalizeWords = (str) => {
@@ -103,7 +104,7 @@ const Outgoing = () => {
 
   const columns = [
     {
-      title: 'Subject',
+      title: 'Document',
       dataIndex: 'document',
       key: 'subject',
       filteredValue: [searchText],
@@ -117,31 +118,28 @@ const Outgoing = () => {
           record.document?.department?.departmentName?.toLowerCase().includes(search)
         );
       },
-      render: (document) => {
-        //   console.log(document);
-        return <div className="font-medium text-[#582F08]">{capitalizeWords(document.subject)}</div>;
-      },
+      render: (document) => (
+        <div className="min-w-0 max-w-[28rem]">
+          <p className="m-0 font-medium text-[#582F08] line-clamp-1">
+            {capitalizeWords(document.subject)}
+          </p>
+          <p className="m-0 mt-0.5 font-mono text-xs text-[#7a6859]">{document.ref}</p>
+        </div>
+      ),
     },
     {
-      title: 'Reference',
-      dataIndex: 'document',
-      key: 'ref',
-      responsive: ['md'],
-      render: (document) => {
-        return <div className="text-gray-600 font-mono text-sm">{document.ref}</div>;
-      },
-    },
-    {
-      title: 'Receiver',
+      title: 'To',
       dataIndex: ['receiver', 'name'],
       key: 'receiver',
-      responsive: ['lg'],
-      render: (name) => <span>{capitalizeWords(name)}</span>,
+      width: 180,
+      responsive: ['md'],
+      render: (name) => <span className="line-clamp-1">{capitalizeWords(name)}</span>,
     },
-
     {
       title: 'Division',
       key: 'division',
+      width: 160,
+      ellipsis: true,
       responsive: ['lg'],
       filters: divisions?.data?.map((div) => ({
         text: div.divisionName,
@@ -151,66 +149,57 @@ const Outgoing = () => {
       onFilter: (value, record) => {
         return record.document?.division?.divisionName === value;
       },
-      render: (document) => {
-        return <div>{capitalizeWords(document.document.division.divisionName)}</div>;
-      },
-    },
-    {
-      title: 'Department',
-      key: 'department',
-      responsive: ['lg'],
-      filters: allDepartments?.data?.map((dept) => ({
-        text: dept.departmentName,
-        value: dept.departmentName,
-      })) || [],
-      filteredValue: filterDepartment ? [filterDepartment] : null,
-      onFilter: (value, record) => {
-        return record.document?.department?.departmentName === value;
-      },
-      render: (document) => {
-        return <div>{capitalizeWords(document.document.department.departmentName)}</div>;
-      },
+      render: (document) => (
+        <span className="line-clamp-1">
+          {capitalizeWords(document.document.division.divisionName)}
+        </span>
+      ),
     },
     {
       title: 'Status',
       key: 'isApproved',
       dataIndex: 'isApproved',
+      width: 180,
       render: (value, record) => {
         if (record?.document?.isApproved === true) {
-          return <Tag color="green">Approved</Tag>;
+          return <Tag color="green" className="m-0">Approved</Tag>;
         } else if (
           record?.document?.isApproved === false &&
           record?.document?.documentType === 'BudgetRelease'
         ) {
-          return <Tag color="orange">Pending Financial Approval</Tag>;
+          return <Tag color="orange" className="m-0">Pending approval</Tag>;
         } else if (record?.document?.documentType !== 'BudgetRelease') {
-          return <Tag color="blue">Approval Not Required</Tag>;
+          return <Tag className="m-0">Not required</Tag>;
         }
       },
     },
     {
-      title: 'Date',
-      key: 'action',
+      title: 'Sent',
+      key: 'sent',
       dataIndex: 'createdAt',
-      responsive: ['md'],
+      width: 130,
       render: (createdAt) => {
         const dateTime = new Date(createdAt);
-        return <div className="text-gray-600">{dateTime.toDateString()}</div>;
+        return (
+          <div>
+            <p className="m-0">
+              {dateTime.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })}
+            </p>
+            <p className="m-0 text-xs text-[#7a6859]">
+              {dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </p>
+          </div>
+        );
       },
     },
     {
-      title: 'Time',
+      title: '',
       key: 'action',
-      dataIndex: 'createdAt',
-      responsive: ['md'],
-      render: (createdAt) => {
-        const dateTime = new Date(createdAt);
-        return <div className="text-gray-600">{dateTime.toLocaleTimeString()}</div>;
-      },
-    },
-    {
-      title: 'Action',
-      key: 'action',
+      width: 48,
       render: (selectedRecord) => {
         const items = [
           {
@@ -302,29 +291,16 @@ const Outgoing = () => {
   });
 
   return (
-    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
-      {/* Header Card */}
-      <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-5">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 flex-shrink-0">
-              <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="28" cy="28" r="28" fill="#FDF4ED"/>
-                <rect x="14" y="18" width="28" height="22" rx="3" fill="#E3BC97"/>
-                <rect x="14" y="18" width="28" height="22" rx="3" stroke="#9D4D01" strokeWidth="1.5"/>
-                <path d="M14 26l14-8 14 8" stroke="#582F08" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M28 18v-5M28 13l-3 3m3-3l3 3" stroke="#9D4D01" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-[#582F08]">Outgoing Documents</h1>
-              <p className="text-sm text-gray-500 mt-0.5">Documents you have sent</p>
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+    <div className="page-shell">
+      <PageHeader
+        title="Outgoing"
+        description="Documents you have sent"
+        meta={`${mobileFilteredData.length} document${mobileFilteredData.length === 1 ? '' : 's'}`}
+        extra={
+          <>
             <Input.Search
-              placeholder="Search by subject, reference, receiver..."
-              className="w-full md:w-[22rem]"
+              placeholder="Search subject, reference, receiver..."
+              className="w-full lg:w-[22rem]"
               allowClear
               onChange={(e) => setSearchText(e.target.value)}
             />
@@ -334,7 +310,7 @@ const Outgoing = () => {
                 setTempFilterDepartment(filterDepartment);
                 setIsFilterModalOpen(true);
               }}
-              className="relative flex items-center justify-center gap-2 px-4 h-[32px] border border-[#E3BC97] rounded-lg hover:bg-[#fdf4ed] transition-colors"
+              className="relative inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-[#E3BC97] px-3 hover:bg-[#fdf4ed] transition-colors"
             >
               <FiFilter className="text-[#9D4D01] text-base" />
               <span className="text-sm text-[#582F08] hidden md:inline">Filter</span>
@@ -344,12 +320,9 @@ const Outgoing = () => {
                 </span>
               )}
             </button>
-          </div>
-        </div>
-        <div className="border-t border-[#f0e6da] px-6 py-3 flex gap-6 bg-[#fffaf6]">
-          <span className="text-sm text-gray-500"><span className="font-semibold text-[#582F08]">{mobileFilteredData.length}</span> documents</span>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Filter Modal */}
       <Modal
@@ -530,16 +503,15 @@ const Outgoing = () => {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-[#f0e6da]">
-        <div className="p-4">
-          <Table 
-            columns={columns} 
-            dataSource={_data} 
-            loading={isLoading}
-            className="outgoing-table"
-            rowClassName={(_, i) => i % 2 !== 0 ? 'bg-[#fffaf6]' : ''}
-          />
-        </div>
+      <div className="hidden md:block overflow-hidden rounded-xl border border-[#f0e6da] bg-white">
+        <Table
+          columns={columns}
+          dataSource={mobileFilteredData}
+          loading={isLoading}
+          className="cp-table outgoing-table"
+          pagination={{ pageSize: 10, showSizeChanger: false }}
+          rowClassName={(_, i) => (i % 2 !== 0 ? 'bg-[#fffaf6]' : '')}
+        />
       </div>
     </div>
   );

@@ -1,27 +1,25 @@
-import React, { useState } from 'react';
-import { Tag, Tooltip, Button, Empty, Spin, Popconfirm, message, Collapse, Tabs } from 'antd';
+import React from 'react';
+import { Tag, Tooltip, Button, Empty, Spin, Popconfirm, message } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getDocumentLinks, deleteDocumentLink, LINK_TYPE_COLORS } from '../http/documentLinks';
-import { LuLink, LuTrash2, LuArrowRight, LuArrowLeft, LuExternalLink, LuFileText, LuMapPin } from 'react-icons/lu';
+import { LuArrowRight, LuArrowLeft, LuFileText, LuTrash2 } from 'react-icons/lu';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 
-const LinkedDocuments = ({ documentId, onViewDocument, onViewTrail }) => {
+const LinkedDocuments = ({ documentId, onViewLinks }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Fetch document links
   const { data: linksData, isLoading } = useQuery({
     queryKey: ['documentLinks', documentId],
     queryFn: () => getDocumentLinks(documentId),
     enabled: !!documentId,
   });
 
-  // Delete link mutation
   const deleteLinkMutation = useMutation({
     mutationFn: (linkId) => deleteDocumentLink(linkId),
     onSuccess: () => {
-      message.success('Link removed successfully');
+      message.success('Link removed');
       queryClient.invalidateQueries(['documentLinks', documentId]);
     },
     onError: (error) => {
@@ -29,13 +27,9 @@ const LinkedDocuments = ({ documentId, onViewDocument, onViewTrail }) => {
     },
   });
 
-  const handleDeleteLink = (linkId) => {
-    deleteLinkMutation.mutate(linkId);
-  };
-
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center p-8">
+      <div className="flex justify-center items-center py-10">
         <Spin />
       </div>
     );
@@ -45,75 +39,63 @@ const LinkedDocuments = ({ documentId, onViewDocument, onViewTrail }) => {
 
   if (totalLinks === 0) {
     return (
-      <Empty
-        description="No linked documents"
-        image={Empty.PRESENTED_IMAGE_SIMPLE}
-        className="py-4"
-      />
+      <div className="rounded-xl border border-dashed border-[#e9d6c2] bg-[#fffaf6] py-10">
+        <Empty
+          description="No linked documents yet"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
+      </div>
     );
   }
 
   const LinkItem = ({ link, direction }) => {
     const document = direction === 'to' ? link.targetDoc : link.sourceDoc;
     const ArrowIcon = direction === 'to' ? LuArrowRight : LuArrowLeft;
-    
-    return (
-      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-        <div className="flex items-center gap-3 flex-1">
-          <Tooltip title={direction === 'to' ? 'Links to this document' : 'Linked from this document'}>
-            <ArrowIcon className="text-gray-400 text-lg" />
-          </Tooltip>
-          
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <p className="font-medium text-gray-800">{document.subject}</p>
-              <Tag color={LINK_TYPE_COLORS[link.linkType]} size="small">
-                {link.linkType}
-              </Tag>
-            </div>
-            <p className="text-sm text-gray-500 font-mono">{document.ref}</p>
-            {link.description && (
-              <p className="text-sm text-gray-400 mt-1 italic">"{link.description}"</p>
-            )}
-            <div className="flex items-center gap-4 mt-1 text-xs text-gray-400">
-              <span>Linked by: {link.createdBy?.name}</span>
-              <span>{dayjs(link.createdAt).format('MMM D, YYYY')}</span>
-            </div>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <Tooltip title="View document PDF">
+    return (
+      <div className="group flex items-start gap-3 rounded-xl border border-[#f0e6da] bg-white px-3 py-3 hover:border-[#E3BC97] transition-colors">
+        <div className="mt-0.5 w-8 h-8 rounded-lg bg-[#FDF4ED] text-[#9D4D01] flex items-center justify-center flex-shrink-0">
+          <ArrowIcon className="text-base" />
+        </div>
+        <button
+          type="button"
+          className="min-w-0 flex-1 text-left"
+          onClick={() => onViewLinks?.(document.docID, document.subject)}
+        >
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-medium text-[#582F08] truncate">{document.subject}</p>
+            <Tag color={LINK_TYPE_COLORS[link.linkType]} className="m-0">
+              {link.linkType}
+            </Tag>
+          </div>
+          <p className="text-xs text-[#7a6859] font-mono mt-0.5">{document.ref}</p>
+          {link.description && (
+            <p className="text-xs text-[#7a6859] mt-1">{link.description}</p>
+          )}
+          <p className="text-[11px] text-[#a08b7a] mt-1">
+            {link.createdBy?.name} · {dayjs(link.createdAt).format('MMM D, YYYY')}
+          </p>
+        </button>
+        <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+          <Tooltip title="Open document">
             <Button
               type="text"
-              icon={<LuFileText className="text-blue-500" />}
+              size="small"
+              icon={<LuFileText className="text-[#9D4D01]" />}
               onClick={() => navigate(`/view-document/${document.docID}`)}
-            />
-          </Tooltip>
-          <Tooltip title="View linked documents">
-            <Button
-              type="text"
-              icon={<LuLink className="text-purple-500" />}
-              onClick={() => onViewDocument?.(document.docID)}
-            />
-          </Tooltip>
-          <Tooltip title="View document trail">
-            <Button
-              type="text"
-              icon={<LuMapPin className="text-green-500" />}
-              onClick={() => onViewTrail?.(document.docID)}
             />
           </Tooltip>
           <Popconfirm
             title="Remove this link?"
-            description="This will unlink the documents."
-            onConfirm={() => handleDeleteLink(link.id)}
+            description="The documents stay in the system; only the relationship is removed."
+            onConfirm={() => deleteLinkMutation.mutate(link.id)}
             okText="Remove"
             cancelText="Cancel"
             okButtonProps={{ danger: true }}
           >
             <Button
               type="text"
+              size="small"
               danger
               icon={<LuTrash2 />}
               loading={deleteLinkMutation.isLoading}
@@ -124,79 +106,24 @@ const LinkedDocuments = ({ documentId, onViewDocument, onViewTrail }) => {
     );
   };
 
-  const tabItems = [
-    {
-      key: 'all',
-      label: (
-        <span className="flex items-center gap-1">
-          <LuLink /> All Links ({totalLinks})
-        </span>
-      ),
-      children: (
-        <div className="space-y-3 max-h-80 overflow-y-auto">
-          {linksTo.length > 0 && (
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-2 flex items-center gap-1">
-                <LuArrowRight /> Links To ({linksTo.length})
-              </p>
-              <div className="space-y-2">
-                {linksTo.map((link) => (
-                  <LinkItem key={link.id} link={link} direction="to" />
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {linksFrom.length > 0 && (
-            <div className={linksTo.length > 0 ? 'mt-4 pt-4 border-t' : ''}>
-              <p className="text-sm font-medium text-gray-500 mb-2 flex items-center gap-1">
-                <LuArrowLeft /> Linked From ({linksFrom.length})
-              </p>
-              <div className="space-y-2">
-                {linksFrom.map((link) => (
-                  <LinkItem key={link.id} link={link} direction="from" />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'to',
-      label: `Links To (${linksTo.length})`,
-      children: (
-        <div className="space-y-2 max-h-80 overflow-y-auto">
-          {linksTo.length > 0 ? (
-            linksTo.map((link) => (
-              <LinkItem key={link.id} link={link} direction="to" />
-            ))
-          ) : (
-            <Empty description="No outgoing links" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'from',
-      label: `Linked From (${linksFrom.length})`,
-      children: (
-        <div className="space-y-2 max-h-80 overflow-y-auto">
-          {linksFrom.length > 0 ? (
-            linksFrom.map((link) => (
-              <LinkItem key={link.id} link={link} direction="from" />
-            ))
-          ) : (
-            <Empty description="No incoming links" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          )}
-        </div>
-      ),
-    },
-  ];
+  const Section = ({ title, count, items, direction }) => {
+    if (!items.length) return null;
+    return (
+      <div className="space-y-2">
+        <p className="text-[11px] uppercase tracking-[0.14em] text-[#9D4D01]">
+          {title} ({count})
+        </p>
+        {items.map((link) => (
+          <LinkItem key={link.id} link={link} direction={direction} />
+        ))}
+      </div>
+    );
+  };
 
   return (
-    <div className="w-full">
-      <Tabs items={tabItems} size="small" />
+    <div className="space-y-5">
+      <Section title="Links to" count={linksTo.length} items={linksTo} direction="to" />
+      <Section title="Linked from" count={linksFrom.length} items={linksFrom} direction="from" />
     </div>
   );
 };

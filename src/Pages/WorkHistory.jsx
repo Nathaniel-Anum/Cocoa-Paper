@@ -8,6 +8,7 @@ import { isArray } from 'lodash';
 import { capitalize } from '../../utils/typography';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/store';
+import PageHeader from '../Components/PageHeader';
 const WorkHistory = () => {
   const [showModal, setShowModal] = React.useState(false);
   const [trails, setTrails] = React.useState([]);
@@ -112,46 +113,30 @@ const WorkHistory = () => {
           handleCancel={() => setShowModal(false)}
           trails={trails}
         />
-        <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
-          <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-5">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 flex-shrink-0">
-                  <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="28" cy="28" r="28" fill="#FDF4ED"/>
-                    <circle cx="28" cy="28" r="10" fill="#FFF7F0" stroke="#9D4D01" strokeWidth="1.5"/>
-                    <path d="M28 22v6l4 2" stroke="#582F08" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M20 18l-4 4M36 18l4 4" stroke="#E3BC97" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-[#582F08]">Work History</h1>
-                  <p className="text-sm text-gray-500 mt-0.5">Your document activity and history</p>
-                </div>
-              </div>
+        <div className="page-shell">
+          <PageHeader
+            title="Work history"
+            description="Your document activity"
+            meta={`${isArray(workHistory?.data) ? _data.length : 0} record${(isArray(workHistory?.data) ? _data.length : 0) === 1 ? '' : 's'}`}
+            extra={
               <Input.Search
-                placeholder="Search by subject, file name, reference..."
-                className="w-full md:w-[22rem]"
+                placeholder="Search subject, file name, reference..."
+                className="w-full lg:w-[22rem]"
                 allowClear
                 onChange={(e) => setSearchText(e.target.value)}
               />
-            </div>
-            <div className="border-t border-[#f0e6da] px-6 py-3 flex gap-6 bg-[#fffaf6]">
-              <span className="text-sm text-gray-500"><span className="font-semibold text-[#582F08]">{isArray(workHistory?.data) ? _data.length : 0}</span> records</span>
-            </div>
-          </div>
+            }
+          />
 
-          <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da] overflow-x-auto">
-            <div className="p-4">
+          <div className="overflow-hidden rounded-xl border border-[#f0e6da] bg-white">
               <Table
                 loading={isLoading || isFetching}
                 dataSource={isArray(workHistory?.data) ? _data : []}
                 columns={columns}
-                scroll={{ x: 600 }}
                 size="small"
+                className="cp-table"
                 rowClassName={(_, index) => (index % 2 !== 0 ? 'bg-[#fffaf6]' : '')}
               />
-            </div>
           </div>
         </div>
       </>

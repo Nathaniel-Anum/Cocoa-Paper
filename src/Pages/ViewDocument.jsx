@@ -20,7 +20,7 @@ import dayjs from 'dayjs';
 import { FaHandshake } from 'react-icons/fa';
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { EditOutlined, UploadOutlined } from '@ant-design/icons';
+import { EditOutlined, EyeOutlined, PaperClipOutlined, UploadOutlined } from '@ant-design/icons';
 import { LuArchive, LuMessageSquare, LuSend, LuUser } from 'react-icons/lu';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -46,6 +46,7 @@ import { WordViewer, ExcelViewer, getFileType } from '../Components/DocumentView
 import TextArea from 'antd/es/input/TextArea';
 import OTPVerificationModal from '../Components/OTPVerificationModal';
 import { useGetAllUserGroups, useGetAllUsers } from '../queryHooks/user';
+import AttachFilesModal from '../Components/modals/AttachFilesModal';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -71,6 +72,7 @@ function ViewDocument() {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedBudgetItem, setSelectedBudgetItem] = useState(null);
   const [showOTPModal, setShowOTPModal] = useState(false);
+  const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
 
   // Data fetching
   const { data: document, refetch } = useViewDocument(docId);
@@ -438,7 +440,7 @@ function ViewDocument() {
   const attachmentCount = documentRecord.attachments?.length || 0;
 
   return (
-    <div className="pl-[10rem] md:pl-[11rem] pr-3 md:pr-8 pt-4 md:pt-6 pb-10 md:pb-12 min-h-screen">
+    <div className="page-shell">
       <Modal
         open={showModal}
         onCancel={() => setShowModal(false)}
@@ -476,49 +478,21 @@ function ViewDocument() {
         </Form>
       </Modal>
       <Content className="h-full mb-10">
-        <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-5 md:mb-6">
-          <div className="px-4 md:px-6 py-4 md:py-5 flex flex-col gap-4 md:gap-5">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-              <div className="flex items-start gap-4 min-w-0">
-                <div className="w-14 h-14 flex-shrink-0">
-                  <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="28" cy="28" r="28" fill="#FDF4ED" />
-                    <path d="M19 16.5h12.5l5.5 5.5V39a2 2 0 0 1-2 2H19a2 2 0 0 1-2-2V18.5a2 2 0 0 1 2-2Z" fill="#FFF8F1" stroke="#9D4D01" strokeWidth="1.5" />
-                    <path d="M31.5 16.5V22h5.5" stroke="#9D4D01" strokeWidth="1.5" strokeLinejoin="round" />
-                    <path d="M22.5 28h9M22.5 32h11M22.5 36h8" stroke="#582F08" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <div className="min-w-0">
-                  <h1 className="text-xl md:text-2xl font-bold text-[#582F08] leading-tight break-words">
-                    {documentRecord.subject}
-                  </h1>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Review the file, comments, approvals, and forwarding details in one place.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
+        <div className="mb-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-xl font-semibold tracking-tight text-[#582F08] leading-tight break-words">
+                {documentRecord.subject}
+              </h1>
+              <p className="mt-1 font-mono text-sm text-[#7a6859]">{documentRecord.ref || '—'}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center rounded-full bg-[#FDF4ED] px-3 py-1 text-xs font-medium text-[#9D4D01] border border-[#f2d8bd]">
                   {documentRecord.documentType || 'General'}
                 </span>
                 <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border ${documentRecord.isApproved ? 'bg-[#eef8f0] text-[#2f6b3d] border-[#cbe5d1]' : 'bg-[#fff6eb] text-[#9D4D01] border-[#f2d8bd]'}`}>
                   {documentRecord.isApproved ? 'Approved' : 'Awaiting action'}
                 </span>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-[#f0e6da] bg-[#fffaf6] px-4 md:px-6 py-3 md:py-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div>
-              <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">Reference</p>
-              <p className="font-medium text-[#582F08] break-all">{documentRecord.ref || '--'}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">File</p>
-              <p className="font-medium text-[#582F08] break-all">{fileName}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.12em] text-gray-400 mb-1">Attachments</p>
-              <p className="font-medium text-[#582F08]">{attachmentCount}</p>
             </div>
           </div>
         </div>
@@ -536,22 +510,44 @@ function ViewDocument() {
             }}
             styles={{ body: { padding: '0' } }}
           >
-            <div className="px-4 md:px-5 py-4 border-b border-[#f0e6da] bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold text-[#582F08]">Document Preview</h2>
-                <p className="text-sm text-gray-500 mt-1">Open the original file and inspect supporting data below.</p>
+            <div className="px-4 md:px-5 py-4 border-b border-[#f0e6da] bg-white">
+              <div className="flex flex-col gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#582F08]">Document Preview</h2>
+                  <p className="text-sm text-[#7a6859] mt-1">Open the original file and inspect supporting data below.</p>
+                </div>
+                {(showForwardForm || attachmentCount > 0) && (
+                  <div
+                    className={`grid gap-2 w-full max-w-md ${
+                      showForwardForm && attachmentCount > 0 ? 'grid-cols-2' : 'grid-cols-1 sm:w-auto'
+                    }`}
+                  >
+                    {showForwardForm && (
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center gap-2 h-10 rounded-lg border border-[#E3BC97] bg-white px-3 text-sm font-medium text-[#9D4D01] hover:bg-[#fdf4ed] transition-colors"
+                        onClick={() => setIsAttachModalOpen(true)}
+                      >
+                        <PaperClipOutlined />
+                        Attach files
+                      </button>
+                    )}
+                    {attachmentCount > 0 && (
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center gap-2 h-10 rounded-lg border border-[#E3BC97] bg-white px-3 text-sm font-medium text-[#9D4D01] hover:bg-[#fdf4ed] transition-colors"
+                        onClick={() => {
+                          setShowToolbar(false);
+                          navigate(`/view-attachment/${docId}`);
+                        }}
+                      >
+                        <EyeOutlined />
+                        View attachments
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
-              {attachmentCount > 0 && (
-                <button
-                  className="inline-flex items-center justify-center rounded-lg border border-[#E3BC97] px-3 py-2 text-sm font-medium text-[#9D4D01] hover:bg-[#fdf4ed] transition-colors"
-                  onClick={() => {
-                    setShowToolbar(false);
-                    navigate(`/view-attachment/${docId}`);
-                  }}
-                >
-                  View Attachments
-                </button>
-              )}
             </div>
 
             <div className="p-3 md:p-5 bg-[#fffaf6]">
@@ -921,6 +917,9 @@ function ViewDocument() {
                         Upload Additional Docs
                       </Button>
                     </Upload>
+                    <p className="text-xs text-[#7a6859] mt-2 mb-0">
+                      Added files are visible to the people you send this to, not the original sender.
+                    </p>
                   </Form.Item>
 
                   <Form.Item className="mb-0">
@@ -969,6 +968,12 @@ function ViewDocument() {
           record={documentRecord}
         />
       )}
+      <AttachFilesModal
+        open={isAttachModalOpen}
+        onClose={() => setIsAttachModalOpen(false)}
+        documentId={docId}
+        documentSubject={documentRecord.subject}
+      />
     </div>
   );
 }

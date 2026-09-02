@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useViewDocument } from '../queryHooks/document';
 import pdf from '../assets/pdf.svg';
 
@@ -13,7 +13,6 @@ import axiosInstance from '../Components/axiosInstance';
 
 const Attachments = () => {
   const { id: docId } = useParams();
-  const navigate = useNavigate();
   const [searchText, setSearchText] = useState('');
 
   const { data: document } = useViewDocument(docId);
@@ -175,7 +174,7 @@ const Attachments = () => {
     })) || [];
 
   return (
-    <div className="pl-[10rem] md:pl-[11rem] pr-3 md:pr-8 pt-4 md:pt-6 pb-10 md:pb-12 min-h-screen">
+    <div className="page-shell">
       {openFileViewer && renderFileViewer()}
       <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-5 md:mb-6">
         <div className="px-4 md:px-6 py-4 md:py-5 flex flex-col gap-4">
@@ -193,9 +192,6 @@ const Attachments = () => {
                 <h1 className="text-xl md:text-2xl font-bold text-[#582F08] leading-tight break-words">
                   Document Attachments
                 </h1>
-                <p className="text-sm text-gray-500 mt-1">
-                  Review supporting files linked to this document and open any attachment in place.
-                </p>
               </div>
             </div>
             <div className="w-full lg:w-auto flex flex-col md:flex-row gap-2">
@@ -205,12 +201,6 @@ const Attachments = () => {
                 allowClear
                 onChange={(e) => setSearchText(e.target.value)}
               />
-              <button
-                onClick={() => navigate(`/view-document/${docId}`)}
-                className="inline-flex items-center justify-center rounded-lg border border-[#E3BC97] px-4 h-[40px] text-sm font-medium text-[#9D4D01] hover:bg-[#fdf4ed] transition-colors"
-              >
-                Back To Document
-              </button>
             </div>
           </div>
         </div>
@@ -238,7 +228,6 @@ const Attachments = () => {
       >
         <div className="px-4 md:px-5 py-4 border-b border-[#f0e6da] bg-white">
           <h2 className="text-lg font-semibold text-[#582F08]">Attachment Library</h2>
-          <p className="text-sm text-gray-500 mt-1">Each file keeps its original viewer and can be opened without leaving this screen.</p>
         </div>
         <div className="p-3 md:p-5 bg-[#fffaf6]">
           <div className="rounded-2xl border border-[#f0e6da] bg-white overflow-hidden">

@@ -42,6 +42,7 @@ import {
 } from '../../utils/Roles';
 import { useUser } from './CustomHook/useUser';
 import { PDFViewerContent } from '../Components/PDFViewer/PdfViewer';
+import PageHeader from '../Components/PageHeader';
 
 const Archive = () => {
   const queryClient = useQueryClient();
@@ -503,63 +504,36 @@ const Archive = () => {
   console.log(moveFolderData);
 
   return (
-    <div className="pl-[10rem] md:pl-[11rem] pr-4 md:pr-8 pt-6 pb-12 min-h-screen">
-
-      {/* ── Header card ── */}
-      <div className="bg-white border border-[#f0e6da] rounded-2xl shadow-sm overflow-hidden mb-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-5">
-          <div className="flex items-center gap-4">
-            {/* Inline SVG illustration */}
-            <div className="w-14 h-14 flex-shrink-0">
-              <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="28" cy="28" r="28" fill="#FDF4ED"/>
-                {/* Cabinet body */}
-                <rect x="12" y="16" width="32" height="24" rx="3" fill="#E3BC97"/>
-                {/* Top drawer */}
-                <rect x="12" y="16" width="32" height="11" rx="2" fill="#D4A068"/>
-                <rect x="24" y="20" width="8" height="3" rx="1.5" fill="#9D4D01"/>
-                {/* Bottom drawer */}
-                <rect x="12" y="29" width="32" height="11" rx="2" fill="#C8955A"/>
-                <rect x="24" y="33" width="8" height="3" rx="1.5" fill="#9D4D01"/>
-                {/* Paper peeking out */}
-                <rect x="20" y="11" width="16" height="8" rx="2" fill="white" opacity="0.9"/>
-                <rect x="23" y="13" width="10" height="1.5" rx="0.75" fill="#9D4D01" opacity="0.5"/>
-                <rect x="23" y="16" width="7" height="1.5" rx="0.75" fill="#9D4D01" opacity="0.3"/>
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-[#582F08]">Archive</h1>
-              <p className="text-sm text-gray-500 mt-0.5">Manage your archived files, folders, and documents securely.</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
-            {/* Search */}
+    <div className="page-shell">
+      <PageHeader
+        title="Archive"
+        description="Archived files, folders, and documents"
+        extra={
+          <>
             <Input
               placeholder="Search files and folders..."
               prefix={<SearchOutlined className="text-[#9D4D01]" />}
               allowClear
-              size="middle"
-              className="w-full md:w-64 rounded-lg"
+              className="w-full lg:w-64"
               onChange={(e) => setSearchText(e.target.value)}
             />
             <button
               onClick={() => setModalStates((prev) => ({ ...prev, createFolder: true }))}
-              className="flex items-center gap-2 px-3 py-2 bg-[#582F08] text-white rounded-lg hover:bg-[#6d3a0a] transition-colors text-sm font-medium whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-3 h-8 bg-[#582F08] text-white rounded-lg hover:bg-[#6d3a0a] transition-colors text-sm font-medium whitespace-nowrap"
             >
               <MdOutlineCreateNewFolder className="text-base" />
               <span className="hidden sm:inline">New Folder</span>
             </button>
             <button
               onClick={() => setModalStates((prev) => ({ ...prev, uploadFile: true }))}
-              className="flex items-center gap-2 px-3 py-2 border border-[#582F08] text-[#582F08] rounded-lg hover:bg-[#582F08] hover:text-white transition-colors text-sm font-medium whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-3 h-8 border border-[#582F08] text-[#582F08] rounded-lg hover:bg-[#582F08] hover:text-white transition-colors text-sm font-medium whitespace-nowrap"
             >
               <UploadOutlined className="text-base" />
               <span className="hidden sm:inline">Upload</span>
             </button>
             {selectedItem.rowKeys.length > 0 && (
               <button
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium whitespace-nowrap"
+                className="inline-flex items-center gap-2 px-3 h-8 border border-[#d6c3b7] text-[#582F08] rounded-lg hover:bg-[#fdf4ed] transition-colors text-sm font-medium whitespace-nowrap"
                 onClick={() => {
                   setModalStates((prev) => ({ ...prev, moveModal: true }));
                   setMoveModalState((prev) => ({
@@ -572,11 +546,10 @@ const Archive = () => {
                 <span>Move</span>
               </button>
             )}
-          </div>
-        </div>
-
-        {/* Stats + breadcrumb strip */}
-        <div className="border-t border-[#f0e6da] px-6 py-3 flex items-center justify-between bg-[#fffaf6] flex-wrap gap-2">
+          </>
+        }
+      />
+      <div className="mb-4 flex items-center justify-between flex-wrap gap-2">
           <Breadcrumb
             items={breadcrumbs}
             itemRender={(route, _, routes) => (
@@ -589,10 +562,9 @@ const Archive = () => {
               </Link>
             )}
           />
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-[#7a6859]">
             {Array.isArray(tableData) ? tableData.length : 0} item{tableData?.length !== 1 ? 's' : ''}
           </span>
-        </div>
       </div>
 
       {/* ── Table ── */}
