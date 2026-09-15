@@ -45,6 +45,8 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
       form.setFieldsValue({
         name: staffDetail.name,
         staffNumber: staffDetail.staff?.staffNumber,
+        personalFileNumber: staffDetail.staff?.personalFileNumber,
+        nextDocumentNo: staffDetail.staff?.nextDocumentNo ?? 1,
         email: staffDetail.email,
         divisionId: staffDetail?.division?.divisionId,
         roleId: staffDetail?.role?.map((role) => role.roleId),
@@ -122,7 +124,21 @@ const Edit = ({ popup, staffDetail, divisions, setPopup, roles }) => {
             },
           ]}
         >
-          <Input placeholder="Staff Number" allowClear />
+          <Input placeholder="Employment number" allowClear />
+        </Form.Item>
+        <Form.Item
+          name="personalFileNumber"
+          label="Personal file number"
+          extra="Used on letters as PRS/DEPT/this number/{volume}/{sequence}"
+        >
+          <Input placeholder="e.g. 228" allowClear />
+        </Form.Item>
+        <Form.Item
+          name="nextDocumentNo"
+          label="Next document number"
+          extra="The next letter for this person will use this number."
+        >
+          <Input type="number" min={1} placeholder="1" />
         </Form.Item>
         <Form.Item
           name="email"

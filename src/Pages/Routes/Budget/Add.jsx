@@ -8,6 +8,7 @@ import { hasPermission, requiredPermissions, getAllRolePermissions } from '../..
 import { useNavigate } from 'react-router-dom';
 import { useGetFinancialYear } from '../../../queryHooks/budget';
 import BudgetFormShell from './BudgetFormShell';
+import { toBudgetWritePayload } from './budgetLineCategories';
 
 const AddBudget = () => {
   const [form] = Form.useForm();
@@ -43,8 +44,9 @@ const AddBudget = () => {
     mutationKey: ['budget'],
     mutationFn: (data) => addBudgetItem(data),
     onSuccess: () => {
-      message.success('Budget submitted successfully!');
+      message.success('Budget created successfully!');
       qClient.invalidateQueries({ queryKey: ['budgets'] });
+      qClient.invalidateQueries({ queryKey: ['budget-stats'] });
       navigate('/budget');
     },
     onError: (err) => {
@@ -53,11 +55,12 @@ const AddBudget = () => {
   });
 
   const handleFinish = (values) => {
-    const { financialYearId, ...rest } = values;
-    const payload = isGlobal
-      ? rest
-      : { ...rest, departmentId: authUser?.departmentId };
-    saveBudgetItem(payload);
+    saveBudgetItem(
+      toBudgetWritePayload(values, {
+        isGlobal,
+        fallbackDepartmentId: authUser?.departmentId,
+      }),
+    );
   };
 
   return (

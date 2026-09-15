@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { Button, Form, Input, InputNumber, Select, Tooltip, Upload, message } from 'antd';
+import { Button, Form, Input, InputNumber, Select, Upload, message } from 'antd';
 import {
+  CaretDownOutlined,
+  CaretRightOutlined,
   CheckOutlined,
   FileTextOutlined,
   MinusCircleOutlined,
@@ -10,6 +12,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { formatMoney } from '../../../../utils/typography';
 import BudgetUploadPanel from './BudgetUploadPanel';
+import { flattenCategoriesToItems } from './budgetLineCategories';
 
 const ENTRY_METHODS = [
   {
@@ -24,7 +27,7 @@ const ENTRY_METHODS = [
   },
 ];
 
-const STEP_LABELS = ['Budget Details', 'Budget Lines', 'Supporting Docs', 'Review and Submit'];
+const STEP_LABELS = ['Budget Details', 'Budget Lines', 'Supporting Docs', 'Review and Create'];
 
 const shellInputClass =
   'rounded-xl border-[#d6c3b7] bg-[#fff8f5] text-[#201b17] hover:border-[#9D4D01] focus:border-[#9D4D01]';
@@ -144,117 +147,250 @@ function DetailsFields({
 }
 
 function LinesFields({ form }) {
+  const [collapsedCategories, setCollapsedCategories] = useState(() => new Set());
+  const [collapsedItems, setCollapsedItems] = useState(() => new Set());
+
+  const toggleSet = (setter, id) => {
+    setter((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   return (
     <div className="rounded-[24px] border border-[#ead9cb] bg-white p-6 shadow-sm">
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold text-[#582f08]">Budget Lines</h2>
-          <p className="text-sm text-[#7a6859]">
-            Add each requested item with quantity and total amount.
-          </p>
-        </div>
+      <div className="mb-5 text-center">
+        <h2 className="text-lg font-bold text-[#582f08]">Budget Lines</h2>
+        <p className="text-sm text-[#7a6859]">
+          Enter a category, then add one or more budget items with quantity and amount under it.
+        </p>
         <Form.Item noStyle shouldUpdate>
           {() => {
-            const lines = form.getFieldValue('budgetItems') ?? [];
+            const lines = flattenCategoriesToItems(form.getFieldValue('categories') ?? []);
+            const total = lines.reduce((sum, item) => sum + (Number(item?.amount) || 0), 0);
             return (
-              <span className="rounded-full bg-[#fdf1eb] px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#9D4D01]">
-                {lines.length} line{lines.length === 1 ? '' : 's'}
-              </span>
+              <div className="mt-4 flex flex-col items-center justify-center rounded-2xl border border-[#ead9cb] bg-[#fff8f5] px-6 py-4">
+                <p className="m-0 text-4xl font-extrabold leading-none text-[#582f08]">{lines.length}</p>
+                <p className="m-0 mt-1 text-xs font-bold uppercase tracking-[0.18em] text-[#9D4D01]">
+                  item{lines.length === 1 ? '' : 's'}
+                </p>
+                <p className="m-0 mt-1 text-sm font-semibold text-[#7a6859]">{formatMoney(total)}</p>
+              </div>
             );
           }}
         </Form.Item>
       </div>
 
-      <Form.List name="budgetItems">
-        {(fields, { add, remove }) => (
-          <div className="space-y-4">
-            {fields.length === 0 && (
+      <Form.List name="categories" initialValue={[{ name: '', items: [{ quantity: 1 }] }]}>
+        {(categoryFields, { add: addCategory, remove: removeCategory }) => (
+          <div className="space-y-5">
+            {categoryFields.length === 0 && (
               <div className="rounded-2xl border border-dashed border-[#d6c3b7] bg-[#fff8f5] px-5 py-8 text-center text-sm text-[#7a6859]">
-                No line items yet. Start by adding the first budget line.
+                No categories yet. Add a category, then add budget items under it.
               </div>
             )}
 
-            {fields.map(({ key, name, ...restField }, index) => (
-              <div key={key} className="rounded-2xl border border-[#ead9cb] bg-[#fffaf7] p-4">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9D4D01]">
-                      Line {index + 1}
-                    </p>
-                    <p className="text-sm text-[#7a6859]">
-                      Provide a clear line-item name and funding amount.
-                    </p>
-                  </div>
-                  <Button
-                    danger
-                    type="text"
-                    icon={<MinusCircleOutlined />}
-                    onClick={() => remove(name)}
+            {categoryFields.map(({ key, name, ...restField }, catIndex) => {
+              const catCollapsed = collapsedCategories.has(key);
+              return (
+              <div key={key} className="rounded-2xl border border-[#ead9cb] bg-[#fffaf7]">
+                <div className="flex items-start justify-between gap-3 p-4">
+                  <button
+                    type="button"
+                    className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#ead9cb] bg-white text-[#9D4D01]"
+                    onClick={() => toggleSet(setCollapsedCategories, key)}
+                    aria-expanded={!catCollapsed}
+                    aria-label={catCollapsed ? 'Expand category' : 'Collapse category'}
                   >
-                    Remove
-                  </Button>
+                    {catCollapsed ? <CaretRightOutlined /> : <CaretDownOutlined />}
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                      <p className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-[#9D4D01]">
+                        Category {catIndex + 1}
+                      </p>
+                      <Form.Item noStyle shouldUpdate>
+                        {() => {
+                          const cat = (form.getFieldValue('categories') ?? [])[name] ?? {};
+                          const catItems = flattenCategoriesToItems([cat]);
+                          const catTotal = catItems.reduce(
+                            (sum, item) => sum + (Number(item?.amount) || 0),
+                            0,
+                          );
+                          return (
+                            <span className="text-[11px] font-semibold text-[#7a6859]">
+                              {catItems.length} item{catItems.length === 1 ? '' : 's'} · {formatMoney(catTotal)}
+                            </span>
+                          );
+                        }}
+                      </Form.Item>
+                    </div>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'name']}
+                      className="mb-0"
+                      label={<span className="text-sm font-semibold text-[#582f08]">Category name</span>}
+                      rules={[{ required: true, message: 'Category name is required.' }]}
+                    >
+                      <Input
+                        size="large"
+                        className={shellInputClass}
+                        placeholder="e.g. IT Equipment"
+                      />
+                    </Form.Item>
+                  </div>
+                  {categoryFields.length > 1 && (
+                    <Button
+                      danger
+                      type="text"
+                      htmlType="button"
+                      icon={<MinusCircleOutlined />}
+                      onClick={() => removeCategory(name)}
+                      className="mt-7"
+                    >
+                      Remove
+                    </Button>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-[2fr_1fr_1fr]">
-                  <Form.Item
-                    {...restField}
-                    name={[name, 'item']}
-                    label={
-                      <span className="text-sm font-semibold text-[#582f08]">Budget Line Item</span>
-                    }
-                    rules={[{ required: true, message: 'Item name is required.' }]}
-                  >
-                    <Input
-                      size="large"
-                      className={shellInputClass}
-                      placeholder="e.g. Server Infrastructure Upgrade"
-                    />
-                  </Form.Item>
+                <div className={catCollapsed ? 'hidden' : undefined}>
+                <Form.List name={[name, 'items']} initialValue={[{ quantity: 1 }]}>
+                  {(itemFields, { add: addItem, remove: removeItem }) => (
+                    <div className="space-y-3 border-t border-[#ead9cb] px-4 pb-4 pt-4">
+                      {itemFields.map(({ key: itemKey, name: itemName, ...itemRest }, itemIndex) => {
+                        const itemId = `${key}-${itemKey}`;
+                        const itemCollapsed = collapsedItems.has(itemId);
+                        return (
+                        <div
+                          key={itemKey}
+                          className="rounded-xl border border-[#ead9cb] bg-white"
+                        >
+                          <div className="flex items-center justify-between gap-2 px-3 py-2">
+                            <button
+                              type="button"
+                              className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                              onClick={() => toggleSet(setCollapsedItems, itemId)}
+                              aria-expanded={!itemCollapsed}
+                            >
+                              <span className="text-[#9D4D01]">
+                                {itemCollapsed ? <CaretRightOutlined /> : <CaretDownOutlined />}
+                              </span>
+                              <Form.Item noStyle shouldUpdate>
+                                {() => {
+                                  const row =
+                                    ((form.getFieldValue('categories') ?? [])[name]?.items ?? [])[
+                                      itemName
+                                    ] ?? {};
+                                  return (
+                                    <span className="truncate text-xs font-bold uppercase tracking-[0.14em] text-[#7a6859]">
+                                      {row.item
+                                        ? `${row.item} · Qty ${row.quantity ?? 1} · ${formatMoney(row.amount ?? 0)}`
+                                        : `Budget item ${itemIndex + 1}`}
+                                    </span>
+                                  );
+                                }}
+                              </Form.Item>
+                            </button>
+                            {itemFields.length > 1 && (
+                              <Button
+                                danger
+                                type="text"
+                                htmlType="button"
+                                size="small"
+                                icon={<MinusCircleOutlined />}
+                                onClick={() => removeItem(itemName)}
+                              >
+                                Remove item
+                              </Button>
+                            )}
+                          </div>
+                          <div className={itemCollapsed ? 'hidden' : 'px-3 pb-3'}>
+                          <div className="grid grid-cols-1 gap-3 md:grid-cols-[2fr_1fr_1fr]">
+                            <Form.Item
+                              {...itemRest}
+                              name={[itemName, 'item']}
+                              className="mb-0"
+                              label={
+                                <span className="text-sm font-semibold text-[#582f08]">
+                                  Budget item
+                                </span>
+                              }
+                              rules={[{ required: true, message: 'Item name is required.' }]}
+                            >
+                              <Input
+                                size="large"
+                                className={shellInputClass}
+                                placeholder="e.g. Laptop"
+                              />
+                            </Form.Item>
+                            <Form.Item
+                              {...itemRest}
+                              name={[itemName, 'quantity']}
+                              className="mb-0"
+                              label={<span className="text-sm font-semibold text-[#582f08]">Quantity</span>}
+                            >
+                              <InputNumber
+                                min={0}
+                                precision={0}
+                                size="large"
+                                className={`w-full ${shellInputClass}`}
+                                placeholder="0"
+                              />
+                            </Form.Item>
+                            <Form.Item
+                              {...itemRest}
+                              name={[itemName, 'amount']}
+                              className="mb-0"
+                              label={
+                                <span className="text-sm font-semibold text-[#582f08]">Amount (GHS)</span>
+                              }
+                              rules={[{ required: true, message: 'Amount is required.' }]}
+                            >
+                              <InputNumber
+                                min={0}
+                                size="large"
+                                className={`w-full ${shellInputClass}`}
+                                placeholder="0.00"
+                                formatter={(value) =>
+                                  `GHS ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                                }
+                                parser={(value) => value?.replace(/GHS\s?|(,*)/g, '') || ''}
+                              />
+                            </Form.Item>
+                          </div>
+                          </div>
+                        </div>
+                        );
+                      })}
 
-                  <Form.Item
-                    {...restField}
-                    name={[name, 'quantity']}
-                    label={<span className="text-sm font-semibold text-[#582f08]">Quantity</span>}
-                  >
-                    <InputNumber
-                      min={0}
-                      size="large"
-                      className={`w-full ${shellInputClass}`}
-                      placeholder="0"
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    {...restField}
-                    name={[name, 'amount']}
-                    label={<span className="text-sm font-semibold text-[#582f08]">Amount (GHS)</span>}
-                    rules={[{ required: true, message: 'Amount is required.' }]}
-                  >
-                    <InputNumber
-                      min={0}
-                      size="large"
-                      className={`w-full ${shellInputClass}`}
-                      placeholder="0.00"
-                      formatter={(value) =>
-                        `GHS ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                      }
-                      parser={(value) => value?.replace(/GHS\s?|(,*)/g, '') || ''}
-                    />
-                  </Form.Item>
+                      <Button
+                        type="dashed"
+                        htmlType="button"
+                        icon={<PlusCircleOutlined />}
+                        onClick={() => addItem({ quantity: 1 })}
+                        className="h-11 w-full rounded-xl border-[#9D4D01] text-[#9D4D01]"
+                      >
+                        Add budget item
+                      </Button>
+                    </div>
+                  )}
+                </Form.List>
                 </div>
               </div>
-            ))}
+              );
+            })}
 
-            <Tooltip title="Add budget line">
-              <Button
-                type="dashed"
-                icon={<PlusCircleOutlined />}
-                onClick={() => add({ quantity: 1 })}
-                className="h-12 w-full rounded-2xl border-[#9D4D01] text-[#9D4D01]"
-              >
-                Add Budget Line
-              </Button>
-            </Tooltip>
+            <Button
+              type="dashed"
+              htmlType="button"
+              icon={<PlusCircleOutlined />}
+              onClick={() => addCategory({ name: '', items: [{ quantity: 1 }] })}
+              className="h-12 w-full rounded-2xl border-[#582f08] text-[#582f08]"
+            >
+              Add category
+            </Button>
           </div>
         )}
       </Form.List>
@@ -294,11 +430,12 @@ const BudgetFormShell = ({
   const reviewValues = {
     ...storedValues,
     ...watchedValues,
-    budgetItems: watchedValues.budgetItems ?? storedValues.budgetItems ?? [],
+    categories: watchedValues.categories ?? storedValues.categories ?? [],
   };
-  const lineItems = Array.isArray(reviewValues.budgetItems)
-    ? reviewValues.budgetItems.filter(Boolean)
+  const categoryGroups = Array.isArray(reviewValues.categories)
+    ? reviewValues.categories.filter((cat) => cat && (cat.name || (cat.items ?? []).length))
     : [];
+  const lineItems = flattenCategoriesToItems(categoryGroups);
   const total = useMemo(
     () => lineItems.reduce((sum, item) => sum + (Number(item?.amount) || 0), 0),
     [lineItems],
@@ -336,14 +473,18 @@ const BudgetFormShell = ({
           : ['name'];
         await form.validateFields(fields);
       } else if (currentStep === 1) {
-        const items = form.getFieldValue('budgetItems') ?? [];
+        const categories = form.getFieldValue('categories') ?? [];
+        const items = flattenCategoriesToItems(categories);
         if (!items.length) {
-          message.warning('Add at least one budget line before continuing.');
+          message.warning('Add at least one category with a budget item before continuing.');
           return;
         }
-        const itemFields = items.flatMap((_, index) => [
-          ['budgetItems', index, 'item'],
-          ['budgetItems', index, 'amount'],
+        const itemFields = categories.flatMap((cat, catIndex) => [
+          ['categories', catIndex, 'name'],
+          ...((cat?.items ?? []).flatMap((_, itemIndex) => [
+            ['categories', catIndex, 'items', itemIndex, 'item'],
+            ['categories', catIndex, 'items', itemIndex, 'amount'],
+          ])),
         ]);
         await form.validateFields(itemFields);
       }
@@ -489,7 +630,7 @@ const BudgetFormShell = ({
                 Update the line items and save the revised budget version.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Button size="large" onClick={onCancel} className="rounded-xl border-[#d6c3b7]">
+                <Button size="large" htmlType="button" onClick={onCancel} className="rounded-xl border-[#d6c3b7]">
                   Cancel
                 </Button>
                 <Button
@@ -554,7 +695,10 @@ const BudgetFormShell = ({
               <Form
                 form={form}
                 layout="vertical"
-                onFinish={onFinish}
+                onFinish={(values) => {
+                  if (currentStep !== STEP_LABELS.length - 1) return;
+                  onFinish(values);
+                }}
                 autoComplete="off"
                 requiredMark={false}
                 preserve
@@ -598,6 +742,7 @@ const BudgetFormShell = ({
                     >
                       <Button
                         icon={<UploadOutlined />}
+                        htmlType="button"
                         size="large"
                         className="rounded-xl"
                         style={{ borderStyle: 'dashed', borderColor: '#9D4D01', color: '#9D4D01' }}
@@ -658,35 +803,47 @@ const BudgetFormShell = ({
                       <div className="border-b border-[#ead9cb] bg-[#582f08] px-5 py-3">
                         <h3 className="m-0 text-base font-bold text-[#fff4e8]">Budget Lines</h3>
                         <p className="m-0 mt-0.5 text-xs uppercase tracking-wider text-[#ead9cb]">
-                          {lineItems.length} line{lineItems.length === 1 ? '' : 's'} ·{' '}
-                          {formatMoney(total)}
+                          {categoryGroups.length} categor{categoryGroups.length === 1 ? 'y' : 'ies'} ·{' '}
+                          {lineItems.length} item{lineItems.length === 1 ? '' : 's'} · {formatMoney(total)}
                         </p>
                       </div>
                       <div className="divide-y divide-[#ead9cb]">
                         {lineItems.length === 0 && (
                           <p className="p-5 text-sm text-[#7a6859]">No budget lines entered.</p>
                         )}
-                        {lineItems.map((item, index) => (
-                          <div
-                            key={`${item?.item ?? 'line'}-${index}`}
-                            className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="m-0 text-xs font-bold uppercase tracking-wider text-[#9D4D01]">
-                                Line {index + 1}
-                              </p>
-                              <p className="m-0 mt-1 break-words text-sm font-semibold text-[#582f08]">
-                                {item?.item || 'Untitled item'}
-                              </p>
+                        {categoryGroups.map((cat, catIndex) => {
+                          const catItems = (cat?.items ?? []).filter(
+                            (row) => row && (row.item || row.amount != null),
+                          );
+                          if (!catItems.length && !cat?.name) return null;
+                          return (
+                            <div key={`${cat?.name ?? 'category'}-${catIndex}`}>
+                              <div className="bg-[#fdf1eb] px-5 py-2">
+                                <p className="m-0 text-xs font-bold uppercase tracking-wider text-[#9D4D01]">
+                                  {cat?.name || 'Uncategorized'}
+                                </p>
+                              </div>
+                              {catItems.map((item, index) => (
+                                <div
+                                  key={`${item?.item ?? 'line'}-${index}`}
+                                  className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <p className="m-0 break-words text-sm font-semibold text-[#582f08]">
+                                      {item?.item || 'Untitled item'}
+                                    </p>
+                                  </div>
+                                  <div className="text-right text-sm">
+                                    <p className="m-0 text-[#7a6859]">Qty {item?.quantity ?? 1}</p>
+                                    <p className="m-0 font-bold text-[#582f08]">
+                                      {formatMoney(item?.amount ?? 0)}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                            <div className="text-right text-sm">
-                              <p className="m-0 text-[#7a6859]">Qty {item?.quantity ?? 1}</p>
-                              <p className="m-0 font-bold text-[#582f08]">
-                                {formatMoney(item?.amount ?? 0)}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                       <div className="flex items-center justify-between border-t-2 border-[#582f08] bg-[#fdf1eb] px-5 py-4">
                         <span className="font-bold text-[#582f08]">Total</span>
@@ -722,42 +879,52 @@ const BudgetFormShell = ({
                 <div className="mt-8 flex flex-col gap-3 rounded-[24px] border border-[#ead9cb] bg-[#fdf1eb] p-4 md:flex-row md:items-center md:justify-between">
                   <p className="text-sm text-[#7a6859]">
                     {currentStep === 0 && 'Step 1 of 4 — Enter budget details to continue.'}
-                    {currentStep === 1 && 'Step 2 of 4 — Add the line items that make up this budget.'}
+                    {currentStep === 1 && 'Step 2 of 4 — Add a category, then budget items under it.'}
                     {currentStep === 2 && 'Step 3 of 4 — Supporting documents are optional.'}
                     {currentStep === 3 &&
-                      'Step 4 of 4 — Read-only review. Go Back to edit, then Submit Budget.'}
+                      'Step 4 of 4 — Read-only review. Go Back to edit, then Create Budget.'}
                   </p>
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button size="large" onClick={onCancel} className="rounded-xl border-[#d6c3b7]">
+                    <Button size="large" htmlType="button" onClick={onCancel} className="rounded-xl border-[#d6c3b7]">
                       Cancel
                     </Button>
                     {currentStep > 0 && (
-                      <Button size="large" onClick={goBack} className="rounded-xl border-[#d6c3b7]">
+                      <Button size="large" htmlType="button" onClick={goBack} className="rounded-xl border-[#d6c3b7]">
                         Back
                       </Button>
                     )}
-                    {currentStep < STEP_LABELS.length - 1 ? (
-                      <Button
-                        type="primary"
-                        size="large"
-                        onClick={goNext}
-                        className="rounded-xl px-6 font-bold"
-                        style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
-                      >
-                        {currentStep === 2 ? 'Skip / Continue' : 'Next'}
-                      </Button>
-                    ) : (
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        size="large"
-                        loading={isPending}
-                        className="rounded-xl px-6 font-bold"
-                        style={{ background: '#582f08', borderColor: '#582f08' }}
-                      >
-                        Submit Budget
-                      </Button>
-                    )}
+                    <Button
+                      type="primary"
+                      htmlType="button"
+                      size="large"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        goNext();
+                      }}
+                      className={`rounded-xl px-6 font-bold ${
+                        currentStep < STEP_LABELS.length - 1 ? '' : 'hidden'
+                      }`}
+                      style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
+                    >
+                      {currentStep === 2 ? 'Skip / Continue' : 'Next'}
+                    </Button>
+                    <Button
+                      type="primary"
+                      htmlType="button"
+                      size="large"
+                      loading={isPending}
+                      onClick={() => {
+                        if (currentStep !== STEP_LABELS.length - 1) return;
+                        form.submit();
+                      }}
+                      className={`rounded-xl px-6 font-bold ${
+                        currentStep === STEP_LABELS.length - 1 ? '' : 'hidden'
+                      }`}
+                      style={{ background: '#582f08', borderColor: '#582f08' }}
+                    >
+                      Create Budget
+                    </Button>
                   </div>
                 </div>
               </Form>

@@ -13,6 +13,7 @@ import WorkflowStepper from './WorkflowStepper';
 import BudgetFormShell from './BudgetFormShell';
 import { SummaryTile, StickyActionBar } from './BudgetDesignShared';
 import { formatMoney } from '../../../../utils/typography';
+import { flattenCategoriesToItems } from './budgetLineCategories';
 
 const DRAFT_TABS = [
   { key: 'overview', label: 'Overview' },
@@ -52,30 +53,41 @@ const DraftEditorShell = ({
   const status = budget?.status ?? 'DRAFT';
   const isReturned = status === 'RETURNED';
 
-  const lineItems = Form.useWatch('budgetItems', form) ?? [];
+  const categories = Form.useWatch('categories', form) ?? [];
+  const lineItems = flattenCategoriesToItems(categories);
+  const rawItems = categories.flatMap((cat) => cat?.items ?? []);
   const totalRequested = useMemo(
     () => lineItems.reduce((sum, item) => sum + (Number(item?.amount) || 0), 0),
     [lineItems],
   );
 
   const validationItems = useMemo(() => {
-    const missingNames = lineItems.filter((item) => !item?.item?.trim?.()).length;
-    const missingAmounts = lineItems.filter((item) => !item?.amount && item?.amount !== 0).length;
+    const missingNames = rawItems.filter((item) => !item?.item?.trim?.()).length;
+    const missingAmounts = rawItems.filter((item) => !item?.amount && item?.amount !== 0).length;
     const hasTitle = !!form.getFieldValue('name');
+    const missingCategories = categories.filter((cat) => !cat?.name?.trim?.()).length;
 
     return [
       {
+        ok: categories.length > 0 && missingCategories === 0,
+        title: 'Category names provided',
+        detail:
+          missingCategories
+            ? `${missingCategories} categor${missingCategories === 1 ? 'y needs' : 'ies need'} a name`
+            : `${categories.length} categor${categories.length === 1 ? 'y' : 'ies'} entered`,
+      },
+      {
         ok: lineItems.length > 0,
-        title: 'At least one budget line',
-        detail: lineItems.length ? `${lineItems.length} lines entered` : 'Add budget lines to continue',
+        title: 'At least one budget item',
+        detail: lineItems.length ? `${lineItems.length} items entered` : 'Add budget items under a category',
       },
       {
         ok: missingNames === 0 && missingAmounts === 0,
         title: 'Line item completeness',
         detail:
           missingNames || missingAmounts
-            ? `${missingNames + missingAmounts} line(s) need attention`
-            : 'All lines have names and amounts',
+            ? `${missingNames + missingAmounts} item(s) need attention`
+            : 'All items have names and amounts',
       },
       {
         ok: hasTitle,
@@ -88,7 +100,7 @@ const DraftEditorShell = ({
         detail: totalRequested > 0 ? `Total requested: ${formatMoney(totalRequested)}` : 'Enter line amounts',
       },
     ];
-  }, [lineItems, totalRequested, form]);
+  }, [categories, lineItems, rawItems, totalRequested, form]);
 
   const validationErrors = validationItems.filter((item) => !item.ok).length;
 

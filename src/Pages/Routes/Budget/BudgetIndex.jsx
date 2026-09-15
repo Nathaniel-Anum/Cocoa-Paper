@@ -1,18 +1,21 @@
 import {
+  Badge,
   Button,
   Collapse,
   Input,
   message,
+  Modal,
   Popconfirm,
+  Popover,
   Select,
   Table,
   Tag,
   Tooltip,
 } from 'antd';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { capitalize, formatMoney } from '../../../../utils/typography';
-import { EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { CheckOutlined, EditOutlined, EyeOutlined, FilterOutlined } from '@ant-design/icons';
 import { BiTrash } from 'react-icons/bi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import useStore from '../../../store/store';
@@ -23,7 +26,7 @@ import {
   useGetFinancialYear,
 } from '../../../queryHooks/budget';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { deleteBudget } from '../../../http/budget';
+import { bulkApproveBudgets, deleteBudget } from '../../../http/budget';
 import {
   hasPermission,
   requiredPermissions,
@@ -32,6 +35,23 @@ import {
 import { useUser } from '../../CustomHook/useUser';
 import axiosInstance from '../../../Components/axiosInstance';
 import BudgetDashboard from './BudgetDashboard';
+import { displayItemCategory, displayItemLabel } from './budgetLineCategories';
+
+const MARK_STORAGE_KEY = 'cp-budget-marked-for-approval';
+const MARKABLE_STATUSES = ['SUBMITTED', 'COMMITTEE_REVIEW', 'RECOMMENDED'];
+
+function loadMarkedBudgetIds() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(MARK_STORAGE_KEY) || '[]');
+    return Array.isArray(raw) ? raw.filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveMarkedBudgetIds(ids) {
+  localStorage.setItem(MARK_STORAGE_KEY, JSON.stringify([...new Set(ids)]));
+}
 
 const STATUS_LABEL = {
   DRAFT: 'Draft',
@@ -70,6 +90,8 @@ const BudgetIndex = () => {
   const [archivedSearchText, setArchivedSearchText] = useState('');
   const { user: authUser } = useUser();
   const allRolePermissions = getAllRolePermissions(authUser);
+  const canApprove = hasPermission(allRolePermissions, [requiredPermissions.APPROVE_BUDGET]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   // Sync URL status param when user navigates via sidebar
   useEffect(() => {
@@ -87,15 +109,15 @@ const BudgetIndex = () => {
   // Client-side status filter (API doesn't support status filter, so we filter locally)
   const budgetColumns = [
     {
-      title: 'Budget Portfolio',
+      title: 'Budget',
       dataIndex: 'name',
       key: 'name',
       render: (value, record) => {
         const total = record?.budgetItems?.reduce((sum, item) => sum + (item.amount ?? 0), 0) ?? 0;
         return (
-          <div className="min-w-[220px]">
-            <p className="m-0 font-bold text-[#582f08]">{value && capitalize(value)}</p>
-            <p className="m-0 mt-1 text-xs text-[#7a6859]">
+          <div className="min-w-0">
+            <p className="m-0 text-sm font-semibold text-[#582f08]">{value && capitalize(value)}</p>
+            <p className="m-0 text-[11px] text-[#7a6859]">
               {record?.budgetItems?.length ?? 0} lines · {formatMoney(total)}
             </p>
           </div>
@@ -105,27 +127,20 @@ const BudgetIndex = () => {
     hasPermission(allRolePermissions, [
       requiredPermissions.READ_BUDGET_GLOBAL,
     ]) && {
-      title: 'Department',
+      title: 'Dept',
       key: 'department',
       dataIndex: ['department', 'departmentName'],
-      render: (value) => <span>{value && capitalize(value)}</span>,
-    },
-    hasPermission(allRolePermissions, [
-      requiredPermissions.READ_BUDGET_GLOBAL,
-    ]) && {
-      title: 'Division',
-      key: 'division',
-      dataIndex: ['department', 'division', 'divisionName'],
-      render: (value) => <span>{value && capitalize(value)}</span>,
+      render: (value) => <span className="text-xs">{value && capitalize(value)}</span>,
     },
     {
-      title: 'Financial Year',
+      title: 'Year',
       dataIndex: 'financialYear',
       key: 'financialYear',
-      render: (value, record) => (
-        <span className={'font-semibold'}>{`${new Date(
+      width: 88,
+      render: (value) => (
+        <span className="text-xs text-[#7a6859]">{`${new Date(
           value.startDate
-        ).getFullYear()} - ${new Date(value.endDate).getFullYear()}`}</span>
+        ).getFullYear()}`}</span>
       ),
     },
     {
@@ -136,7 +151,7 @@ const BudgetIndex = () => {
         const style = STATUS_BADGE_STYLE[v] ?? { bg: '#f3f4f6', text: '#4b5563' };
         return (
           <span
-            className="inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em]"
+            className="inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
             style={{ background: style.bg, color: style.text }}
           >
             {STATUS_LABEL[v] ?? v ?? 'Draft'}
@@ -145,44 +160,24 @@ const BudgetIndex = () => {
       },
     },
     {
-      title: 'Last Updated',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
-      render: (value) => (
-        <span className="text-[#7a6859]">
-          {value ? new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-        </span>
-      ),
-    },
-    {
       title: '',
       dataIndex: 'id',
-      key: 'view',
-      render: (value) => (
-        <Tooltip title="View workflow">
-          <EyeOutlined
-            className="text-[#9D4D01] cursor-pointer"
-            style={{ fontSize: 17 }}
-            onClick={() => navigate(`/budget/${value}`)}
-          />
-        </Tooltip>
-      ),
-    },
-    (hasPermission(allRolePermissions, [requiredPermissions.UPDATE_BUDGET]) ||
-      hasPermission(allRolePermissions, [requiredPermissions.DELETE_BUDGET])) && {
-      title: 'Actions',
-      dataIndex: 'id',
       key: 'action',
+      width: 88,
       render: (value, record) => {
         const isEditable = ['DRAFT', 'RETURNED'].includes(record.status ?? 'DRAFT');
-        if (!isEditable) return null;
         return (
-          <div className="flex gap-2">
-            {hasPermission(allRolePermissions, [requiredPermissions.UPDATE_BUDGET]) && (
+          <div className="flex items-center gap-2">
+            <Tooltip title="View">
+              <EyeOutlined
+                className="text-[#9D4D01] cursor-pointer"
+                onClick={() => navigate(`/budget/${value}`)}
+              />
+            </Tooltip>
+            {isEditable && hasPermission(allRolePermissions, [requiredPermissions.UPDATE_BUDGET]) && (
               <Tooltip title="Edit">
                 <EditOutlined
-                  className="text-blue-400 cursor-pointer"
-                  style={{ fontSize: 16 }}
+                  className="text-[#9D4D01] cursor-pointer"
                   onClick={() => {
                     setChosenRecord(record);
                     navigate(`/update-budget-item/${value}`);
@@ -190,14 +185,14 @@ const BudgetIndex = () => {
                 />
               </Tooltip>
             )}
-            {hasPermission(allRolePermissions, [requiredPermissions.DELETE_BUDGET]) && (
+            {isEditable && hasPermission(allRolePermissions, [requiredPermissions.DELETE_BUDGET]) && (
               <Popconfirm
                 onConfirm={() => removeBudget(value)}
-                title="Delete this budget? This cannot be undone."
+                title="Delete this budget?"
                 okButtonProps={{ danger: true }}
               >
                 <Tooltip title="Delete">
-                  <BiTrash className="text-red-400 cursor-pointer" style={{ fontSize: 16 }} />
+                  <BiTrash className="text-red-400 cursor-pointer" />
                 </Tooltip>
               </Popconfirm>
             )}
@@ -209,10 +204,15 @@ const BudgetIndex = () => {
 
   const budgetData = [
     {
+      title: 'Category',
+      key: 'category',
+      render: (_, record) => displayItemCategory(record.item) || '—',
+    },
+    {
       title: 'Budgetary Item',
       dataIndex: 'item',
       key: 'item',
-      render: (value) => <span>{value && capitalize(value)}</span>,
+      render: (value) => <span>{value && capitalize(displayItemLabel(value))}</span>,
     },
     {
       title: 'Quantity',
@@ -264,7 +264,70 @@ const BudgetIndex = () => {
     );
   });
 
+  const showRowSelection =
+    MARKABLE_STATUSES.includes(filterStatus) || (canApprove && !filterStatus);
+  const dataIdsKey = data.map((b) => b.id).join(',');
+  const selectedRecommended = useMemo(
+    () => data.filter((b) => selectedRowKeys.includes(b.id) && b.status === 'RECOMMENDED'),
+    [data, selectedRowKeys],
+  );
+
+  useEffect(() => {
+    if (!showRowSelection) {
+      setSelectedRowKeys([]);
+      return;
+    }
+    const marked = new Set(loadMarkedBudgetIds());
+    setSelectedRowKeys(data.filter((b) => marked.has(b.id)).map((b) => b.id));
+  }, [filterStatus, dataIdsKey, showRowSelection]);
+
   const qClient = useQueryClient();
+
+  const { mutate: approveSelected, isPending: approving } = useMutation({
+    mutationFn: (ids) => bulkApproveBudgets(ids),
+    onSuccess: (res) => {
+      const approved = res?.data?.data?.approved ?? [];
+      const failed = res?.data?.data?.failed ?? [];
+      if (approved.length) {
+        message.success(res?.data?.message || `${approved.length} budget(s) approved.`);
+      } else {
+        message.error(res?.data?.message || 'No budgets were approved.');
+      }
+      if (failed.length && approved.length) {
+        message.warning(`${failed.length} selected budget(s) could not be approved.`);
+      }
+      saveMarkedBudgetIds(loadMarkedBudgetIds().filter((id) => !approved.includes(id)));
+      setSelectedRowKeys((keys) => keys.filter((id) => !approved.includes(id)));
+      qClient.invalidateQueries({ queryKey: ['budgets'] });
+      qClient.invalidateQueries({ queryKey: ['budget-stats'] });
+    },
+    onError: (err) => message.error(err?.response?.data?.error || 'Approval failed'),
+  });
+
+  const confirmApproveSelected = () => {
+    const ids = selectedRecommended.map((b) => b.id);
+    if (!ids.length) {
+      message.warning('Select at least one recommended budget to approve.');
+      return;
+    }
+    Modal.confirm({
+      title: `Approve ${ids.length} budget${ids.length === 1 ? '' : 's'}?`,
+      content:
+        'This cannot be undone. Approved budgets are locked for departmental allocation.',
+      okText: 'Approve',
+      cancelText: 'Cancel',
+      okButtonProps: {
+        style: { background: '#9D4D01', borderColor: '#9D4D01' },
+      },
+      onOk: () =>
+        new Promise((resolve, reject) => {
+          approveSelected(ids, {
+            onSuccess: () => resolve(),
+            onError: (err) => reject(err),
+          });
+        }),
+    });
+  };
 
   const { mutate: removeBudget } = useMutation({
     mutationKey: ['deleteBudget'],
@@ -272,6 +335,8 @@ const BudgetIndex = () => {
     onSuccess: () => {
       message.success('Budget Deleted Successfully');
       qClient.invalidateQueries({ queryKey: ['budgets'] });
+      qClient.invalidateQueries({ queryKey: ['budget-stats'] });
+      qClient.invalidateQueries({ queryKey: ['budgets-archived'] });
     },
     onError: (err) => message.error(err?.response?.data?.error),
   });
@@ -303,165 +368,218 @@ const BudgetIndex = () => {
   });
 
   return (
-    <div className="space-y-6 pb-8">
-      {/* ══ Dashboard Stats ═══════════════════════════════════════════════ */}
+    <div className="space-y-4 pb-8">
       <BudgetDashboard />
 
       {['COMMITTEE_REVIEW', 'RECOMMENDED', 'SUBMITTED', 'RETURNED'].includes(filterStatus) && (
-        <div
-          className="rounded-2xl border px-4 py-3 text-sm"
-          style={{
-            background:
-              filterStatus === 'RECOMMENDED'
-                ? '#f5f3ff'
-                : filterStatus === 'COMMITTEE_REVIEW'
-                ? '#eff6ff'
-                : filterStatus === 'RETURNED'
-                ? '#fffbeb'
-                : '#fff4e8',
-            borderColor:
-              filterStatus === 'RECOMMENDED'
-                ? '#ddd6fe'
-                : filterStatus === 'COMMITTEE_REVIEW'
-                ? '#bfdbfe'
-                : filterStatus === 'RETURNED'
-                ? '#fde68a'
-                : '#fdd9b0',
-            color:
-              filterStatus === 'RECOMMENDED'
-                ? '#5b21b6'
-                : filterStatus === 'COMMITTEE_REVIEW'
-                ? '#1d4ed8'
-                : filterStatus === 'RETURNED'
-                ? '#b45309'
-                : '#7c3200',
-          }}
-        >
-          <strong>{data.length}</strong>{' '}
+        <p className="m-0 text-sm text-[#7a6859]">
+          <span className="font-semibold text-[#582F08]">{data.length}</span>
           {filterStatus === 'RECOMMENDED'
-            ? 'budget(s) awaiting final executive decision.'
+            ? ' awaiting approval. Select one or more, then Approve selected.'
             : filterStatus === 'COMMITTEE_REVIEW'
-            ? 'budget(s) currently in committee review.'
+            ? ' in committee review'
             : filterStatus === 'RETURNED'
-            ? 'budget(s) returned for correction.'
-            : 'budget(s) submitted and waiting for committee intake.'}{' '}
-          Open a row to continue the approval workflow.
-        </div>
+            ? ' returned for correction'
+            : ' submitted'}
+        </p>
       )}
 
-      {/* ══ Table ══════════════════════════════════════════════════════════ */}
-      <div className="overflow-hidden rounded-[28px] border border-[#ead9cb] bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f0e6db] bg-[#582f08] px-6 py-4">
-          <div>
-            <h3 className="m-0 text-lg font-bold text-[#fff4e8]">
-              {filterStatus === 'RECOMMENDED'
-                ? 'Approvals Register'
-                : filterStatus === 'COMMITTEE_REVIEW'
-                ? 'Committee Register'
-                : filterStatus === 'SUBMITTED'
-                ? 'Submitted Register'
-                : filterStatus === 'RETURNED'
-                ? 'Returned Register'
-                : 'Portfolio Register'}
-            </h3>
-            <p className="m-0 mt-1 text-xs uppercase tracking-[0.16em] text-[#ead9cb]">
-              {data.length} visible budgets
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 border-b border-[#ead9cb] bg-[#fdf5ef] px-5 py-4">
-          <span className="flex-shrink-0 text-xs font-bold uppercase tracking-[0.18em] text-[#9D4D01]">
-            Filters
-          </span>
+      <div className="overflow-hidden rounded-xl border border-[#f0e6da] bg-white">
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#f0e6da] bg-[#fffaf6] px-3 py-2">
           <Input.Search
-            placeholder="Search budget name..."
-            className="w-56"
+            placeholder="Search..."
+            className="w-44"
             allowClear
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             onSearch={(val) => setSearchText(val)}
             size="small"
           />
-          <Select
-            size="small"
-            className="w-36"
-            placeholder="All Years"
-            allowClear
-            value={filterFYId || undefined}
-            onChange={(v) => setFilterFYId(v ?? '')}
-            options={(financialYear?.data?.data ?? []).map((y) => ({
-              label: `FY ${new Date(y.startDate).getFullYear()}`,
-              value: y.id,
-            }))}
-          />
-          <Select
-            size="small"
-            className="w-40"
-            placeholder="All Divisions"
-            allowClear
-            value={selectedDivision || undefined}
-            onChange={(v) => { setSelectedDivision(v ?? ''); setSelectedDepartment(''); }}
-            options={(divisions?.data ?? []).map((d) => ({
-              label: capitalize(d.divisionName),
-              value: d.divisionId,
-            }))}
-            showSearch
-            optionFilterProp="label"
-          />
-          <Select
-            size="small"
-            className="w-44"
-            placeholder="All Departments"
-            allowClear
-            disabled={!selectedDivision}
-            value={selectedDepartment || undefined}
-            onChange={(v) => setSelectedDepartment(v ?? '')}
-            options={(departments?.data?.data ?? []).map((d) => ({
-              label: capitalize(d.departmentName),
-              value: d.departmentId,
-            }))}
-            showSearch
-            optionFilterProp="label"
-          />
-          <Select
-            size="small"
-            className="w-40"
-            placeholder="All Statuses"
-            allowClear
-            value={filterStatus || undefined}
-            onChange={(v) => {
-              const next = v ?? '';
-              setFilterStatus(next);
-              navigate(next ? `/budget?status=${next}` : '/budget');
-            }}
-            options={Object.entries(STATUS_LABEL).map(([k, v]) => ({ label: v, value: k }))}
-          />
-          {(searchText || filterFYId || selectedDivision || selectedDepartment || filterStatus) && (
-            <Button
-              size="small"
-              type="link"
-              style={{ color: '#9D4D01', padding: 0 }}
-              onClick={() => {
-                setSearchText('');
-                setFilterFYId('');
-                setSelectedDivision('');
-                setSelectedDepartment('');
-                setFilterStatus('');
-                navigate('/budget');
-              }}
+          <div className="ml-auto">
+            <Popover
+              trigger="click"
+              placement="bottomRight"
+              overlayInnerStyle={{ padding: 12 }}
+              content={
+                <div className="w-64 space-y-3">
+                  <p className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-[#9D4D01]">
+                    Filters
+                  </p>
+                  <div>
+                    <p className="mb-1 text-xs font-semibold text-[#582f08]">Year</p>
+                    <Select
+                      size="small"
+                      className="w-full"
+                      placeholder="Year"
+                      allowClear
+                      value={filterFYId || undefined}
+                      onChange={(v) => setFilterFYId(v ?? '')}
+                      options={(financialYear?.data?.data ?? []).map((y) => ({
+                        label: `FY ${new Date(y.startDate).getFullYear()}`,
+                        value: y.id,
+                      }))}
+                      getPopupContainer={(node) =>
+                        node.closest('.ant-popover-inner-content') || node.parentElement
+                      }
+                    />
+                  </div>
+                  <div>
+                    <p className="mb-1 text-xs font-semibold text-[#582f08]">Division</p>
+                    <Select
+                      size="small"
+                      className="w-full"
+                      placeholder="Division"
+                      allowClear
+                      value={selectedDivision || undefined}
+                      onChange={(v) => { setSelectedDivision(v ?? ''); setSelectedDepartment(''); }}
+                      options={(divisions?.data ?? []).map((d) => ({
+                        label: capitalize(d.divisionName),
+                        value: d.divisionId,
+                      }))}
+                      showSearch
+                      optionFilterProp="label"
+                      getPopupContainer={(node) =>
+                        node.closest('.ant-popover-inner-content') || node.parentElement
+                      }
+                    />
+                  </div>
+                  <div>
+                    <p className="mb-1 text-xs font-semibold text-[#582f08]">Department</p>
+                    <Select
+                      size="small"
+                      className="w-full"
+                      placeholder="Department"
+                      allowClear
+                      disabled={!selectedDivision}
+                      value={selectedDepartment || undefined}
+                      onChange={(v) => setSelectedDepartment(v ?? '')}
+                      options={(departments?.data?.data ?? []).map((d) => ({
+                        label: capitalize(d.departmentName),
+                        value: d.departmentId,
+                      }))}
+                      showSearch
+                      optionFilterProp="label"
+                      getPopupContainer={(node) =>
+                        node.closest('.ant-popover-inner-content') || node.parentElement
+                      }
+                    />
+                  </div>
+                  <div>
+                    <p className="mb-1 text-xs font-semibold text-[#582f08]">Status</p>
+                    <Select
+                      size="small"
+                      className="w-full"
+                      placeholder="Status"
+                      allowClear
+                      value={filterStatus || undefined}
+                      onChange={(v) => {
+                        const next = v ?? '';
+                        setFilterStatus(next);
+                        navigate(next ? `/budget?status=${next}` : '/budget');
+                      }}
+                      options={Object.entries(STATUS_LABEL).map(([k, v]) => ({ label: v, value: k }))}
+                      getPopupContainer={(node) =>
+                        node.closest('.ant-popover-inner-content') || node.parentElement
+                      }
+                    />
+                  </div>
+                  {(filterFYId || selectedDivision || selectedDepartment || filterStatus) && (
+                    <Button
+                      size="small"
+                      type="link"
+                      className="px-0"
+                      style={{ color: '#9D4D01' }}
+                      onClick={() => {
+                        setFilterFYId('');
+                        setSelectedDivision('');
+                        setSelectedDepartment('');
+                        setFilterStatus('');
+                        navigate('/budget');
+                      }}
+                    >
+                      Clear filters
+                    </Button>
+                  )}
+                </div>
+              }
             >
-              Reset Filters
-            </Button>
-          )}
+              <Badge
+                count={[filterFYId, selectedDivision, selectedDepartment, filterStatus].filter(Boolean).length}
+                size="small"
+                color="#9D4D01"
+                offset={[-2, 2]}
+              >
+                <Button
+                  size="small"
+                  icon={<FilterOutlined />}
+                  className="border-[#ead9cb] text-[#582f08]"
+                  aria-label="Filter budgets"
+                />
+              </Badge>
+            </Popover>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <Table
+        {showRowSelection && selectedRowKeys.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#f0e6da] bg-[#fff4e8] px-3 py-2">
+            <p className="m-0 text-sm text-[#582f08]">
+              <span className="font-semibold">{selectedRowKeys.length}</span> selected
+              {selectedRecommended.length
+                ? ` · ${selectedRecommended.length} ready to approve`
+                : filterStatus === 'RECOMMENDED'
+                  ? ''
+                  : ' · marked budgets stay selected on Approvals'}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                size="small"
+                onClick={() => {
+                  const visible = new Set(data.map((b) => b.id));
+                  saveMarkedBudgetIds(loadMarkedBudgetIds().filter((id) => !visible.has(id)));
+                  setSelectedRowKeys([]);
+                }}
+              >
+                Clear
+              </Button>
+              {canApprove && (
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<CheckOutlined />}
+                  loading={approving}
+                  disabled={!selectedRecommended.length}
+                  onClick={confirmApproveSelected}
+                  style={{ background: '#9D4D01', borderColor: '#9D4D01' }}
+                >
+                  Approve selected
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        <Table
             columns={budgetColumns}
+            rowSelection={
+              showRowSelection
+                ? {
+                    selectedRowKeys,
+                    onChange: (keys) => {
+                      setSelectedRowKeys(keys);
+                      const visible = new Set(data.map((b) => b.id));
+                      const kept = loadMarkedBudgetIds().filter((id) => !visible.has(id));
+                      saveMarkedBudgetIds([...kept, ...keys]);
+                    },
+                    getCheckboxProps: (record) => ({
+                      disabled: !MARKABLE_STATUSES.includes(record.status ?? 'DRAFT'),
+                    }),
+                    preserveSelectedRowKeys: true,
+                  }
+                : undefined
+            }
             expandable={{
               expandedRowRender: (record) => (
-                <div className="overflow-x-auto px-2 py-2">
+                <div className="overflow-x-auto px-2 py-1">
                   <Table
                     columns={budgetData}
                     dataSource={record.budgetItems}
@@ -477,54 +595,51 @@ const BudgetIndex = () => {
             }}
             dataSource={data}
             loading={isLoading}
-            scroll={{ x: 920 }}
-            size="middle"
+            scroll={{ x: 720 }}
+            size="small"
             pagination={{
+              pageSize: 12,
               showSizeChanger: false,
-              className: 'px-4 pb-3',
+              className: 'px-3 pb-2',
             }}
             rowClassName={(_, index) =>
-              index % 2 === 0 ? 'bg-[#fdf5ef]' : 'bg-[#f7eee6]'
+              index % 2 === 0 ? 'bg-white' : 'bg-[#fffaf6]'
             }
           />
-        </div>
       </div>
 
-      {/* ══ Archived Budgets ═══════════════════════════════════════════════ */}
       {!['COMMITTEE_REVIEW', 'RECOMMENDED', 'SUBMITTED', 'RETURNED'].includes(filterStatus) && (
       <Collapse
         ghost
+        size="small"
         items={[
           {
             key: 'archived',
             label: (
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-[#582f08]">Archived Budgets</span>
-                <Tag color="orange">
-                  {archivedData.length}
-                </Tag>
+                <span className="text-sm font-medium text-[#582f08]">Archived</span>
+                <Tag color="orange">{archivedData.length}</Tag>
               </div>
             ),
             children: (
-              <div className="overflow-x-auto rounded-xl shadow-sm">
-                <div className="mb-3">
-                  <Input.Search
-                    placeholder="Search by category or budget item..."
-                    className="w-full sm:w-72"
+              <div className="overflow-x-auto">
+                <Input.Search
+                    placeholder="Search archived..."
+                    className="mb-2 w-full sm:w-64"
                     allowClear
+                    size="small"
                     value={archivedSearchText}
                     onChange={(e) => setArchivedSearchText(e.target.value)}
                     onSearch={(val) => setArchivedSearchText(val)}
                   />
-                </div>
                 <Table
                   columns={[
                     {
-                      title: 'Budgetary Item',
+                      title: 'Budget',
                       dataIndex: 'name',
                       key: 'name',
                       render: (value) => (
-                        <span className="font-bold">{value && capitalize(value)}</span>
+                        <span className="font-medium text-[#582F08]">{value && capitalize(value)}</span>
                       ),
                     },
                     hasPermission(allRolePermissions, [
@@ -533,28 +648,20 @@ const BudgetIndex = () => {
                       title: 'Department',
                       key: 'department',
                       dataIndex: ['department', 'departmentName'],
-                      render: (value) => <span>{value && capitalize(value)}</span>,
-                    },
-                    hasPermission(allRolePermissions, [
-                      requiredPermissions.READ_BUDGET_GLOBAL,
-                    ]) && {
-                      title: 'Division',
-                      key: 'division',
-                      dataIndex: ['department', 'division', 'divisionName'],
-                      render: (value) => <span>{value && capitalize(value)}</span>,
+                      render: (value) => <span className="text-xs">{value && capitalize(value)}</span>,
                     },
                     {
-                      title: 'Financial Year',
+                      title: 'Year',
                       dataIndex: 'financialYear',
                       key: 'financialYear',
                       render: (value) => (
-                        <span className="font-bold">{`${new Date(
+                        <span className="text-xs">{`${new Date(
                           value.startDate
-                        ).getFullYear()} – ${new Date(value.endDate).getFullYear()}`}</span>
+                        ).getFullYear()}`}</span>
                       ),
                     },
                     {
-                      title: 'Status',
+                      title: '',
                       key: 'status',
                       render: () => <Tag color="orange">Archived</Tag>,
                     },
@@ -579,14 +686,15 @@ const BudgetIndex = () => {
                     archivedData.map((b) => ({ ...b, key: b.id }))
                   }
                   loading={archivedLoading}
-                  scroll={{ x: 700 }}
-                  size="middle"
+                  scroll={{ x: 520 }}
+                  size="small"
+                  pagination={{ pageSize: 8, showSizeChanger: false }}
                 />
               </div>
             ),
           },
         ]}
-        className="border border-[#f0e6da] rounded-xl bg-white shadow-sm"
+        className="rounded-xl border border-[#f0e6da] bg-white"
       />
       )}
     </div>

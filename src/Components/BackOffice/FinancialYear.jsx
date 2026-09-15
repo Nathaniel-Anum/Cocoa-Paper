@@ -317,6 +317,7 @@ const FinancialYear = () => {
               dataSource={filteredRows}
               loading={isLoading}
               pagination={{ pageSize: 8, hideOnSinglePage: true }}
+              scroll={{ x: 'max-content' }}
               rowClassName={(_, index) => (index % 2 !== 0 ? 'bg-[#fdf5ef]' : 'bg-[#fffaf7]')}
             />
           </div>

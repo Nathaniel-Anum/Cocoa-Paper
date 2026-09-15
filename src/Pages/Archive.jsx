@@ -22,6 +22,8 @@ import {
   MoreOutlined,
   FolderOpenOutlined,
   UsergroupAddOutlined,
+  PaperClipOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { Tag, Tooltip } from 'antd';
 import { Link, useLocation, useParams } from 'react-router-dom';
@@ -35,6 +37,8 @@ import useArchiveTransform from './CustomHook/useArchiveTransform';
 import CreateFolder from '../Components/modals/Archive/CreateFolder';
 import UploadFile from '../Components/modals/Archive/UploadFile';
 import ShareFolder from '../Components/modals/Archive/ShareFolder';
+import AttachArchiveFile from '../Components/modals/Archive/AttachArchiveFile';
+import { getCombinedArchiveFile } from '../http/archive';
 import {
   hasPermission,
   requiredPermissions,
@@ -60,6 +64,7 @@ const Archive = () => {
     moveModal: false,
     fileViewer: false,
     shareModal: false,
+    attachModal: false,
   });
 
   const [shareTarget, setShareTarget] = useState(null);
@@ -284,24 +289,59 @@ const Archive = () => {
   };
 
   // Event Handlers
-  const handleFileClick = async (record) => {
-    if (record.type === 'File') {
-      try {
-        const response = await axiosInstance.get(
-          `/archive/file/${record.fileId}`,
-          {
-            responseType: 'blob',
-          }
-        );
-        // Ensure the blob has the correct MIME type for PDF
-        const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-        const fileUrl = URL.createObjectURL(pdfBlob);
-        setSelectedItem((prev) => ({ ...prev, file: { ...record, fileUrl } }));
-        setModalStates((prev) => ({ ...prev, fileViewer: true }));
-      } catch (error) {
-        message.error('Error loading file');
-      }
+  const openArchiveFile = async (record, { combined = false } = {}) => {
+    if (record.type !== 'File') return;
+    try {
+      const useCombined = combined || (record.attachmentCount || 0) > 0;
+      const response = await axiosInstance.get(
+        useCombined
+          ? `/archive/file/${record.fileId}/combined`
+          : `/archive/file/${record.fileId}`,
+        { responseType: 'blob' }
+      );
+      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+      const fileUrl = URL.createObjectURL(pdfBlob);
+      setSelectedItem((prev) => ({
+        ...prev,
+        record,
+        file: {
+          ...record,
+          fileUrl,
+          viewingCombined: useCombined,
+        },
+      }));
+      setModalStates((prev) => ({ ...prev, fileViewer: true }));
+    } catch (error) {
+      message.error('Error loading file');
     }
+  };
+
+  const handleFileClick = async (record) => {
+    await openArchiveFile(record);
+  };
+
+  const downloadCombinedPdf = async (record) => {
+    try {
+      const response = await getCombinedArchiveFile(record.fileId, { download: true });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const baseName = (record.fileName || 'document').replace(/\.pdf$/i, '');
+      link.href = url;
+      link.download = `${baseName}-combined.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      message.error(error?.response?.data?.error || 'Could not download combined PDF');
+    }
+  };
+
+  const canAttachToFile = (record) => {
+    if (!record || record.type !== 'File') return false;
+    const isSharedIn = record.isShared === true;
+    return !isSharedIn || record.sharedRole === 'EDITOR';
   };
 
   const handleBreadcrumbUpdate = (item) => {
@@ -330,8 +370,28 @@ const Archive = () => {
     const canRename = !isSharedIn || record.sharedRole === 'EDITOR';
     const canDelete = !isSharedIn || record.sharedCanDelete;
     const canShare = isFolder && !isSharedIn;
+    const canAttach = canAttachToFile(record);
 
     const items = [];
+    if (canAttach) {
+      items.push({
+        key: 'attach',
+        label: 'Attach files',
+        icon: <PaperClipOutlined />,
+        onClick: () => {
+          setSelectedItem((prev) => ({ ...prev, record }));
+          setModalStates((prev) => ({ ...prev, attachModal: true }));
+        },
+      });
+    }
+    if (!isFolder && (record.attachmentCount || 0) > 0) {
+      items.push({
+        key: 'download-combined',
+        label: 'Download combined PDF',
+        icon: <DownloadOutlined />,
+        onClick: () => downloadCombinedPdf(record),
+      });
+    }
     if (canRename) {
       items.push({
         key: 'edit',
@@ -418,9 +478,17 @@ const Archive = () => {
               </div>
             </Link>
           ) : (
-            <div onClick={() => handleFileClick(record)}>
+            <div onClick={() => handleFileClick(record)} className="flex gap-2 items-center">
               <FilePdfFilled className="text-[24px] text-[#eb3b3b]" />
-              {record.fileName}
+              <span className="truncate">{record.fileName}</span>
+              {(record.attachmentCount || 0) > 0 && (
+                <Tooltip title={`${record.attachmentCount} attached file${record.attachmentCount === 1 ? '' : 's'} included in the combined PDF`}>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#FDF4ED] px-2 py-0.5 text-[10px] font-semibold text-[#9D4D01] border border-[#f2d8bd]">
+                    <PaperClipOutlined />
+                    {record.attachmentCount}
+                  </span>
+                </Tooltip>
+              )}
             </div>
           )}
         </div>
@@ -634,6 +702,12 @@ const Archive = () => {
                           Shared
                         </Tag>
                       )}
+                      {record.type === 'File' && (record.attachmentCount || 0) > 0 && (
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-[#FDF4ED] px-1.5 text-[9px] font-semibold text-[#9D4D01]">
+                          <PaperClipOutlined />
+                          {record.attachmentCount}
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-gray-400">
                       {record.isShared
@@ -720,6 +794,27 @@ const Archive = () => {
         folder={shareTarget}
       />
 
+      <AttachArchiveFile
+        open={modalStates.attachModal}
+        onClose={() => setModalStates((prev) => ({ ...prev, attachModal: false }))}
+        file={selectedItem.record?.type === 'File' ? selectedItem.record : selectedItem.file}
+        onAttached={(data) => {
+          const nextCount = data?.attachmentCount ?? (selectedItem.record?.attachmentCount || 0);
+          const nextRecord = {
+            ...(selectedItem.record || selectedItem.file),
+            attachmentCount: nextCount,
+          };
+          setSelectedItem((prev) => ({
+            ...prev,
+            record: prev.record ? { ...prev.record, attachmentCount: nextCount } : prev.record,
+            file: prev.file ? { ...prev.file, attachmentCount: nextCount } : prev.file,
+          }));
+          if (modalStates.fileViewer && nextRecord.fileId) {
+            openArchiveFile(nextRecord, { combined: true });
+          }
+        }}
+      />
+
       {/* Move Modal */}
       <Modal
         title="Move to..."
@@ -765,7 +860,35 @@ const Archive = () => {
 
       {/* File Viewer Modal */}
       <Modal
-        title={selectedItem.file?.fileName || 'Document'}
+        title={
+          <div className="flex items-center justify-between gap-3 pr-8 min-w-0">
+            <span className="truncate text-[#582F08]">
+              {selectedItem.file?.fileName || 'Document'}
+            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              {canAttachToFile(selectedItem.file || selectedItem.record) && (
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#E3BC97] text-xs font-medium text-[#9D4D01] hover:bg-[#fdf4ed]"
+                  onClick={() => setModalStates((prev) => ({ ...prev, attachModal: true }))}
+                >
+                  <PaperClipOutlined />
+                  Attach files
+                </button>
+              )}
+              {(selectedItem.file?.attachmentCount || 0) > 0 && (
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-[#582F08] text-white text-xs font-medium hover:bg-[#6d3a0a]"
+                  onClick={() => downloadCombinedPdf(selectedItem.file)}
+                >
+                  <DownloadOutlined />
+                  Download PDF
+                </button>
+              )}
+            </div>
+          </div>
+        }
         open={modalStates.fileViewer}
         onCancel={() => {
           setModalStates((prev) => ({ ...prev, fileViewer: false }));

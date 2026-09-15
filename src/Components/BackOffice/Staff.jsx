@@ -182,6 +182,7 @@ const Staff = () => {
           record.department?.departmentName?.toLowerCase().includes(search) ||
           record.division?.divisionName?.toLowerCase().includes(search) ||
           record.staff?.staffNumber?.toLowerCase().includes(search) ||
+          record.staff?.personalFileNumber?.toLowerCase().includes(search) ||
           roles.includes(search)
         );
       },
@@ -190,6 +191,18 @@ const Staff = () => {
       title: 'Staff Number',
       dataIndex: ['staff', 'staffNumber'],
       key: 'age',
+    },
+    {
+      title: 'Personal file',
+      dataIndex: ['staff', 'personalFileNumber'],
+      key: 'personalFileNumber',
+      render: (value) => <span>{value || '—'}</span>,
+    },
+    {
+      title: 'Next file no.',
+      dataIndex: ['staff', 'nextDocumentNo'],
+      key: 'nextDocumentNo',
+      render: (value) => <span>{value ?? 1}</span>,
     },
     {
       title: 'Email',
@@ -316,7 +329,22 @@ const Staff = () => {
                 },
               ]}
             >
-              <Input placeholder="Staff Number" allowClear />
+              <Input placeholder="Employment number" allowClear />
+            </Form.Item>
+            <Form.Item
+              name="personalFileNumber"
+              label="Personal file number"
+              extra="Used on letters as PRS/DEPT/this number/{volume}/{sequence}"
+            >
+              <Input placeholder="e.g. 228" allowClear />
+            </Form.Item>
+            <Form.Item
+              name="nextDocumentNo"
+              label="Next document number"
+              extra="The next letter for this person will use this number (e.g. 45)."
+              initialValue={1}
+            >
+              <Input type="number" min={1} placeholder="1" />
             </Form.Item>
             <Form.Item
               name="email"
@@ -419,8 +447,8 @@ const Staff = () => {
             </Form.Item>
           </Form>
         </Modal>
-        <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da]">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e6da]">
+        <div className="bg-white rounded-xl shadow-sm border border-[#f0e6da] min-w-0 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-[#f0e6da]">
             <h2 className="text-lg font-bold text-[#582F08]">Staff Members</h2>
             <div className="flex gap-3 items-center">
               <Input.Search
@@ -445,6 +473,7 @@ const Staff = () => {
               dataSource={_data}
               loading={isLoading}
               className="backoffice-table"
+              scroll={{ x: 'max-content' }}
               rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
             />
           </div>

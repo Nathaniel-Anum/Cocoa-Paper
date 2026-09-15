@@ -8,14 +8,25 @@ export const getShareableUsers = async () => {
 
 // Grant access to one or more recipients on a folder
 // recipients: [{ userId, role: 'VIEWER'|'EDITOR', canDelete: boolean }]
-export const grantFolderAccess = (folderId, recipients) => {
-  return axiosInstance.post(`/folder-access/${folderId}`, { recipients });
+// includeFolderIds: descendant folders to grant as well
+export const grantFolderAccess = (
+  folderId,
+  recipients,
+  includeFolderIds = [],
+) => {
+  return axiosInstance.post(`/folder-access/${folderId}`, {
+    recipients,
+    includeFolderIds,
+  });
 };
 
-// List everyone who has access to a folder (owner only)
+// List everyone who has access to a folder (owner only), plus subfolders
 export const getFolderAccessList = async (folderId) => {
   const res = await axiosInstance.get(`/folder-access/${folderId}`);
-  return res.data.access;
+  return {
+    access: res.data.access || [],
+    subfolders: res.data.subfolders || [],
+  };
 };
 
 // Update a recipient's permissions on a folder

@@ -76,6 +76,9 @@ export const recommendBudget = (id, note) =>
 export const approveBudget = (id, note) =>
   axiosInstance.patch(`/budget/${id}/approve`, { note });
 
+export const bulkApproveBudgets = (ids) =>
+  axiosInstance.post('/budget/bulk-approve', { ids });
+
 export const rejectBudget = (id, note) =>
   axiosInstance.patch(`/budget/${id}/reject`, { note });
 

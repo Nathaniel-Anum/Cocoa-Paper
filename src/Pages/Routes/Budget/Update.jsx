@@ -10,6 +10,7 @@ import { getAllRolePermissions, hasPermission, requiredPermissions } from '../..
 import { useGetBudgetById, useGetFinancialYear } from '../../../queryHooks/budget';
 import BudgetFormShell from './BudgetFormShell';
 import DraftEditorShell from './DraftEditorShell';
+import { groupItemsToCategories, toBudgetWritePayload } from './budgetLineCategories';
 
 const UpdateBudget = () => {
   const [form] = Form.useForm();
@@ -58,6 +59,7 @@ const UpdateBudget = () => {
       message.success('Budget updated successfully!');
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
       queryClient.invalidateQueries({ queryKey: ['budget', id] });
+      queryClient.invalidateQueries({ queryKey: ['budget-stats'] });
       if (!isDraftEditor) {
         setTimeout(() => navigate('/budget'), 1000);
       }
@@ -73,6 +75,7 @@ const UpdateBudget = () => {
       message.success('Budget submitted for review.');
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
       queryClient.invalidateQueries({ queryKey: ['budget', id] });
+      queryClient.invalidateQueries({ queryKey: ['budget-stats'] });
       navigate(`/budget/${id}`);
     },
     onError: (err) => message.error(err?.response?.data?.error || 'Submit failed'),
@@ -84,23 +87,19 @@ const UpdateBudget = () => {
         name: activeBudget.name,
         divisionId: activeBudget?.department?.divisionId,
         departmentId: activeBudget.departmentId,
-        budgetItems: activeBudget?.budgetItems?.map((item) => ({
-          item: item?.item,
-          amount: item?.amount,
-          dollarAmount: item?.dollarAmount,
-          quantity: item?.quantity ?? 1,
-        })),
+        categories: groupItemsToCategories(activeBudget?.budgetItems),
       });
       setSelectedDivision(activeBudget?.department?.divisionId || '');
     }
   }, [activeBudget, form]);
 
   const handleFinish = (values) => {
-    const { financialYearId, ...rest } = values;
-    const payload = isGlobal
-      ? rest
-      : { ...rest, departmentId: authUser?.departmentId };
-    saveBudgetItem(payload);
+    saveBudgetItem(
+      toBudgetWritePayload(values, {
+        isGlobal,
+        fallbackDepartmentId: authUser?.departmentId,
+      }),
+    );
   };
 
   const handleSubmitForReview = () => {
@@ -112,9 +111,12 @@ const UpdateBudget = () => {
       okButtonProps: { style: { background: '#9D4D01', borderColor: '#9D4D01' } },
       onOk: async () => {
         const values = await form.validateFields();
-        const { financialYearId, ...rest } = values;
-        const payload = isGlobal ? rest : { ...rest, departmentId: authUser?.departmentId };
-        await saveBudgetItemAsync(payload);
+        await saveBudgetItemAsync(
+          toBudgetWritePayload(values, {
+            isGlobal,
+            fallbackDepartmentId: authUser?.departmentId,
+          }),
+        );
         await submitBudgetItemAsync();
         navigate(`/budget/${id}`);
       },

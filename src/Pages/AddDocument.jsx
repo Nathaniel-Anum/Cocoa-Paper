@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   MinusCircleOutlined,
   PlusOutlined,
@@ -17,6 +17,7 @@ import {
   Col,
   Spin,
   message,
+  Modal,
 } from 'antd';
 import axiosInstance from '../Components/axiosInstance';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -26,10 +27,22 @@ import { useUser } from './CustomHook/useUser';
 import { addDocument, uploadFile } from '../http/addDocument';
 import TextArea from 'antd/es/input/TextArea';
 import { useGetAllBudgets } from '../queryHooks/budget';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { multiply } from 'lodash';
 import { capitalize, formatMoney } from '../../utils/typography';
 import { useGetAllUserGroups, useGetAllUsers } from '../queryHooks/user';
+import { buildHrMergeLetter } from './hrLetterTemplates';
+import { isHrDepartment } from '../utils/isHrDepartment';
+import { getHrTemplate, listHrTemplates } from '../utils/hrTemplateStore';
+import { PlaceholderInput, formatFillValues } from './HrTemplates/placeholderFields';
+import ArchiveFolderPicker from '../Components/modals/Archive/ArchiveFolderPicker';
+import {
+  canIssuePersonalFile,
+  normalizeVolume,
+  previewPersonalFileNumber,
+  staffFileIssueHint,
+  staffFileLabel,
+} from '../utils/personalFileNumber';
 
 // Set up notification configuration
 notification.config({
@@ -40,8 +53,10 @@ notification.config({
 const AddDocument = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [form] = Form.useForm();
   const { user } = useUser();
+  const showHrOperations = isHrDepartment(user);
 
   // State variables
   const [selectedDivision, setSelectedDivision] = useState('');
@@ -53,11 +68,23 @@ const AddDocument = () => {
   const [selectedItemBalances, setSelectedItemBalances] = useState({});
   const [isPrivate, setIsPrivate] = useState(false);
   const [ccEnableForward, setCcEnableForward] = useState(false);
+  const [folderPickerOpen, setFolderPickerOpen] = useState(false);
+  const [pickedFolder, setPickedFolder] = useState(null);
+  const [hrPreview, setHrPreview] = useState(null);
+  const [hrPreviewBody, setHrPreviewBody] = useState('');
+  const [hrPreviewing, setHrPreviewing] = useState(false);
 
   const { data: userGroups, isLoading: loadingUserGroups } =
     useGetAllUserGroups();
 
   const { data: ccUsers } = useGetAllUsers();
+
+  useEffect(() => {
+    if (showHrOperations && searchParams.get('type') === 'HROperations') {
+      form.setFieldValue('documentType', 'HROperations');
+      setRequestType('HROperations');
+    }
+  }, [searchParams, form, showHrOperations]);
 
   // Animation options
   const defaultOptions = {
@@ -76,8 +103,6 @@ const AddDocument = () => {
     // Try to extract error message from different formats
     if (typeof error === 'string') {
       description = error;
-    } else if (error?.message) {
-      description = error.message;
     } else if (error?.response?.data?.error) {
       if (Array.isArray(error.response.data.error)) {
         description = error.response.data.error
@@ -88,6 +113,8 @@ const AddDocument = () => {
       }
     } else if (error?.response?.data?.msg) {
       description = error.response.data.msg;
+    } else if (error?.message) {
+      description = error.message;
     }
 
     // Log the error for debugging
@@ -154,7 +181,7 @@ const AddDocument = () => {
     useGetAllBudgets();
 
   // Document creation mutation
-  const { mutate: startDocument, isPending: isDocumentSubmitting } =
+  const { mutate: startDocument, mutateAsync: startDocumentAsync, isPending: isDocumentSubmitting } =
     useMutation({
       mutationKey: ['document'],
       mutationFn: async (values) => {
@@ -164,6 +191,7 @@ const AddDocument = () => {
       },
       onSuccess: () => {
         setLoading(false);
+        setPickedFolder(null);
         showSuccessNotification(
           'Request Successful',
           'Your document has been created successfully!'
@@ -280,11 +308,18 @@ const AddDocument = () => {
 
   const handleRequestChange = (value) => {
     setRequestType(value);
-    // Reset related fields when request type changes
     form.setFieldsValue({
       budgetAllocations: undefined,
       amount: undefined,
+      hrTemplateId: undefined,
+      hrFill: undefined,
+      hrArchiveFolderId: undefined,
+      hrPersonalStaffUserId: undefined,
+      hrFileVolume: undefined,
     });
+    if (value === 'HROperations') {
+      form.setFieldValue('subject', undefined);
+    }
   };
 
   const handleItemCategoryChange = (categoryId, fieldKey) => {
@@ -337,8 +372,236 @@ const AddDocument = () => {
     setSelectedItemBalances((prev) => ({ ...prev, [fieldKey]: found }));
   };
 
+  const allPeople = ccUsers?.data?.users || ccUsers?.data || [];
+  const staffNameOptions = allPeople
+    .map((person) => person?.name)
+    .filter(Boolean)
+    .map((name) => ({ value: name }));
+  const staffByUserId = Object.fromEntries(
+    allPeople.filter((person) => person?.userId).map((person) => [person.userId, person]),
+  );
+  const letterStaffOptions = allPeople
+    .filter((person) => person?.staff)
+    .map((person) => {
+      const hint = staffFileIssueHint(person);
+      return {
+        label: hint ? `${staffFileLabel(person)} (${hint})` : staffFileLabel(person),
+        value: person.userId,
+      };
+    });
+  const formDocumentType = Form.useWatch('documentType', form);
+  const isHrRequest =
+    formDocumentType === 'HROperations' || requestType === 'HROperations';
+  const hrTemplates = showHrOperations ? listHrTemplates() : [];
+  const selectedHrTemplateId = Form.useWatch('hrTemplateId', form);
+  const selectedHrTemplate = selectedHrTemplateId
+    ? getHrTemplate(selectedHrTemplateId)
+    : null;
+  const isHrLetter = selectedHrTemplate && selectedHrTemplate.kind !== 'memo';
+  const hrFillWatch = Form.useWatch('hrFill', form) || {};
+  const personalStaffUserId = Form.useWatch('hrPersonalStaffUserId', form);
+  const letterStaffUserId = hrFillWatch.staff_name || personalStaffUserId;
+  const letterStaff = letterStaffUserId ? staffByUserId[letterStaffUserId] : null;
+  const letterVolume = Form.useWatch('hrFileVolume', form);
+  const letterQuotePreview = letterStaff
+    ? previewPersonalFileNumber(letterStaff, letterVolume)
+    : '';
+
+  useEffect(() => {
+    if (!isHrLetter || !letterStaff?.staff?.personalFolderId) return;
+    if (form.getFieldValue('hrArchiveFolderId')) return;
+    form.setFieldValue('hrArchiveFolderId', letterStaff.staff.personalFolderId);
+  }, [form, isHrLetter, letterStaff]);
+
+  const closeHrPreview = () => {
+    if (hrPreview?.blobUrl) URL.revokeObjectURL(hrPreview.blobUrl);
+    setHrPreview(null);
+    setHrPreviewBody('');
+  };
+
+  const recipientNameFromValues = (values) => {
+    const recipient = values?.userId ? staffByUserId[values.userId] : null;
+    return recipient?.name || '';
+  };
+
+  const buildHrLetterFromValues = async (values, { issue = false, body } = {}) => {
+    const template = getHrTemplate(values.hrTemplateId);
+    if (!template) {
+      throw new Error('Select an HR template to send.');
+    }
+    const isLetter = template.kind !== 'memo';
+    const recipientName = recipientNameFromValues(values);
+    const filledValues = {
+      ...formatFillValues(values.hrFill || {}, isLetter ? template.placeholders : [], staffByUserId),
+      staff_name: recipientName || values.hrFill?.staff_name,
+      recipient: recipientName,
+    };
+    let fileNumber;
+    let issued;
+    let archiveFolderId = values.hrArchiveFolderId;
+    if (isLetter) {
+      const staffUserId = values.hrFill?.staff_name || values.hrPersonalStaffUserId;
+      if (!staffUserId) {
+        throw new Error('Select the staff whose personal file this letter belongs to.');
+      }
+      if (!archiveFolderId) {
+        throw new Error('Select the archive folder for this personal file.');
+      }
+      const volume = normalizeVolume(values.hrFileVolume);
+      if (!volume) {
+        throw new Error('Type the volume for this file, for example V1, V2, or V3.');
+      }
+      const staffPerson = staffByUserId[staffUserId];
+      if (issue) {
+        const issueRes = await axiosInstance.post('/personal-file/issue', {
+          userId: staffUserId,
+          folderId: archiveFolderId,
+          volume,
+        });
+        issued = issueRes?.data?.issue;
+        fileNumber = issued?.fileNumber;
+        if (!fileNumber) {
+          throw new Error('Could not issue a personal file number');
+        }
+      } else {
+        fileNumber = previewPersonalFileNumber(staffPerson, volume);
+      }
+    }
+    const letter = await buildHrMergeLetter({
+      title: values.subject || template.name,
+      body: body ?? template.body,
+      values: filledValues,
+      senderName: user?.name,
+      kind: template.kind,
+      fileNumber,
+    });
+    return { letter, issued, fileNumber, template, isLetter, archiveFolderId };
+  };
+
+  const openHrPreview = async (values) => {
+    try {
+      const template = getHrTemplate(values.hrTemplateId);
+      if (!template) {
+        showErrorNotification('Choose a template', 'Select an HR template to send.');
+        return;
+      }
+      setHrPreviewing(true);
+      const built = await buildHrLetterFromValues(values, {
+        issue: false,
+        body: template.body,
+      });
+      if (hrPreview?.blobUrl) URL.revokeObjectURL(hrPreview.blobUrl);
+      const blobUrl = URL.createObjectURL(built.letter.blob);
+      setHrPreviewBody(template.body);
+      setHrPreview({
+        values,
+        blobUrl,
+        template,
+        fileNumber: built.fileNumber,
+      });
+    } catch (error) {
+      showErrorNotification('Could not preview', error);
+    } finally {
+      setHrPreviewing(false);
+    }
+  };
+
+  const refreshHrPreview = async () => {
+    if (!hrPreview?.values) return;
+    try {
+      setHrPreviewing(true);
+      const built = await buildHrLetterFromValues(hrPreview.values, {
+        issue: false,
+        body: hrPreviewBody,
+      });
+      if (hrPreview.blobUrl) URL.revokeObjectURL(hrPreview.blobUrl);
+      const blobUrl = URL.createObjectURL(built.letter.blob);
+      setHrPreview((prev) => ({ ...prev, blobUrl, fileNumber: built.fileNumber }));
+    } catch (error) {
+      showErrorNotification('Could not update preview', error);
+    } finally {
+      setHrPreviewing(false);
+    }
+  };
+
+  const sendHrFromPreview = async () => {
+    if (!hrPreview?.values) return;
+    const values = hrPreview.values;
+    try {
+      setLoading(true);
+      const built = await buildHrLetterFromValues(values, {
+        issue: true,
+        body: hrPreviewBody,
+      });
+      const { letter, issued, fileNumber, template, isLetter, archiveFolderId } = built;
+      const mainFormData = new FormData();
+      mainFormData.append('file', letter.file);
+      mainFormData.append('ref', fileNumber || values.subject || template.name || 'MEMO');
+      mainFormData.append('subject', values.subject || template.name);
+      const response = await uploadFile(mainFormData);
+      const fileId = response?.data?.newFile?.fileId;
+      if (!fileId) {
+        throw new Error('File upload successful but no file ID was returned');
+      }
+      let archivedFileId;
+      if (isLetter && archiveFolderId) {
+        const archiveData = new FormData();
+        archiveData.append('file', letter.file);
+        archiveData.append('ref', fileNumber);
+        archiveData.append('subject', values.subject || template.name);
+        archiveData.append('folderId', archiveFolderId);
+        archiveData.append('isArchive', true);
+        const archiveRes = await uploadFile(archiveData);
+        archivedFileId = archiveRes?.data?.newFile?.fileId;
+      }
+      if (issued?.issueId) {
+        try {
+          await axiosInstance.patch(`/personal-file/issue/${issued.issueId}`, {
+            fileId: archivedFileId || fileId,
+          });
+        } catch (attachError) {
+          console.error('Could not attach issued file', attachError);
+        }
+      }
+      await startDocumentAsync({
+        subject: values.subject || template.name,
+        documentType: 'General',
+        divisionId: values.divisionId,
+        departmentId: values.departmentId,
+        userId: values.userId,
+        carbonCopyIds: values.carbonCopyIds,
+        comment: values.comment,
+        privateComment: values.privateComment,
+        fileId,
+        physicalDoc: false,
+        isPrivate,
+        ccEnableForward,
+      });
+      closeHrPreview();
+    } catch (error) {
+      showErrorNotification('HR letter failed', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleHrOperationsSubmit = async (values) => {
+    await openHrPreview(values);
+  };
+
   // Form submission handler
   const handleSubmit = (values) => {
+    if (values.documentType === 'HROperations') {
+      if (!showHrOperations) {
+        showErrorNotification(
+          'Not allowed',
+          'HR Operations is only available to Human Resource staff.',
+        );
+        return;
+      }
+      handleHrOperationsSubmit(values);
+      return;
+    }
     const submissionData = {
       ...values,
       physicalDoc: isPhysical,
@@ -483,7 +746,7 @@ const AddDocument = () => {
 
   // Close processing notification when done
   React.useEffect(() => {
-    if (!isSubmitting) {
+    if (!isSubmitting && typeof notification.destroy === 'function') {
       notification.destroy('document-processing');
     }
   }, [isSubmitting]);
@@ -539,6 +802,9 @@ const AddDocument = () => {
                       label: 'Out of Budget Release',
                       value: 'OutOfBudget',
                     },
+                    ...(showHrOperations
+                      ? [{ label: 'HR Operations', value: 'HROperations' }]
+                      : []),
                   ]}
                 />
               </Form.Item>
@@ -549,6 +815,174 @@ const AddDocument = () => {
               >
                 <Input placeholder="Input a Subject" />
               </Form.Item>
+              {isHrRequest && (
+                <div className="mb-6 rounded-xl border border-[#ead9cb] bg-[#fffaf7] p-4">
+                  <p className="mb-1 text-sm font-semibold text-[#582f08]">
+                    Choose a saved template
+                  </p>
+                  <p className="mb-3 text-xs text-[#7a6859]">
+                    Car loan and Contract are no longer options here. Use a template from Templates, then send it.
+                  </p>
+                  {hrTemplates.length === 0 ? (
+                    <p className="text-sm text-[#7a6859]">
+                      No templates yet.{' '}
+                      <Link to="/templates" className="font-semibold text-[#9D4D01]">
+                        Create a template
+                      </Link>{' '}
+                      first, then come back here to fill and send it.
+                    </p>
+                  ) : (
+                    <>
+                      <Form.Item
+                        name="hrTemplateId"
+                        label="Choose template"
+                        rules={[{ required: true, message: 'Choose a template' }]}
+                      >
+                        <Select
+                          placeholder="Select a saved template"
+                          options={hrTemplates.map((template) => ({
+                            label: `${template.name} · ${template.kind === 'memo' ? 'Memo' : 'Any type'}`,
+                            value: template.id,
+                          }))}
+                          onChange={(id) => {
+                            const template = getHrTemplate(id);
+                            form.setFieldsValue({
+                              hrTemplateId: id,
+                              hrFill: {},
+                              hrArchiveFolderId: undefined,
+                              hrPersonalStaffUserId: undefined,
+                              subject: template?.name || form.getFieldValue('subject'),
+                            });
+                            setPickedFolder(null);
+                          }}
+                          showSearch
+                          optionFilterProp="label"
+                        />
+                      </Form.Item>
+                      {selectedHrTemplate && (
+                        <>
+                          <p className="mb-3 text-xs text-[#7a6859]">
+                            {selectedHrTemplate.kind === 'memo'
+                              ? 'This prints on the official memo form. To, From, Date, and Subject come from this form. You will preview and can edit the body before sending. Memos do not get a personal file number.'
+                              : 'This prints on the Ghana Cocoa Board letterhead. PLEASE QUOTE and DATE are filled in for you. You will preview before sending.'}
+                          </p>
+                          {isHrLetter &&
+                            !(selectedHrTemplate.placeholders || []).some(
+                              (item) => item.type === 'staff',
+                            ) && (
+                              <Form.Item
+                                name="hrPersonalStaffUserId"
+                                label="Staff personal file"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: 'Select the staff for this letter',
+                                  },
+                                ]}
+                              >
+                                <Select
+                                  placeholder="Nathaniel — staff ID — dept code — PF — next"
+                                  options={letterStaffOptions}
+                                  showSearch
+                                  optionFilterProp="label"
+                                  size="large"
+                                />
+                              </Form.Item>
+                            )}
+                          {isHrLetter &&
+                            (selectedHrTemplate.placeholders || []).map((item) => (
+                            <Form.Item
+                              key={item.key}
+                              name={['hrFill', item.key]}
+                              label={item.label}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: `Enter ${item.label.toLowerCase()}`,
+                                },
+                              ]}
+                            >
+                              <PlaceholderInput
+                                field={item}
+                                staffNameOptions={staffNameOptions}
+                                staffSelectOptions={letterStaffOptions}
+                              />
+                            </Form.Item>
+                          ))}
+                          {isHrLetter && (
+                            <>
+                              <Form.Item
+                                name="hrFileVolume"
+                                label="Volume"
+                                extra="Typed into PLEASE QUOTE as PRS/{dept}/{PF}/{volume}/{sequence}."
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: 'Enter the volume, e.g. V2',
+                                  },
+                                  {
+                                    validator: (_, value) =>
+                                      normalizeVolume(value)
+                                        ? Promise.resolve()
+                                        : Promise.reject(
+                                            new Error('Use V1, V2, V3, and so on'),
+                                          ),
+                                  },
+                                ]}
+                              >
+                                <Input placeholder="e.g. V2" maxLength={6} allowClear />
+                              </Form.Item>
+                              {letterQuotePreview ? (
+                                <p className="mb-3 text-sm font-semibold text-[#582F08]">
+                                  PLEASE QUOTE: {letterQuotePreview}
+                                </p>
+                              ) : letterStaffUserId && !canIssuePersonalFile(letterStaff) ? (
+                                <p className="mb-3 text-sm text-red-600">
+                                  This staff needs a personal file number and a department code.
+                                </p>
+                              ) : letterStaffUserId ? (
+                                <p className="mb-3 text-xs text-[#7a6859]">
+                                  Type the volume to see the next file number.
+                                </p>
+                              ) : (
+                                <p className="mb-3 text-xs text-[#7a6859]">
+                                  Select staff and type the volume to see the next file number.
+                                </p>
+                              )}
+                              <Form.Item
+                                name="hrArchiveFolderId"
+                                hidden
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: 'Choose the archive folder for this file',
+                                  },
+                                ]}
+                              >
+                                <Input />
+                              </Form.Item>
+                              <div className="-mt-4 mb-4 flex items-center gap-2">
+                                <Button
+                                  htmlType="button"
+                                  onClick={() => setFolderPickerOpen(true)}
+                                >
+                                  Choose folder
+                                </Button>
+                                <span className="text-sm text-[#7a6859]">
+                                  {pickedFolder?.folderName ||
+                                    (letterStaff?.staff?.personalFolderId
+                                      ? 'Using the staff personal folder'
+                                      : 'No folder selected')}
+                                </span>
+                              </div>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
               {/* Amount (for Out of Budget) */}
               {requestType === 'OutOfBudgetRelease' && (
                 <>
@@ -746,6 +1180,7 @@ const AddDocument = () => {
                   )}
                 </Form.List>
               )}
+              {/* Recipient, CC, comments */}
               {/* Division */}
               <Form.Item
                 name="divisionId"
@@ -899,7 +1334,7 @@ const AddDocument = () => {
 
               {/* Main File Upload (for electronic documents) */}
 
-              {!isPhysical && (
+              {!isPhysical && !isHrRequest && (
                 <>
                   <Form.Item
                     name="file"
@@ -953,13 +1388,70 @@ const AddDocument = () => {
                   type="primary"
                   htmlType="submit"
                   className="bg-[#582F08] hover:bg-[#694421] text-white w-full py-1 h-10"
-                  loading={isSubmitting}
-                  disabled={isSubmitting}
+                  loading={isSubmitting || hrPreviewing}
+                  disabled={isSubmitting || hrPreviewing}
                 >
-                  {isSubmitting ? 'Processing...' : 'Submit Document'}
+                  {isSubmitting || hrPreviewing
+                    ? 'Processing...'
+                    : isHrRequest
+                      ? 'Preview'
+                      : 'Submit Document'}
                 </Button>
               </Form.Item>
             </Form>
+            <ArchiveFolderPicker
+              open={folderPickerOpen}
+              onClose={() => setFolderPickerOpen(false)}
+              selectedFolderId={pickedFolder?.folderId}
+              onSelect={(folder) => {
+                setPickedFolder(folder);
+                form.setFieldValue('hrArchiveFolderId', folder.folderId);
+              }}
+            />
+            <Modal
+              open={Boolean(hrPreview)}
+              onCancel={closeHrPreview}
+              title="Preview before sending"
+              width={920}
+              footer={[
+                <Button key="back" onClick={closeHrPreview}>
+                  Back
+                </Button>,
+                <Button
+                  key="refresh"
+                  onClick={refreshHrPreview}
+                  loading={hrPreviewing}
+                >
+                  Update preview
+                </Button>,
+                <Button
+                  key="send"
+                  type="primary"
+                  onClick={sendHrFromPreview}
+                  loading={isSubmitting}
+                >
+                  Send
+                </Button>,
+              ]}
+            >
+              <p className="mb-3 text-xs text-[#7a6859]">
+                Edit the body if needed, then update the preview. Sending uses this version.
+                {hrPreview?.fileNumber ? ` PLEASE QUOTE will be ${hrPreview.fileNumber}.` : ''}
+              </p>
+              <TextArea
+                value={hrPreviewBody}
+                onChange={(event) => setHrPreviewBody(event.target.value)}
+                rows={8}
+                className="mb-4"
+              />
+              {hrPreview?.blobUrl ? (
+                <iframe
+                  title="HR document preview"
+                  src={hrPreview.blobUrl}
+                  className="h-[480px] w-full rounded-md border border-[#ead9cb] bg-white"
+                />
+              ) : null}
+            </Modal>
           </div>
         </div>
       </div>

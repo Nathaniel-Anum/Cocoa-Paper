@@ -51,6 +51,7 @@ const Division = () => {
             columns={columns}
             dataSource={_data}
             className="backoffice-table"
+            scroll={{ x: 'max-content' }}
             rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
           />
         </div>

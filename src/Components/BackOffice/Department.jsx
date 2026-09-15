@@ -95,9 +95,16 @@ const Department = () => {
         const search = value.toLowerCase();
         return (
           record.departmentName?.toLowerCase().includes(search) ||
+          record.departmentCode?.toLowerCase().includes(search) ||
           record.division?.divisionName?.toLowerCase().includes(search)
         );
       },
+    },
+    {
+      title: 'Code',
+      dataIndex: 'departmentCode',
+      key: 'departmentCode',
+      render: (value) => <span>{value || '—'}</span>,
     },
     {
       title: 'Division',
@@ -157,6 +164,7 @@ const Department = () => {
               dataSource={_data}
               loading={isLoading}
               className="backoffice-table"
+              scroll={{ x: 'max-content' }}
               rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
             />
           </div>

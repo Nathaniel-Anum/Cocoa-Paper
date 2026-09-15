@@ -25,7 +25,7 @@ const BackOfficeSideBar = () => {
   const { user } = useUser();
 
   return (
-    <div className="w-[220px] h-screen fixed top-0 left-0 bg-[#582f08] flex flex-col overflow-y-auto z-20 shadow-lg">
+    <div className="w-[220px] h-screen sticky top-0 flex-shrink-0 bg-[#582f08] flex flex-col overflow-y-auto z-20 shadow-lg">
       {/* Logo */}
       <div className="px-5 pt-5 pb-4 border-b border-white/10 flex-shrink-0">
         <img

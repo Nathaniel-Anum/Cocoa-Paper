@@ -50,6 +50,7 @@ import {
 } from '../../../../utils/Roles';
 import WorkflowStepper from './WorkflowStepper';
 import { capitalize, formatMoney } from '../../../../utils/typography';
+import { displayItemCategory, displayItemLabel } from './budgetLineCategories';
 import {
   SummaryTile,
   LockBanner,
@@ -100,16 +101,6 @@ function fmtYear(budget) {
   const e = new Date(budget.financialYear.endDate).getFullYear();
   return s === e ? String(s) : `${s} – ${e}`;
 }
-
-const SURFACE_TONE = {
-  DRAFT: { bg: '#fdf5ef', border: '#f0e6db', text: '#582f08', accent: '#9D4D01', label: 'Draft Workspace' },
-  SUBMITTED: { bg: '#fff4e8', border: '#fdd9b0', text: '#7c3200', accent: '#9D4D01', label: 'Submitted for Review' },
-  COMMITTEE_REVIEW: { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8', accent: '#2563eb', label: 'Committee Workspace' },
-  RECOMMENDED: { bg: '#f5f3ff', border: '#ddd6fe', text: '#6d28d9', accent: '#7c3aed', label: 'Committee Recommendation' },
-  APPROVED: { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d', accent: '#16a34a', label: 'Approved Budget' },
-  RETURNED: { bg: '#fffbeb', border: '#fde68a', text: '#b45309', accent: '#d97706', label: 'Returned for Correction' },
-  REJECTED: { bg: '#fff1f2', border: '#fecdd3', text: '#be123c', accent: '#dc2626', label: 'Rejected Budget' },
-};
 
 // ── Workflow action modal ────────────────────────────────────────────────────
 function ActionModal({ open, onCancel, onConfirm, title, requireNote, noteLabel, loading, confirmText, confirmDanger, description }) {
@@ -244,7 +235,18 @@ const BudgetDetail = () => {
 
   // ── Budget items table ─────────────────────────────────────────────────────
   const budgetItemCols = [
-    { title: 'Item', dataIndex: 'item', key: 'item', render: (v) => capitalize(v) },
+    {
+      title: 'Category',
+      key: 'cat',
+      render: (_, record) =>
+        displayItemCategory(record.item, record.budgetCategory?.name) || '—',
+    },
+    {
+      title: 'Item',
+      dataIndex: 'item',
+      key: 'item',
+      render: (v) => capitalize(displayItemLabel(v)),
+    },
     { title: 'Qty', dataIndex: 'quantity', key: 'qty', render: (v) => v ?? '—' },
     {
       title: 'Amount (GHS)',
@@ -293,7 +295,6 @@ const BudgetDetail = () => {
 
   const status = budget.status ?? 'DRAFT';
   const isLocked = ['APPROVED', 'REJECTED'].includes(status);
-  const tone = SURFACE_TONE[status] ?? SURFACE_TONE.DRAFT;
   const lineCount = budget?.budgetItems?.length ?? 0;
   const liveEditedTotal = editMode
     ? Object.values(editedAmounts).reduce((s, v) => s + (v ?? 0), 0)
@@ -319,51 +320,48 @@ const BudgetDetail = () => {
       ['COMMITTEE_REVIEW', 'RECOMMENDED'].includes(status));
 
   return (
-    <div className="space-y-5 pb-10">
-      <section className="rounded-[28px] border border-[#ead9cb] bg-[#fffdfb] p-6 shadow-[0_18px_50px_rgba(88,47,8,0.07)]">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex items-start gap-3">
+    <div className="space-y-4 pb-8">
+      <section className="rounded-xl border border-[#f0e6da] bg-white px-4 py-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-2 min-w-0">
             <Button
               icon={<ArrowLeftOutlined />}
               onClick={() => navigate('/budget')}
               size="small"
-              className="mt-1 text-[#582f08] border-[#f0e6db]"
+              className="mt-0.5 text-[#582f08] border-[#f0e6db]"
             />
-            <div>
-              <p className="m-0 text-xs font-bold uppercase tracking-[0.18em] text-[#9D4D01]">
-                {tone.label}
-              </p>
-              <h2 className="m-0 mt-2 text-3xl font-extrabold tracking-[-0.02em] text-[#582f08]">
+            <div className="min-w-0">
+              <h2 className="m-0 text-lg font-semibold text-[#582f08]">
                 {capitalize(budget.name)}
               </h2>
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-[#7a6859]">
-                <span>{budget.department?.departmentName ?? '—'}</span>
-                <span className="h-1 w-1 rounded-full bg-[#c9b8a7]" />
-                <span>{budget.department?.division?.divisionName ?? '—'}</span>
-                <span className="h-1 w-1 rounded-full bg-[#c9b8a7]" />
-                <span>FY {fmtYear(budget)}</span>
-                <span className="h-1 w-1 rounded-full bg-[#c9b8a7]" />
-                <span>{lineCount} line items</span>
-              </div>
+              <p className="m-0 mt-0.5 text-xs text-[#7a6859]">
+                {budget.department?.departmentName
+                  ? capitalize(budget.department.departmentName)
+                  : '—'}
+                {' · '}
+                FY {fmtYear(budget)}
+                {' · '}
+                {lineCount} lines
+                {' · '}
+                {formatMoney(total)}
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
             <Tag
               color={STATUS_COLOR[status]}
-              className="text-sm font-semibold px-3 py-1 rounded-full"
+              className="text-xs font-medium px-2 py-0.5 rounded-full m-0"
             >
               {STATUS_LABEL[status]}
             </Tag>
-            <Tooltip title="Compare with another year's budget">
+            <Tooltip title="Compare">
               <Button
                 icon={<SwapOutlined />}
                 size="small"
                 onClick={() => navigate('/budget/compare')}
-                style={{ borderColor: '#9D4D01', color: '#9D4D01' }}
-              >
-                Compare
-              </Button>
+                style={{ borderColor: '#E3BC97', color: '#9D4D01' }}
+              />
             </Tooltip>
             {isEditableByRole && (
               <Tooltip title={['COMMITTEE_REVIEW', 'RECOMMENDED'].includes(status) ? 'Edit (Committee / Approval access)' : 'Edit budget'}>
@@ -371,72 +369,20 @@ const BudgetDetail = () => {
                   icon={<EditOutlined />}
                   size="small"
                   onClick={() => navigate(`/update-budget-item/${id}`)}
-                  style={{ background: '#1d4ed8', color: '#fff', border: 'none' }}
+                  style={{ background: '#582F08', color: '#fff', border: 'none' }}
                 >
-                  Edit Budget
+                  Edit
                 </Button>
               </Tooltip>
             )}
-          </div>
-        </div>
-
-        <div
-          className="mt-6 rounded-[24px] border p-5"
-          style={{ background: tone.bg, borderColor: tone.border }}
-        >
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
-            <div>
-              <p className="m-0 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: tone.accent }}>
-                Workflow Context
-              </p>
-              <h3 className="m-0 mt-2 text-xl font-bold" style={{ color: tone.text }}>
-                {status === 'SUBMITTED' && 'Budget locked and awaiting committee intake.'}
-                {status === 'RETURNED' && 'Corrections are required before resubmission.'}
-                {status === 'RECOMMENDED' && 'Committee recommendation is finalized for executive review.'}
-                {status === 'APPROVED' && 'Final approval completed and locked for audit.'}
-                {status === 'REJECTED' && 'This budget has been formally rejected.'}
-                {status === 'COMMITTEE_REVIEW' && 'Committee members can revise and evaluate this submission.'}
-                {status === 'DRAFT' && 'Continue preparing the draft before submission.'}
-              </h3>
-              <p className="m-0 mt-3 max-w-3xl text-sm leading-6" style={{ color: tone.text }}>
-                {status === 'SUBMITTED' &&
-                  'The submitted version is preserved while the committee prepares the next review action.'}
-                {status === 'RETURNED' &&
-                  'Use the reviewer note below to resolve issues, update affected lines, and then submit the corrected version again.'}
-                {status === 'RECOMMENDED' &&
-                  'Amounts are effectively locked while approvers review the recommendation, supporting files, and rationale.'}
-                {status === 'APPROVED' &&
-                  'No further changes can be made to this version. The approved figures are now part of the audit trail.'}
-                {status === 'REJECTED' &&
-                  'The record remains visible for audit purposes, but no workflow actions remain available on this budget.'}
-                {status === 'COMMITTEE_REVIEW' &&
-                  'Reviewers can adjust amounts inline, compare the submitted totals, and record a recommendation outcome.'}
-                {status === 'DRAFT' &&
-                  'Drafts remain fully editable. When ready, submit this version into the formal review process.'}
-              </p>
-            </div>
-            <SummaryTile
-              label="Total Portfolio Value"
-              value={formatMoney(total)}
-              caption={`Updated ${fmtDate(budget.updatedAt ?? budget.createdAt)}`}
-              tone={
-                status === 'APPROVED'
-                  ? 'success'
-                  : status === 'REJECTED'
-                  ? 'danger'
-                  : status === 'RECOMMENDED'
-                  ? 'violet'
-                  : 'highlight'
-              }
-            />
           </div>
         </div>
       </section>
 
       {/* ── Workflow tracker ──────────────────────────────────────────────── */}
       <Card
-        className="rounded-2xl shadow-sm border-[#f0e6db]"
-        bodyStyle={{ padding: '8px 16px 16px' }}
+        className="rounded-xl shadow-sm border-[#f0e6db]"
+        bodyStyle={{ padding: '8px 12px 12px' }}
       >
         <p className="text-xs font-semibold text-[#9D4D01] uppercase tracking-wider mb-0 mt-2">
           Approval Workflow
@@ -465,43 +411,6 @@ const BudgetDetail = () => {
           </div>
         )}
       </Card>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <SummaryTile
-          label="Current Status"
-          value={STATUS_LABEL[status]}
-          caption={budget.submittedAt ? `Submitted ${fmtDate(budget.submittedAt)}` : 'Not yet submitted'}
-          tone={
-            status === 'APPROVED'
-              ? 'success'
-              : status === 'REJECTED'
-              ? 'danger'
-              : status === 'RETURNED'
-              ? 'warning'
-              : status === 'RECOMMENDED'
-              ? 'violet'
-              : status === 'COMMITTEE_REVIEW'
-              ? 'info'
-              : 'default'
-          }
-        />
-        <SummaryTile
-          label="Budget Lines"
-          value={String(lineCount)}
-          caption="Tracked individual funding requests"
-          tone="default"
-        />
-        <SummaryTile
-          label="Portfolio Total"
-          value={formatMoney(liveEditedTotal)}
-          caption={
-            editMode
-              ? `Staged variance ${amountVariance >= 0 ? '+' : ''}${formatMoney(amountVariance)}`
-              : 'Live total of current line items'
-          }
-          tone={editMode ? 'info' : 'highlight'}
-        />
-      </div>
 
       {/* ── Committee Workspace (COMMITTEE_REVIEW status) ─────────────────── */}
       {status === 'COMMITTEE_REVIEW' && (
@@ -632,8 +541,8 @@ const BudgetDetail = () => {
                     <Table
                       columns={[
                         { title: '#', key: 'idx', render: (_, __, i) => i + 1, width: 40, align: 'center' },
-                        { title: 'Budget Line Item', dataIndex: 'item', key: 'item', render: (v) => capitalize(v) },
-                        { title: 'Category', dataIndex: ['budgetCategory', 'name'], key: 'cat', render: (v) => v ?? '—' },
+                        { title: 'Budget Line Item', dataIndex: 'item', key: 'item', render: (v) => capitalize(displayItemLabel(v)) },
+                        { title: 'Category', key: 'cat', render: (_, record) => displayItemCategory(record.item, record.budgetCategory?.name) || '—' },
                         {
                           title: 'Submitted Amt', dataIndex: 'amount', key: 'orig', align: 'right',
                           render: (v) => <span className="text-gray-600">{formatMoney(v)}</span>,
@@ -713,8 +622,8 @@ const BudgetDetail = () => {
                     <Table
                       columns={[
                         { title: '#', key: 'idx', render: (_, __, i) => i + 1, width: 40, align: 'center' },
-                        { title: 'Budget Line Item', dataIndex: 'item', key: 'item', render: (v) => capitalize(v) },
-                        { title: 'Category', dataIndex: ['budgetCategory', 'name'], key: 'cat', render: (v) => v ?? '—' },
+                        { title: 'Budget Line Item', dataIndex: 'item', key: 'item', render: (v) => capitalize(displayItemLabel(v)) },
+                        { title: 'Category', key: 'cat', render: (_, record) => displayItemCategory(record.item, record.budgetCategory?.name) || '—' },
                         { title: 'Qty', dataIndex: 'quantity', key: 'qty', align: 'center', render: (v) => v ?? '—' },
                         { title: 'Original Amount', dataIndex: 'amount', key: 'amount', align: 'right', render: (v) => <span className="font-semibold">{formatMoney(v)}</span> },
                       ]}
@@ -805,12 +714,12 @@ const BudgetDetail = () => {
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Budget Category</label>
                   <p className="text-sm font-semibold text-[#582f08] mt-1">
-                    {lineEditDrawer.budgetCategory?.name ?? '—'}
+                    {lineEditDrawer.budgetCategory?.name || displayItemCategory(lineEditDrawer.item) || '—'}
                   </p>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Budget Line Item</label>
-                  <p className="text-sm font-semibold mt-1">{capitalize(lineEditDrawer.item)}</p>
+                  <p className="text-sm font-semibold mt-1">{capitalize(displayItemLabel(lineEditDrawer.item))}</p>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Submitted Amount</label>
@@ -908,13 +817,12 @@ const BudgetDetail = () => {
                       title: 'Budget Line Item',
                       dataIndex: 'item',
                       key: 'item',
-                      render: (v) => <span className="font-semibold">{capitalize(v)}</span>,
+                      render: (v) => <span className="font-semibold">{capitalize(displayItemLabel(v))}</span>,
                     },
                     {
                       title: 'Category',
-                      dataIndex: ['budgetCategory', 'name'],
                       key: 'cat',
-                      render: (v) => v ?? '—',
+                      render: (_, record) => displayItemCategory(record.item, record.budgetCategory?.name) || '—',
                     },
                     {
                       title: 'Recommended Amt',
@@ -1084,7 +992,7 @@ const BudgetDetail = () => {
                 size="small"
                 summary={() => (
                   <Table.Summary.Row className="font-bold bg-[#f5f3ff]">
-                    <Table.Summary.Cell colSpan={2}><span className="font-bold text-[#7c3aed]">Total</span></Table.Summary.Cell>
+                    <Table.Summary.Cell colSpan={3}><span className="font-bold text-[#7c3aed]">Total</span></Table.Summary.Cell>
                     <Table.Summary.Cell align="right"><span className="font-bold text-[#7c3aed]">{formatMoney(total)}</span></Table.Summary.Cell>
                   </Table.Summary.Row>
                 )}
@@ -1119,7 +1027,7 @@ const BudgetDetail = () => {
                     title: 'Affected Line',
                     dataIndex: 'item',
                     key: 'item',
-                    render: (value) => <span className="font-semibold">{capitalize(value)}</span>,
+                    render: (value) => <span className="font-semibold">{capitalize(displayItemLabel(value))}</span>,
                   },
                   {
                     title: 'Amount',
@@ -1303,10 +1211,14 @@ const BudgetDetail = () => {
                     </Descriptions.Item>
                     <Descriptions.Item label="Financial Year">{fmtYear(budget)}</Descriptions.Item>
                     <Descriptions.Item label="Department">
-                      {budget.department?.departmentName ?? '—'}
+                      {budget.department?.departmentName
+                        ? capitalize(budget.department.departmentName)
+                        : '—'}
                     </Descriptions.Item>
                     <Descriptions.Item label="Division">
-                      {budget.department?.division?.divisionName ?? '—'}
+                      {budget.department?.division?.divisionName
+                        ? capitalize(budget.department.division.divisionName)
+                        : '—'}
                     </Descriptions.Item>
                     {budget.submittedAt && (
                       <Descriptions.Item label="Submitted On">{fmtDate(budget.submittedAt)}</Descriptions.Item>
@@ -1390,15 +1302,15 @@ const BudgetDetail = () => {
                           },
                           {
                             title: 'Category',
-                            dataIndex: ['budgetCategory', 'name'],
                             key: 'cat',
-                            render: (v) => v ?? '—',
+                            render: (_, record) =>
+                              displayItemCategory(record.item, record.budgetCategory?.name) || '—',
                           },
                           {
                             title: 'Description',
                             dataIndex: 'item',
                             key: 'item',
-                            render: (v) => <span className="font-semibold">{capitalize(v)}</span>,
+                            render: (v) => <span className="font-semibold">{capitalize(displayItemLabel(v))}</span>,
                           },
                           {
                             title: 'Allocated',
@@ -1431,7 +1343,7 @@ const BudgetDetail = () => {
                   className="rounded-b-2xl overflow-hidden"
                   summary={() => (
                     <Table.Summary.Row className="font-bold bg-[#fdf5ef]">
-                      <Table.Summary.Cell colSpan={status === 'APPROVED' ? 3 : 2}>
+                      <Table.Summary.Cell colSpan={status === 'APPROVED' ? 3 : 3}>
                         <span className="font-bold text-[#582f08]">
                           {status === 'APPROVED' ? 'Total Approved Budget' : 'Total'}
                         </span>
@@ -1547,11 +1459,10 @@ const BudgetDetail = () => {
         onCancel={() => setModal(null)}
         onConfirm={(note) => approveM.mutate(note)}
         title="Confirm Final Approval"
-        requireNote
-        noteLabel="Approval reason"
+        requireNote={false}
         loading={approveM.isPending}
-        confirmText="Finalize & Sign"
-        description={`Are you sure you want to approve the recommended total of ${formatMoney(total)}? This action locks the budget for departmental allocation.`}
+        confirmText="Approve"
+        description={`Are you sure you want to approve the recommended total of ${formatMoney(total)}? This cannot be undone and locks the budget for departmental allocation.`}
       />
       <ActionModal
         open={modal === 'reject'}

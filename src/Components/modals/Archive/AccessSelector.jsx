@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Select, Segmented, Checkbox, Spin, Empty, Avatar } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { getShareableUsers } from '../../../http/folderAccess';
@@ -6,6 +6,7 @@ import { getShareableUsers } from '../../../http/folderAccess';
 // Controlled selector for choosing division users and their folder permissions.
 // value: [{ userId, name, role: 'VIEWER'|'EDITOR', canDelete }]
 const AccessSelector = ({ value = [], onChange, excludeUserIds = [] }) => {
+  const [open, setOpen] = useState(false);
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['shareableUsers'],
     queryFn: getShareableUsers,
@@ -42,6 +43,9 @@ const AccessSelector = ({ value = [], onChange, excludeUserIds = [] }) => {
         mode="multiple"
         allowClear
         showSearch
+        open={open}
+        onOpenChange={setOpen}
+        onSelect={() => setOpen(false)}
         loading={isLoading}
         placeholder="Select people in your division"
         className="w-full"

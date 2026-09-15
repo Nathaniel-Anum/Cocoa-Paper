@@ -423,45 +423,30 @@ const BudgetCompare = () => {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-6 pb-10">
-      <section className="rounded-[28px] border border-[#ead9cb] bg-[#fffdfb] p-6 shadow-[0_18px_50px_rgba(88,47,8,0.07)]">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
+    <div className="space-y-4 pb-8">
+      <section className="rounded-xl border border-[#f0e6da] bg-white px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
             <Button
               icon={<ArrowLeftOutlined />}
               onClick={() => navigate('/budget')}
               size="small"
-              className="mt-1 border-[#ead9cb] text-[#7a6859] hover:border-[#9D4D01] hover:text-[#9D4D01]"
+              className="border-[#ead9cb] text-[#7a6859]"
             />
-            <div>
-              <p className="m-0 text-xs font-bold uppercase tracking-[0.18em] text-[#9D4D01]">
-                Analytical Workspace
-              </p>
-              <h2 className="m-0 mt-2 flex items-center gap-2 text-3xl font-extrabold tracking-[-0.02em] text-[#582f08]">
-                <BarChartOutlined className="text-[#9D4D01]" /> Version Comparison
-              </h2>
-              <p className="m-0 mt-2 max-w-3xl text-sm leading-6 text-[#7a6859]">
-                Compare departmental budget versions across workflow milestones or financial years
-                and identify major shifts in requested, reduced, and newly introduced spend.
-              </p>
+            <div className="min-w-0">
+              <h2 className="m-0 text-lg font-semibold text-[#582f08]">Compare budgets</h2>
+              {activeCompareData && (
+                <p className="m-0 text-xs text-[#7a6859]">
+                  {capitalize(deptName)} · {yearALabel} vs {yearBLabel}
+                </p>
+              )}
             </div>
           </div>
 
-          {activeCompareData && (
-            <div className="rounded-2xl border border-[#ead9cb] bg-[#fdf5ef] px-4 py-3">
-              <p className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-[#9D4D01]">
-                Active Comparison
-              </p>
-              <p className="m-0 mt-1 text-sm font-semibold text-[#582f08]">
-                {capitalize(deptName)} · {yearALabel} vs {yearBLabel}
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
           <Button
             type={compareMode === 'version' ? 'primary' : 'default'}
+            size="small"
             onClick={() => setCompareMode('version')}
             style={
               compareMode === 'version'
@@ -469,10 +454,11 @@ const BudgetCompare = () => {
                 : undefined
             }
           >
-            Budget Versions
+            Versions
           </Button>
           <Button
             type={compareMode === 'year' ? 'primary' : 'default'}
+            size="small"
             onClick={() => setCompareMode('year')}
             style={
               compareMode === 'year'
@@ -480,12 +466,13 @@ const BudgetCompare = () => {
                 : undefined
             }
           >
-            Financial Years
+            Years
           </Button>
+          </div>
         </div>
 
-        <div className="mt-6 rounded-[24px] border border-[#ead9cb] bg-[#fdf1eb] p-5">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+        <div className="mt-3 rounded-xl border border-[#f0e6da] bg-[#fffaf6] p-3">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]">
           {/* Division */}
           <div>
             <label className="block text-xs font-bold text-[#582f08] uppercase tracking-wider mb-1.5">

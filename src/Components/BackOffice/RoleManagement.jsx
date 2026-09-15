@@ -349,6 +349,7 @@ const RoleManagement = () => {
             dataSource={_data}
             loading={isLoading}
             className="backoffice-table"
+            scroll={{ x: 'max-content' }}
             rowClassName={(_, i) => (i % 2 !== 0 ? 'backoffice-row-alt' : '')}
           />
         </div>

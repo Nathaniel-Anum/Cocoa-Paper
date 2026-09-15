@@ -49,6 +49,10 @@ import UserGroups from './Components/BackOffice/UserGroups';
 import Stamp from './Components/BackOffice/Stamp';
 import OTPSettings from './Components/OTPSettings';
 import UserGuide from './Pages/UserGuide';
+import HrTemplatesIndex from './Pages/HrTemplates/HrTemplatesIndex';
+import HrTemplateEditor from './Pages/HrTemplates/HrTemplateEditor';
+import HrTemplateFill from './Pages/HrTemplates/HrTemplateFill';
+import { isHrDepartment } from './utils/isHrDepartment';
 import { socket } from './utils/socket';
 import useStore from './store/store';
 import { isPushSupported, subscribeToPush, isSubscribedToPush } from './utils/pushNotifications';
@@ -236,6 +240,38 @@ function App() {
                   ])}
                 >
                   <AddDocument />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/templates"
+              element={
+                <ProtectedRoutes isAllowed={!!user && isHrDepartment(user)}>
+                  <HrTemplatesIndex />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/templates/new"
+              element={
+                <ProtectedRoutes isAllowed={!!user && isHrDepartment(user)}>
+                  <HrTemplateEditor />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/templates/:id/edit"
+              element={
+                <ProtectedRoutes isAllowed={!!user && isHrDepartment(user)}>
+                  <HrTemplateEditor />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/templates/:id/fill"
+              element={
+                <ProtectedRoutes isAllowed={!!user && isHrDepartment(user)}>
+                  <HrTemplateFill />
                 </ProtectedRoutes>
               }
             />

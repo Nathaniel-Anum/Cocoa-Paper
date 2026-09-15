@@ -26,3 +26,24 @@ export const getArchiveByFolderId = async (folderId) => {
     throw error;
   }
 };
+
+export const attachArchiveFiles = async (fileId, files) => {
+  const formData = new FormData();
+  files.forEach((file) => formData.append("files", file));
+  const response = await axiosInstance.post(
+    `/archive/file/${fileId}/attachments`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    },
+  );
+  return response.data;
+};
+
+export const getCombinedArchiveFile = async (fileId, { download = false } = {}) => {
+  const response = await axiosInstance.get(`/archive/file/${fileId}/combined`, {
+    responseType: "blob",
+    params: download ? { download: true } : {},
+  });
+  return response;
+};

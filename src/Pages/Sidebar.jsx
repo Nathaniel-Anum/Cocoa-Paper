@@ -8,7 +8,8 @@ import {
 } from '../../utils/Roles';
 import { GiTakeMyMoney } from 'react-icons/gi';
 import { HiMiniPresentationChartLine } from 'react-icons/hi2';
-import { FaChartPie, FaTimes, FaBook, FaChevronRight } from 'react-icons/fa';
+import { FaChartPie, FaTimes, FaBook, FaChevronRight, FaFileAlt } from 'react-icons/fa';
+import { isHrDepartment } from '../utils/isHrDepartment';
 import {
   AuditOutlined,
   CheckSquareOutlined,
@@ -164,6 +165,8 @@ const Sidebar = () => {
   }, [budgetFlyoutOpen]);
 
   const canSeeBudget = hasPermission(allRolePermissions, [requiredPermissions.DISPLAY_BUDGET]);
+  const showHrTemplates = isHrDepartment(user);
+  const isTemplatesRoute = location.pathname.startsWith('/templates');
   const canCreateBudget = hasPermission(allRolePermissions, [requiredPermissions.CREATE_BUDGET]);
   const canSeeCommittee =
     hasPermission(allRolePermissions, [requiredPermissions.START_COMMITTEE_REVIEW]) ||
@@ -350,6 +353,21 @@ const Sidebar = () => {
             </Link>
           )}
 
+          {showHrTemplates && (
+            <Link to="/templates" onClick={closeSidebar}>
+              <li
+                className={`flex flex-col justify-center items-center gap-1 duration-300 py-2 px-2 hover:scale-105 hover:rounded-md ${
+                  isTemplatesRoute
+                    ? 'rounded-md bg-[#fd984e]/25 ring-1 ring-[#fd984e]/40'
+                    : 'hover:bg-white/10'
+                }`}
+              >
+                <FaFileAlt className="text-[#E3BC97]" size={38} />
+                <p className="text-xs">Templates</p>
+              </li>
+            </Link>
+          )}
+
           {/* ── Budget hover flyout ──────────────────────────────────────── */}
           {canSeeBudget && (
             <li
@@ -378,15 +396,15 @@ const Sidebar = () => {
                 aria-expanded={budgetFlyoutOpen}
               >
                 <GiTakeMyMoney className="text-[#E3BC97]" size={45} />
-                <span className="flex items-center gap-1 text-xs font-semibold text-white">
+                <p className="flex items-center gap-1 text-xs">
                   Budget
                   <FaChevronRight
                     size={10}
                     className={`transition-transform duration-200 ${
-                      budgetFlyoutOpen ? 'translate-x-0.5 text-[#fd984e]' : 'text-[#E3BC97]'
+                      budgetFlyoutOpen ? 'translate-x-0.5 text-[#E3BC97]' : 'text-[#E3BC97]'
                     }`}
                   />
-                </span>
+                </p>
               </button>
             </li>
           )}

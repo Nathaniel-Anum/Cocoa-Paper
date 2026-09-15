@@ -574,6 +574,21 @@ table th {
 
 /* ==================== BACKOFFICE TABLE STYLES ==================== */
 
+/* Keep tables inside the admin content column, not under the sidebar */
+.backoffice-table {
+  max-width: 100%;
+}
+
+.backoffice-table .ant-table-container,
+.backoffice-table .ant-table-content {
+  overflow-x: auto !important;
+}
+
+.backoffice-table .ant-table {
+  min-width: 100%;
+  border-radius: 0 !important;
+}
+
 /* Dark branded header for backoffice tables */
 .backoffice-table .ant-table-thead > tr > th {
   background-color: #582f08 !important;
@@ -614,10 +629,6 @@ table th {
 }
 
 /* Remove outer wrapper border/radius so card handles it */
-.backoffice-table .ant-table {
-  border-radius: 0 !important;
-}
-
 .backoffice-table .ant-table-container {
   border-radius: 0 !important;
   border-inline-start: none !important;

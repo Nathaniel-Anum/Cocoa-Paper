@@ -97,6 +97,18 @@ const AddDepartment = ({ setOpen, open }) => {
           >
             <Input placeholder="Department Name" allowClear />
           </Form.Item>
+          <Form.Item
+            name="departmentCode"
+            label="Department code"
+            rules={[
+              {
+                required: true,
+                message: 'Please input a short department code, e.g. FD',
+              },
+            ]}
+          >
+            <Input placeholder="e.g. FD" allowClear maxLength={8} />
+          </Form.Item>
 
           <Form.Item
             name="divisionId"

@@ -40,8 +40,8 @@ const BackOfficeNavBar = () => {
 
   return (
     <div className="bg-white border-b border-[#f0e6da] shadow-sm">
-      <div className="flex justify-between items-center py-3 ml-[220px]">
-        <div className="pl-6">
+      <div className="flex flex-wrap justify-between items-center gap-3 py-3 px-6">
+        <div className="min-w-0">
           <p className="font-bold text-[18px] text-[#582F08]">Admin Panel</p>
 
           <p className="text-xs font-medium text-[#9D4D01]">
@@ -68,7 +68,7 @@ const BackOfficeNavBar = () => {
           <input
             type="search"
             placeholder="Search files and documents"
-            className="w-[280px] h-full px-3 bg-transparent rounded-lg outline-none text-sm"
+            className="w-full max-w-[280px] min-w-[140px] h-full px-3 bg-transparent rounded-lg outline-none text-sm"
           />
         </div>
         {/* <div>
@@ -87,7 +87,7 @@ const BackOfficeNavBar = () => {
             />
           </svg>
         </div> */}
-        <div className="pr-6 flex gap-2 items-center">
+        <div className="flex gap-2 items-center min-w-0">
           <p className="bg-[#E3BC97] text-[#582F08] w-9 h-9 flex items-center justify-center font-bold rounded-full text-sm">
             {user?.name?.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || 'U'}
           </p>
